@@ -4,7 +4,7 @@
 ; Author: 		Krzysztof Koch
 ; Version:		V1.00
 ; Date created:	26/09/2016
-; Last mod: 	26/09/2016
+; Last mod: 	27/09/2016
 ;
 ; Note: 		Startup code containing stack and heap definitions as well as 
 ;				exception vectors
@@ -24,22 +24,8 @@ __initial_sp
 
 
 ;-------------------------------------------------------------------------------
-; Heap Configuration
-;-------------------------------------------------------------------------------
-Heap_Size       EQU     0x00000200				; Heap size in bytes
-
-; Heap memory area - RAM, uninitialised with 2-word alignment
-                AREA    HEAP, NOINIT, READWRITE, ALIGN=3
-__heap_base
-Heap_Mem        SPACE   Heap_Size
-__heap_limit
-
-
-
-;-------------------------------------------------------------------------------
 ; Vector Table Mapped to Address 0 at Reset
 ;-------------------------------------------------------------------------------
-
 				PRESERVE8						  ; Preserve eight-byte alignment of the stack
 				THUMB 							  ; Use Thumb instruction set
                 AREA    RESET, DATA, READONLY 	  ; Data to be placed in ROM at address 0x0 
@@ -208,19 +194,19 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
 
 ;-------------------------------------------------------------------------------
 ; Reset Handler
-;-------------------------------------------------------------------------------
-								
+;-------------------------------------------------------------------------------			
 				AREA    |.text|, CODE, READONLY	  ; Instructions to be placed in ROM
 
 				EXPORT  Reset_Handler             
 Reset_Handler   PROC
-                IMPORT  SystemInit
+                IMPORT  system_init
                 IMPORT  main
-                LDR     R0, =SystemInit 		  ; Run system initialisation function
+                LDR     R0, =system_init 		  ; Run system initialisation function
                 BLX     R0
                 LDR     R0, =main				  ; Run the main method
                 BX      R0
                 ENDP
+
 
 
 ;-------------------------------------------------------------------------------
@@ -271,652 +257,233 @@ SysTick_Handler\
                 B       .
                 ENDP
 
-GPIOA_Handler\
-                PROC
-                EXPORT  GPIOA_Handler [WEAK]
-                B       .
-                ENDP
 
-GPIOB_Handler\
-                PROC
-                EXPORT  GPIOB_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOC_Handler\
-                PROC
-                EXPORT  GPIOC_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOD_Handler\
-                PROC
-                EXPORT  GPIOD_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOE_Handler\
-                PROC
-                EXPORT  GPIOE_Handler [WEAK]
-                B       .
-                ENDP
-
-UART0_Handler\
-                PROC
-                EXPORT  UART0_Handler [WEAK]
-                B       .
-                ENDP
-
-UART1_Handler\
-                PROC
-                EXPORT  UART1_Handler [WEAK]
-                B       .
-                ENDP
-
-SSI0_Handler\
-                PROC
-                EXPORT  SSI0_Handler [WEAK]
-                B       .
-                ENDP
-
-I2C0_Handler\
-                PROC
-                EXPORT  I2C0_Handler [WEAK]
-                B       .
-                ENDP
-
-PMW0_FAULT_Handler\
-                PROC
-                EXPORT  PMW0_FAULT_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM0_0_Handler\
-                PROC
-                EXPORT  PWM0_0_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM0_1_Handler\
-                PROC
-                EXPORT  PWM0_1_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM0_2_Handler\
-                PROC
-                EXPORT  PWM0_2_Handler [WEAK]
-                B       .
-                ENDP
-
-QEI0_Handler\
-                PROC
-                EXPORT  QEI0_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC0SS0_Handler\
-                PROC
-                EXPORT  ADC0SS0_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC0SS1_Handler\
-                PROC
-                EXPORT  ADC0SS1_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC0SS2_Handler\
-                PROC
-                EXPORT  ADC0SS2_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC0SS3_Handler\
-                PROC
-                EXPORT  ADC0SS3_Handler [WEAK]
-                B       .
-                ENDP
-
-WDT0_Handler\
-                PROC
+;-------------------------------------------------------------------------------
+; External interrupt handlers. WEAK - imported into other sources if no other  
+; source exports an alternative
+;-------------------------------------------------------------------------------
+Default_Handler	PROC
+	
+				EXPORT  GPIOA_Handler [WEAK]
+				EXPORT  GPIOB_Handler [WEAK]
+				EXPORT  GPIOC_Handler [WEAK]	
+				EXPORT  GPIOD_Handler [WEAK]
+				EXPORT  GPIOE_Handler [WEAK]
+				EXPORT  UART0_Handler [WEAK]
+				EXPORT  UART1_Handler [WEAK]
+				EXPORT  SSI0_Handler [WEAK]	
+				EXPORT  I2C0_Handler [WEAK]
+				EXPORT  PMW0_FAULT_Handler [WEAK]
+				EXPORT  PWM0_0_Handler [WEAK]
+				EXPORT  PWM0_1_Handler [WEAK]
+				EXPORT  PWM0_2_Handler [WEAK]
+				EXPORT  QEI0_Handler [WEAK]
+				EXPORT  ADC0SS0_Handler [WEAK]	
+				EXPORT  ADC0SS1_Handler [WEAK]	
+				EXPORT  ADC0SS2_Handler [WEAK]
+				EXPORT  ADC0SS3_Handler [WEAK]
                 EXPORT  WDT0_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER0A_Handler\
-                PROC
                 EXPORT  TIMER0A_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER0B_Handler\
-                PROC
                 EXPORT  TIMER0B_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER1A_Handler\
-                PROC
                 EXPORT  TIMER1A_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER1B_Handler\
-                PROC
                 EXPORT  TIMER1B_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER2A_Handler\
-                PROC
                 EXPORT  TIMER2A_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER2B_Handler\
-                PROC
                 EXPORT  TIMER2B_Handler [WEAK]
-                B       .
-                ENDP
-
-COMP0_Handler\
-                PROC
                 EXPORT  COMP0_Handler [WEAK]
-                B       .
-                ENDP
-
-COMP1_Handler\
-                PROC
                 EXPORT  COMP1_Handler [WEAK]
-                B       .
-                ENDP
-
-COMP2_Handler\
-                PROC
                 EXPORT  COMP2_Handler [WEAK]
-                B       .
-                ENDP
-
-SYSCTL_Handler\
-                PROC
                 EXPORT  SYSCTL_Handler [WEAK]
-                B       .
-                ENDP
-
-FLASH_Handler\
-                PROC
                 EXPORT  FLASH_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOF_Handler\
-                PROC
                 EXPORT  GPIOF_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOG_Handler\
-                PROC
                 EXPORT  GPIOG_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOH_Handler\
-                PROC
                 EXPORT  GPIOH_Handler [WEAK]
-                B       .
-                ENDP
-
-UART2_Handler\
-                PROC
                 EXPORT  UART2_Handler [WEAK]
-                B       .
-                ENDP
-
-SSI1_Handler\
-                PROC
                 EXPORT  SSI1_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER3A_Handler\
-                PROC
                 EXPORT  TIMER3A_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER3B_Handler\
-                PROC
                 EXPORT  TIMER3B_Handler [WEAK]
-                B       .
-                ENDP
-
-I2C1_Handler\
-                PROC
                 EXPORT  I2C1_Handler [WEAK]
-                B       .
-                ENDP
-
-QEI1_Handler\
-                PROC
                 EXPORT  QEI1_Handler [WEAK]
-                B       .
-                ENDP
-
-CAN0_Handler\
-                PROC
                 EXPORT  CAN0_Handler [WEAK]
-                B       .
-                ENDP
-
-CAN1_Handler\
-                PROC
                 EXPORT  CAN1_Handler [WEAK]
-                B       .
-                ENDP
-
-CAN2_Handler\
-                PROC
                 EXPORT  CAN2_Handler [WEAK]
-                B       .
-                ENDP
-
-HIB_Handler\
-                PROC
                 EXPORT  HIB_Handler [WEAK]
-                B       .
-                ENDP
-
-USB0_Handler\
-                PROC
                 EXPORT  USB0_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM0_3_Handler\
-                PROC
                 EXPORT  PWM0_3_Handler [WEAK]
-                B       .
-                ENDP
-
-UDMA_Handler\
-                PROC
                 EXPORT  UDMA_Handler [WEAK]
-                B       .
-                ENDP
-
-UDMAERR_Handler\
-                PROC
                 EXPORT  UDMAERR_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC1SS0_Handler\
-                PROC
                 EXPORT  ADC1SS0_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC1SS1_Handler\
-                PROC
                 EXPORT  ADC1SS1_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC1SS2_Handler\
-                PROC
                 EXPORT  ADC1SS2_Handler [WEAK]
-                B       .
-                ENDP
-
-ADC1SS3_Handler\
-                PROC
                 EXPORT  ADC1SS3_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOJ_Handler\
-                PROC
                 EXPORT  GPIOJ_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOK_Handler\
-                PROC
                 EXPORT  GPIOK_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOL_Handler\
-                PROC
                 EXPORT  GPIOL_Handler [WEAK]
-                B       .
-                ENDP
-
-SSI2_Handler\
-                PROC
                 EXPORT  SSI2_Handler [WEAK]
-                B       .
-                ENDP
-
-SSI3_Handler\
-                PROC
                 EXPORT  SSI3_Handler [WEAK]
-                B       .
-                ENDP
-
-UART3_Handler\
-                PROC
                 EXPORT  UART3_Handler [WEAK]
-                B       .
-                ENDP
-
-UART4_Handler\
-                PROC
                 EXPORT  UART4_Handler [WEAK]
-                B       .
-                ENDP
-
-UART5_Handler\
-                PROC
                 EXPORT  UART5_Handler [WEAK]
-                B       .
-                ENDP
-
-UART6_Handler\
-                PROC
                 EXPORT  UART6_Handler [WEAK]
-                B       .
-                ENDP
-
-UART7_Handler\
-                PROC
                 EXPORT  UART7_Handler [WEAK]
-                B       .
-                ENDP
-
-I2C2_Handler\
-                PROC
                 EXPORT  I2C2_Handler [WEAK]
-                B       .
-                ENDP
-
-I2C3_Handler\
-                PROC
                 EXPORT  I2C3_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER4A_Handler\
-                PROC
                 EXPORT  TIMER4A_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER4B_Handler\
-                PROC
                 EXPORT  TIMER4B_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER5A_Handler\
-                PROC
                 EXPORT  TIMER5A_Handler [WEAK]
-                B       .
-                ENDP
-
-TIMER5B_Handler\
-                PROC
                 EXPORT  TIMER5B_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER0A_Handler\
-                PROC
                 EXPORT  WTIMER0A_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER0B_Handler\
-                PROC
                 EXPORT  WTIMER0B_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER1A_Handler\
-                PROC
                 EXPORT  WTIMER1A_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER1B_Handler\
-                PROC
                 EXPORT  WTIMER1B_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER2A_Handler\
-                PROC
                 EXPORT  WTIMER2A_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER2B_Handler\
-                PROC
                 EXPORT  WTIMER2B_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER3A_Handler\
-                PROC
                 EXPORT  WTIMER3A_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER3B_Handler\
-                PROC
                 EXPORT  WTIMER3B_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER4A_Handler\
-                PROC
                 EXPORT  WTIMER4A_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER4B_Handler\
-                PROC
                 EXPORT  WTIMER4B_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER5A_Handler\
-                PROC
                 EXPORT  WTIMER5A_Handler [WEAK]
-                B       .
-                ENDP
-
-WTIMER5B_Handler\
-                PROC
                 EXPORT  WTIMER5B_Handler [WEAK]
-                B       .
-                ENDP
-
-FPU_Handler\
-                PROC
                 EXPORT  FPU_Handler [WEAK]
-                B       .
-                ENDP
-
-I2C4_Handler\
-                PROC
                 EXPORT  I2C4_Handler [WEAK]
-                B       .
-                ENDP
-
-I2C5_Handler\
-                PROC
                 EXPORT  I2C5_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOM_Handler\
-                PROC
                 EXPORT  GPIOM_Handler [WEAK]
-                B       .
-                ENDP
-
-GPION_Handler\
-                PROC
                 EXPORT  GPION_Handler [WEAK]
-                B       .
-                ENDP
-
-QEI2_Handler\
-                PROC
                 EXPORT  QEI2_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP0_Handler\
-                PROC
                 EXPORT  GPIOP0_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP1_Handler\
-                PROC
                 EXPORT  GPIOP1_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP2_Handler\
-                PROC
                 EXPORT  GPIOP2_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP3_Handler\
-                PROC
                 EXPORT  GPIOP3_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP4_Handler\
-                PROC
                 EXPORT  GPIOP4_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP5_Handler\
-                PROC
                 EXPORT  GPIOP5_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP6_Handler\
-                PROC
                 EXPORT  GPIOP6_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOP7_Handler\
-                PROC
                 EXPORT  GPIOP7_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ0_Handler\
-                PROC
                 EXPORT  GPIOQ0_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ1_Handler\
-                PROC
                 EXPORT  GPIOQ1_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ2_Handler\
-                PROC
                 EXPORT  GPIOQ2_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ3_Handler\
-                PROC
                 EXPORT  GPIOQ3_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ4_Handler\
-                PROC
                 EXPORT  GPIOQ4_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ5_Handler\
-                PROC
                 EXPORT  GPIOQ5_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ6_Handler\
-                PROC
                 EXPORT  GPIOQ6_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOQ7_Handler\
-                PROC
                 EXPORT  GPIOQ7_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOR_Handler\
-                PROC
                 EXPORT  GPIOR_Handler [WEAK]
-                B       .
-                ENDP
-
-GPIOS_Handler\
-                PROC
                 EXPORT  GPIOS_Handler [WEAK]
-                B       .
-                ENDP
-
-PMW1_0_Handler\
-                PROC
                 EXPORT  PMW1_0_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM1_1_Handler\
-                PROC
                 EXPORT  PWM1_1_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM1_2_Handler\
-                PROC
                 EXPORT  PWM1_2_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM1_3_Handler\
-                PROC
                 EXPORT  PWM1_3_Handler [WEAK]
-                B       .
-                ENDP
-
-PWM1_FAULT_Handler\
-                PROC
                 EXPORT  PWM1_FAULT_Handler [WEAK]
-                B       .
+ 
+
+GPIOA_Handler 
+GPIOB_Handler 
+GPIOC_Handler 	
+GPIOD_Handler 
+GPIOE_Handler 
+UART0_Handler 
+UART1_Handler 
+SSI0_Handler 	
+I2C0_Handler 
+PMW0_FAULT_Handler 
+PWM0_0_Handler 
+PWM0_1_Handler 
+PWM0_2_Handler 
+QEI0_Handler 
+ADC0SS0_Handler 	
+ADC0SS1_Handler 	
+ADC0SS2_Handler 
+ADC0SS3_Handler
+WDT0_Handler 
+TIMER0A_Handler 
+TIMER0B_Handler 
+TIMER1A_Handler 
+TIMER1B_Handler 
+TIMER2A_Handler 
+TIMER2B_Handler 
+COMP0_Handler 
+COMP1_Handler 
+COMP2_Handler 
+SYSCTL_Handler 
+FLASH_Handler 
+GPIOF_Handler 
+GPIOG_Handler 
+GPIOH_Handler 
+UART2_Handler 
+SSI1_Handler 
+TIMER3A_Handler 
+TIMER3B_Handler 
+I2C1_Handler 
+QEI1_Handler 
+CAN0_Handler 
+CAN1_Handler 
+CAN2_Handler 
+HIB_Handler 
+USB0_Handler 
+PWM0_3_Handler 
+UDMA_Handler 
+UDMAERR_Handler 
+ADC1SS0_Handler 
+ADC1SS1_Handler 
+ADC1SS2_Handler 
+ADC1SS3_Handler 
+GPIOJ_Handler 
+GPIOK_Handler 
+GPIOL_Handler 
+SSI2_Handler 
+SSI3_Handler 
+UART3_Handler 
+UART4_Handler 
+UART5_Handler 
+UART6_Handler 
+UART7_Handler 
+I2C2_Handler 
+I2C3_Handler 
+TIMER4A_Handler 
+TIMER4B_Handler 
+TIMER5A_Handler 
+TIMER5B_Handler 
+WTIMER0A_Handler 
+WTIMER0B_Handler 
+WTIMER1A_Handler 
+WTIMER1B_Handler 
+WTIMER2A_Handler 
+WTIMER2B_Handler 
+WTIMER3A_Handler 
+WTIMER3B_Handler 
+WTIMER4A_Handler 
+WTIMER4B_Handler 
+WTIMER5A_Handler 
+WTIMER5B_Handler 
+FPU_Handler 
+I2C4_Handler 
+I2C5_Handler 
+GPIOM_Handler 
+GPION_Handler 
+QEI2_Handler 
+GPIOP0_Handler 
+GPIOP1_Handler 
+GPIOP2_Handler 
+GPIOP3_Handler 
+GPIOP4_Handler 
+GPIOP5_Handler 
+GPIOP6_Handler 
+GPIOP7_Handler 
+GPIOQ0_Handler 
+GPIOQ1_Handler 
+GPIOQ2_Handler 
+GPIOQ3_Handler 
+GPIOQ4_Handler 
+GPIOQ5_Handler 
+GPIOQ6_Handler 
+GPIOQ7_Handler 
+GPIOR_Handler 
+GPIOS_Handler 
+PMW1_0_Handler 
+PWM1_1_Handler 
+PWM1_2_Handler 
+PWM1_3_Handler 
+PWM1_FAULT_Handler 
+
+				B       .
                 ENDP
 
 				ALIGN

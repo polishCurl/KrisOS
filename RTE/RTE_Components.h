@@ -3,8 +3,8 @@
  * Auto generated Run-Time-Environment Component Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'DebuggerTest' 
- * Target:  'Target 1' 
+ * Project: 'KrisRTOS' 
+ * Target:  'Setup Target' 
  */
 
 #ifndef RTE_COMPONENTS_H
