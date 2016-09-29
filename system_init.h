@@ -73,3 +73,13 @@ typedef enum {
 --------------------------------------------------------------------------------*/
 void system_clock_config(OSCSRC oscSrc, XTAL oscFreq, int8_t usePll, 
 						 int8_t use400MHzPll, uint8_t divider);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	systick_config
+* Purpose:    	Set periodic interrupts every 'ticks' clock cycles using SysTick
+* Arguments: 	
+*		ticks - number of clock cycles between system timer interrupts (24 bits)
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+void systick_config(uint32_t ticks);

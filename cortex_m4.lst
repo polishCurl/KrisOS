@@ -1,0 +1,160 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ; ******************************************************
+                       ************************
+    2 00000000         ; File:      cortex_m4_reg.s
+    3 00000000         ; Brief:     Methods for accessing special purpose regis
+                       ters inside Cortex-M4
+    4 00000000         ; Author:   Krzysztof Koch
+    5 00000000         ; Version:  V1.00
+    6 00000000         ; Date created: 29/09/2016
+    7 00000000         ; Last mod:  29/09/2016
+    8 00000000         ;
+    9 00000000         ; Note:   
+   10 00000000         ; ******************************************************
+                       ************************
+   11 00000000         
+   12 00000000         
+   13 00000000                 PRESERVE8                    ; Preserve eight-by
+                                                            te alignment of the
+                                                             stack
+   14 00000000                 THUMB                        ; Use Thumb instruc
+                                                            tion set
+   15 00000000                 AREA             |.text|, CODE, READONLY ; Instr
+                                                            uctions to be place
+                                                            d in ROM  
+   16 00000000         
+   17 00000000         ;-------------------------------------------------------
+                       ------------------------
+   18 00000000         ; Function:     __disable_irqs
+   19 00000000         ; Purpose:     Disable interrupts by setting the I bit i
+                       n PRIMASK register
+   20 00000000         ; Arguments: -
+   21 00000000         ; Returns:   -
+   22 00000000         ;-------------------------------------------------------
+                       ------------------------
+   23 00000000         __disable_irqs
+                               PROC
+   24 00000000                 EXPORT           __disable_irqs
+   25 00000000 B672            CPSID            I
+   26 00000002 4770            BX               LR
+   27 00000004                 ENDP
+   28 00000004         
+   29 00000004         
+   30 00000004         ;-------------------------------------------------------
+                       ------------------------
+   31 00000004         ; Function:     __enable_irqs
+   32 00000004         ; Purpose:     Enable interrupts by clearing the I bit i
+                       n PRIMASK register
+   33 00000004         ; Arguments: -
+   34 00000004         ; Returns:   -
+   35 00000004         ;-------------------------------------------------------
+                       ------------------------
+   36 00000004         __enable_irqs
+                               PROC
+   37 00000004                 EXPORT           __enable_irqs
+   38 00000004 B662            CPSIE            I
+   39 00000006 4770            BX               LR
+   40 00000008                 ENDP
+   41 00000008         
+   42 00000008         
+   43 00000008         ;-------------------------------------------------------
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                       ------------------------
+   44 00000008         ; Function:     __set_base_prio
+   45 00000008         ; Purpose:     Set the base priority, disables interrupt
+                       s with priority lower than
+   46 00000008         ;    the argument. Writing 0 turns of priority masking
+   47 00000008         ; Arguments:
+   48 00000008         ;  R0 - base priority
+   49 00000008         ; Returns:   -
+   50 00000008         ;-------------------------------------------------------
+                       ------------------------ 
+   51 00000008         __set_base_prio
+                               PROC
+   52 00000008                 EXPORT           __set_base_prio
+   53 00000008 F380 8811       MSR              BASEPRI, R0
+   54 0000000C 4770            BX               LR
+   55 0000000E                 ENDP
+   56 0000000E         
+   57 0000000E         
+   58 0000000E         ;-------------------------------------------------------
+                       ------------------------
+   59 0000000E         ; Function:     __get_base_prio
+   60 0000000E         ; Purpose:     Read the masking priority level
+   61 0000000E         ; Arguments: -
+   62 0000000E         ; Returns:   
+   63 0000000E         ;  R0 - masking priority level
+   64 0000000E         ;-------------------------------------------------------
+                       ------------------------ 
+   65 0000000E         __get_base_prio
+                               PROC
+   66 0000000E                 EXPORT           __get_base_prio
+   67 0000000E F3EF 8011       MRS              R0, BASEPRI
+   68 00000012 4770            BX               LR
+   69 00000014                 ENDP
+   70 00000014         
+   71 00000014                 END
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\cortex_m4.d -o.\cortex_m4.o -I"C:\Users\Krzysztof Koch\Docume
+nts\KrisRTOS\RTE" -IC:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C
+123 -IC:\Keil_v5\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__U
+VISION_VERSION SETA 520" --predefine="TM4C123GH6PM SETA 1" --list=.\cortex_m4.l
+st cortex_m4.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 15 in file cortex_m4.s
+   Uses
+      None
+Comment: .text unused
+__disable_irqs 00000000
+
+Symbol: __disable_irqs
+   Definitions
+      At line 23 in file cortex_m4.s
+   Uses
+      At line 24 in file cortex_m4.s
+Comment: __disable_irqs used once
+__enable_irqs 00000004
+
+Symbol: __enable_irqs
+   Definitions
+      At line 36 in file cortex_m4.s
+   Uses
+      At line 37 in file cortex_m4.s
+Comment: __enable_irqs used once
+__get_base_prio 0000000E
+
+Symbol: __get_base_prio
+   Definitions
+      At line 65 in file cortex_m4.s
+   Uses
+      At line 66 in file cortex_m4.s
+Comment: __get_base_prio used once
+__set_base_prio 00000008
+
+Symbol: __set_base_prio
+   Definitions
+      At line 51 in file cortex_m4.s
+   Uses
+      At line 52 in file cortex_m4.s
+Comment: __set_base_prio used once
+5 symbols
+339 symbols in table

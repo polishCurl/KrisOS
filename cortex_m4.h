@@ -33,14 +33,27 @@
 *------------------------------------------------------------------------------*/
 
 // Main clock registers
-#define SYSCTL_RCC_R *((__IO uint32_t*) 0x400FE060)
-#define SYSCTL_RIS_R *((__IO uint32_t*) 0x400FE050)
-#define SYSCTL_RCC2_R *((__IO uint32_t*) 0x400FE070)
+#define SYSCTL_RCC *((__IO uint32_t*) 0x400FE060)
+#define SYSCTL_RIS *((__IO uint32_t*) 0x400FE050)
+#define SYSCTL_RCC2 *((__IO uint32_t*) 0x400FE070)
 
-
+// SysTick timer registers
+#define SYSTICK_CTRL *((__IO uint32_t*) 0xE000E010)
+#define SYSTICK_RELOAD *((__IO uint32_t*) 0xE000E014)
+#define SYSTICK_CURRENT *((__IO uint32_t*) 0xE000E018)
+#define SYSTICK_PRIO *((__IO uint32_t*) 0xE000ED20)
 
 
 /*-------------------------------------------------------------------------------
 * System clock speed
 *------------------------------------------------------------------------------*/
 extern uint64_t SYSTEM_CLOCK_FREQ;
+
+
+/*-------------------------------------------------------------------------------
+* Function prototypes for accessing special purpose registers
+*------------------------------------------------------------------------------*/
+void __disable_irqs(void);
+void __enable_irqs(void);
+void __set_base_prio(int32_t basePrio);
+int32_t __get_base_prio(void);
