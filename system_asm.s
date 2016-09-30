@@ -1,24 +1,30 @@
 ; ******************************************************************************
-; File:     	startup.s
-; Brief:    	Startup file for TM4C123GH6PM
+; File:     	system_asm.s
+; Brief:    	System related assembly code
 ; Author: 		Krzysztof Koch
 ; Version:		V1.00
 ; Date created:	26/09/2016
 ; Last mod: 	27/09/2016
 ;
-; Note: 		Startup code containing stack and heap definitions as well as 
-;				exception vectors
+; Note: 		System startup code containing stack definition as well as 
+;				exception vectors. Routines for accessing special purpose 
+;				registers inside the MCU.
 ; ******************************************************************************
 
 
 ;-------------------------------------------------------------------------------
-; Stack Configuration
+; Stack Configuration, double stacking in use
 ;-------------------------------------------------------------------------------
-Stack_Size      EQU     0x00000200				; Stack size in bytes
+Handler_Stack_Size	EQU     0x00000200		  ; Stack size for handler mode (MSP)
+Thread_Stack_Size	EQU     0x00000200		  ; Stack size for thread mode (PSP)
 
 ; Stack memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
-                AREA    STACK, NOINIT, READWRITE, ALIGN=3 	
-Stack_Mem       SPACE   Stack_Size
+                AREA    STACK, NOINIT, READWRITE, ALIGN=3 
+					
+Handler_Stack	SPACE   Handler_Stack_Size
+__initial_handler_sp	
+
+Thread_Stack   	SPACE   Thread_Stack_Size
 __initial_sp	
 
 
@@ -199,10 +205,12 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
 
 				EXPORT  Reset_Handler             
 Reset_Handler   PROC
-                IMPORT  system_init
-                IMPORT  main
-                LDR     R0, =system_init 		  ; Run system initialisation function
+				LDR 	R0, =__initial_handler_sp ; load the proces stack pointer
+				MSR 	PSP, R0
+				IMPORT  system_init				  ; run the system initialisation 
+                LDR     R0, =system_init
                 BLX     R0
+                IMPORT  main
                 LDR     R0, =main				  ; Run the main method
                 BX      R0
                 ENDP
@@ -482,9 +490,64 @@ PWM1_1_Handler
 PWM1_2_Handler 
 PWM1_3_Handler 
 PWM1_FAULT_Handler 
-
 				B       .
                 ENDP
-
 				ALIGN
+					
+					
+;-------------------------------------------------------------------------------
+; Function:    	__disable_irqs
+; Purpose:    	Disable interrupts by setting the I bit in PRIMASK register
+; Arguments:	-
+; Returns: 		-
+;-------------------------------------------------------------------------------
+__disable_irqs	PROC
+				EXPORT	__disable_irqs
+				CPSID	I
+				BX 		LR
+				ENDP
+				
+				
+;-------------------------------------------------------------------------------
+; Function:    	__enable_irqs
+; Purpose:    	Enable interrupts by clearing the I bit in PRIMASK register
+; Arguments:	-
+; Returns: 		-
+;-------------------------------------------------------------------------------
+__enable_irqs	PROC
+				EXPORT	__enable_irqs
+				CPSIE	I
+				BX 		LR
+				ENDP
+				
+		
+;-------------------------------------------------------------------------------
+; Function:    	__set_base_prio
+; Purpose:    	Set the base priority, disables interrupts with priority lower than
+;				the argument. Writing 0 turns of priority masking
+; Arguments:
+;		R0 - base priority
+; Returns: 		-
+;-------------------------------------------------------------------------------	
+__set_base_prio	PROC
+				EXPORT 	__set_base_prio
+				MSR 	BASEPRI, R0
+				BX 		LR
+				ENDP
+					
+
+;-------------------------------------------------------------------------------
+; Function:    	__get_base_prio
+; Purpose:    	Read the masking priority level
+; Arguments:	-
+; Returns: 		
+;		R0 - masking priority level
+;-------------------------------------------------------------------------------	
+__get_base_prio	PROC
+				EXPORT 	__get_base_prio
+				MRS 	R0, BASEPRI
+				BX 		LR
+				ENDP
+					
+					
                 END

@@ -1,20 +1,17 @@
 /*******************************************************************************
-* File:     	system_init.s
-* Brief:    	Initialisation functions for main system components
+* File:     	system.c
+* Brief:    	System related code
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	26/09/2016
 * Last mod: 	28/09/2016
 *
-* Note: 		
+* Note: 		Methods for configuring core system functionality such as 
+* 				the main clock and system timer
 *******************************************************************************/
-
-
-/*-------------------------------------------------------------------------------
-* Included headers
-*------------------------------------------------------------------------------*/
-#include "cortex_m4.h"
-#include "system_init.h"
+#include "common.h"
+#include "tm4c123gh6pm.h"
+#include "system.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -24,21 +21,21 @@ uint64_t SYSTEM_CLOCK_FREQ;
 
 
 /*-------------------------------------------------------------------------------
+* Clock ticks
+*------------------------------------------------------------------------------*/
+uint64_t TICKS;
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	system_init
 * Purpose:    	System initialisation method
 * Arguments: 	-
 * Returns: 		-	
-* Note: 		
-*	Initialisation of system clock, heap manager.
 --------------------------------------------------------------------------------*/
 void system_init(void) {
-	//system_clock_config(INT_OSC_16MHz, XTAL_16MHz, 1, 1, 5);
-	
-	heap_init();
-	__enable_irqs();
+	system_clock_config(MAIN_OSC, XTAL_16MHz, 1, 1, 5);		// set up the system clock
+	__enable_fpu();
 }
-
-
 
 /*-------------------------------------------------------------------------------
 * Function:    	system_clock_config
@@ -87,6 +84,17 @@ void system_clock_config(OSCSRC oscSrc, XTAL oscFreq, int8_t usePll,
 			SYSTEM_CLOCK_FREQ = 30000;
 	}					  
 }
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	__enable_fpu
+* Purpose:    	Enable the floating-point unit co-processor
+* Arguments: 	-
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+void __enable_fpu(void) {
+	CPASR |= (0x3 << 20);
+}
 					   
 
 /*-------------------------------------------------------------------------------
@@ -96,13 +104,10 @@ void system_clock_config(OSCSRC oscSrc, XTAL oscFreq, int8_t usePll,
 *		ticks - number of clock cycles between system timer interrupts (24 bits)
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void systick_config(uint32_t ticks) {
+void systick_config(uint32_t cycles) {
 	
-	SYSTICK_CTRL = 0; 				// Disable SysTick for the time of configuration
-	SYSTICK_RELOAD = ticks - 1; 	// Set reload value, counts down to 0, so decrement needed
-	SYSTICK_CURRENT = 0; 			// Clear the counter
-	SYSTICK_CTRL |= 0x7;			// Main clock as source, SysTick enabled with IRQs
+	SYSTICK->CTRL = 0; 				// Disable SysTick for the time of configuration
+	SYSTICK->RELOAD = cycles - 1; 	// Set reload value, counts down to 0, so decrement needed
+	SYSTICK->CURRENT = 0; 			// Clear the counter
+	SYSTICK->CTRL |= 0x7;			// Main clock as source, SysTick enabled with IRQs
 }
-
-
-

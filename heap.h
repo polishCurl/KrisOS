@@ -6,9 +6,9 @@
 * Date created:	28/09/2016
 * Last mod: 	28/09/2016
 *
-* Note: 		
+* Note: 		malloc and free method headers are already declared in stdlib.h
 *******************************************************************************/
-
+#include "common.h"
 
 /*-------------------------------------------------------------------------------
 * Function:    	heap_init
@@ -16,28 +16,7 @@
 * Arguments:	- 	
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-extern void heap_init(void);
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	heap_allocate
-* Purpose:    	Dynamically allocate bytesToAlloc bytes on the heap
-* Arguments:	
-*		bytesToAlloc - number of bytes to allocate	
-* Returns: 
-* 		pointer to the memory block allocated or a NULL pointer if unsuccessful
---------------------------------------------------------------------------------*/
-extern void* heap_allocate(size_t bytesToAlloc);
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	heap_free
-* Purpose:    	Free the allocated block of memory
-* Arguments:	
-*		toFree - block of heap memory to free
-* Returns: 		-
---------------------------------------------------------------------------------*/
-extern void heap_free(void* toFree);
+void heap_init(void);
 
 
 /*-------------------------------------------------------------------------------
@@ -47,4 +26,4 @@ extern void heap_free(void* toFree);
 * Returns: 
 * 		number of bytes still possible for allocation
 --------------------------------------------------------------------------------*/
-extern size_t get_free_heap_size(void);
+size_t get_free_heap_size(void);

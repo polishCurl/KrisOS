@@ -1,0 +1,30 @@
+Dependencies for Project 'KrisRTOS', Target 'Main Target': (DO NOT MODIFY !)
+F (.\heap.c)(0x57EE59C4)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\heap.o --omf_browse .\heap.crf --depend .\heap.d)
+I (common.h)(0x57EEBF66)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
+I (heap.h)(0x57EEE0FE)
+F (.\kris_embed_os.c)(0x57EEC77D)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\kris_embed_os.o --omf_browse .\kris_embed_os.crf --depend .\kris_embed_os.d)
+I (heap.h)(0x57EEE0FE)
+I (common.h)(0x57EEBF66)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
+I (system.h)(0x57EEC946)
+F (.\main.c)(0x57EE5CE7)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\main.o --omf_browse .\main.crf --depend .\main.d)
+I (kris_embed_os.h)(0x57EE5B5D)
+I (common.h)(0x57EEBF66)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
+F (.\system.c)(0x57EEE2B6)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\system_1.o --omf_browse .\system_1.crf --depend .\system_1.d)
+I (common.h)(0x57EEBF66)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
+I (tm4c123gh6pm.h)(0x57EEE011)
+I (system.h)(0x57EEC946)
+F (.\system_asm.s)(0x57EEC915)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\system_asm.lst --xref -o .\system_asm.o --depend .\system_asm.d)
+F (.\uart.c)(0x57EEE853)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\uart.o --omf_browse .\uart.crf --depend .\uart.d)
+I (common.h)(0x57EEBF66)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
+I (system.h)(0x57EEC946)
+I (tm4c123gh6pm.h)(0x57EEE011)

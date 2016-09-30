@@ -13,7 +13,8 @@
 /*-------------------------------------------------------------------------------
 * Included headers
 *------------------------------------------------------------------------------*/
-#include "cortex_m4.h"
+#include "common.h"
+#include "heap.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ void heap_init(void){}
 * Returns: 
 * 		pointer to the memory block allocated or a NULL pointer if unsuccessful
 --------------------------------------------------------------------------------*/
-void* heap_allocate(size_t bytesToAlloc) {
+void* malloc(size_t bytesToAlloc) {
 	
 	// pointer to the memory allocates
 	void* pointer;
@@ -86,7 +87,7 @@ void* heap_allocate(size_t bytesToAlloc) {
 *		toFree - block of heap memory to free
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void heap_free(void* toFree) {}
+void free(void* toFree) {}
 	
 
 /*-------------------------------------------------------------------------------

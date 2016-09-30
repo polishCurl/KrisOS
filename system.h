@@ -1,19 +1,26 @@
 /*******************************************************************************
-* File:     	system_init.h
-* Brief:    	Header file fofr systemInit.c
+* File:     	system.h
+* Brief:    	Function prototypes for accessing core system functionality
 * Author: 		Krzysztof Koch
 * Version:		V1.00
-* Date created:	27/09/2016
-* Last mod: 	27/09/2016
+* Date created:	30/09/2016
+* Last mod: 	30/09/2016
 *
 * Note: 		
 *******************************************************************************/
+#include "common.h"
 
 
 /*-------------------------------------------------------------------------------
-* Included headers
+* System clock speed
 *------------------------------------------------------------------------------*/
-#include "cortex_m4.h"
+extern uint64_t SYSTEM_CLOCK_FREQ;
+
+
+/*-------------------------------------------------------------------------------
+* Clock ticks
+*------------------------------------------------------------------------------*/
+extern uint64_t TICKS;
 
 
 /*-------------------------------------------------------------------------------
@@ -60,6 +67,15 @@ typedef enum {
 
 
 /*-------------------------------------------------------------------------------
+* Function prototypes for accessing special purpose registers
+*------------------------------------------------------------------------------*/
+void __disable_irqs(void);				// disable IRQs
+void __enable_irqs(void);				// enable IRQs
+void __set_base_prio(int32_t basePrio);	// disable IRQs with priotity lower than base
+int32_t __get_base_prio(void);			// get base priority
+void __enable_fpu(void); 				// enable the FPU co-processor
+
+/*-------------------------------------------------------------------------------
 * Function:    	SystemClockCongig
 * Purpose:    	System clock setup method. Determines system clock frequency
 * Arguments: 	
@@ -83,3 +99,13 @@ void system_clock_config(OSCSRC oscSrc, XTAL oscFreq, int8_t usePll,
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void systick_config(uint32_t ticks);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	uart_init
+* Purpose:    	Initialisation of UART interface.
+* Arguments:
+*		baudRate - controls the number of bits sent per second
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+void uart_init(uint32_t baudRate);

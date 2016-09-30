@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>Setup Target</TargetName>
+      <TargetName>Main Target</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060183::V5.06 update 2 (build 183)::ARMCC</pCCUsed>
@@ -375,34 +375,52 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>CORE</GroupName>
+          <GroupName>KrisEmbedOS</GroupName>
+          <Files>
+            <File>
+              <FileName>heap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\heap.c</FilePath>
+            </File>
+            <File>
+              <FileName>kris_embed_os.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\kris_embed_os.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>OSTest</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>HAL</GroupName>
+          <Files>
             <File>
-              <FileName>startup.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\startup.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_init.c</FileName>
+              <FileName>system.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\system_init.c</FilePath>
+              <FilePath>.\system.c</FilePath>
             </File>
             <File>
-              <FileName>heap_manager.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\heap_manager.c</FilePath>
-            </File>
-            <File>
-              <FileName>cortex_m4.s</FileName>
+              <FileName>system_asm.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\cortex_m4.s</FilePath>
+              <FilePath>.\system_asm.s</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\uart.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>Common</GroupName>
         </Group>
       </Groups>
     </Target>
