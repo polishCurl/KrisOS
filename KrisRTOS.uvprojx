@@ -403,19 +403,29 @@
           <GroupName>HAL</GroupName>
           <Files>
             <File>
-              <FileName>system.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\system.c</FilePath>
-            </File>
-            <File>
-              <FileName>system_asm.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\system_asm.s</FilePath>
-            </File>
-            <File>
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\time.c</FilePath>
+            </File>
+            <File>
+              <FileName>special_reg_access.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\special_reg_access.s</FilePath>
+            </File>
+            <File>
+              <FileName>startup.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\startup.s</FilePath>
+            </File>
+            <File>
+              <FileName>retarget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\retarget.c</FilePath>
             </File>
           </Files>
         </Group>

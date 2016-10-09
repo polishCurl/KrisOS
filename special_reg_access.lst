@@ -1,0 +1,402 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ; ******************************************************
+                       ************************
+    2 00000000         ; File:      special_reg_access.s
+    3 00000000         ; Brief:     Routines for accessing special purpose regi
+                       sters
+    4 00000000         ; Author:   Krzysztof Koch
+    5 00000000         ; Version:  V1.00
+    6 00000000         ; Date created: 26/09/2016
+    7 00000000         ; Last mod:  27/09/2016
+    8 00000000         ;
+    9 00000000         ; Note:   Methods allowing to access internal special re
+                       gisters and other
+   10 00000000         ;     functionality which can't easily be accessed using
+                        C language syntax
+   11 00000000         ; ******************************************************
+                       ************************
+   12 00000000         
+   13 00000000         
+   14 00000000                 PRESERVE8                    ; Preserve eight-by
+                                                            te alignment of the
+                                                             stack
+   15 00000000                 THUMB                        ; Use Thumb instruc
+                                                            tion set
+   16 00000000                 AREA             |.text|, CODE, READONLY ; Instr
+                                                            uctions to be place
+                                                            d in ROM
+   17 00000000         ;-------------------------------------------------------
+                       ------------------------
+   18 00000000         ; Function:     __disable_irqs
+   19 00000000         ; Purpose:     Disable interrupts by setting the I bit i
+                       n PRIMASK register
+   20 00000000         ; Arguments: -
+   21 00000000         ; Returns:   -
+   22 00000000         ;-------------------------------------------------------
+                       ------------------------
+   23 00000000                 EXPORT           __disable_irqs
+   24 00000000         __disable_irqs
+                               PROC
+   25 00000000 B672            CPSID            I
+   26 00000002 4770            BX               LR
+   27 00000004                 ENDP
+   28 00000004         
+   29 00000004         
+   30 00000004         ;-------------------------------------------------------
+                       ------------------------
+   31 00000004         ; Function:     __enable_irqs
+   32 00000004         ; Purpose:     Enable interrupts by clearing the I bit i
+                       n PRIMASK register
+   33 00000004         ; Arguments: -
+   34 00000004         ; Returns:   -
+   35 00000004         ;-------------------------------------------------------
+                       ------------------------
+   36 00000004                 EXPORT           __enable_irqs
+   37 00000004         __enable_irqs
+                               PROC
+   38 00000004 B662            CPSIE            I
+   39 00000006 4770            BX               LR
+   40 00000008                 ENDP
+   41 00000008         
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   42 00000008         
+   43 00000008         ;-------------------------------------------------------
+                       ------------------------
+   44 00000008         ; Function:     __set_base_prio
+   45 00000008         ; Purpose:     Set the base priority, disables interrupt
+                       s with priority lower than
+   46 00000008         ;    the argument. Writing 0 turns of priority masking
+   47 00000008         ; Arguments:
+   48 00000008         ;  R0 - base priority
+   49 00000008         ; Returns:   -
+   50 00000008         ;-------------------------------------------------------
+                       ------------------------ 
+   51 00000008                 EXPORT           __set_base_prio
+   52 00000008         __set_base_prio
+                               PROC
+   53 00000008 F380 8811       MSR              BASEPRI, R0
+   54 0000000C 4770            BX               LR
+   55 0000000E                 ENDP
+   56 0000000E         
+   57 0000000E         
+   58 0000000E         ;-------------------------------------------------------
+                       ------------------------
+   59 0000000E         ; Function:     __get_base_prio
+   60 0000000E         ; Purpose:     Read the masking priority level
+   61 0000000E         ; Arguments: -
+   62 0000000E         ; Returns:   
+   63 0000000E         ;  R0 - masking priority level
+   64 0000000E         ;-------------------------------------------------------
+                       ------------------------
+   65 0000000E                 EXPORT           __get_base_prio
+   66 0000000E         __get_base_prio
+                               PROC
+   67 0000000E F3EF 8011       MRS              R0, BASEPRI
+   68 00000012 4770            BX               LR
+   69 00000014                 ENDP
+   70 00000014         
+   71 00000014         ;-------------------------------------------------------
+                       ------------------------
+   72 00000014         ; Function:     __set_psp
+   73 00000014         ; Purpose:     Set the value of the Process Stack Pointe
+                       r
+   74 00000014         ; Arguments:  
+   75 00000014         ;  R0 - new base address of the process stack
+   76 00000014         ; Returns:   - 
+   77 00000014         ;-------------------------------------------------------
+                       ------------------------
+   78 00000014                 EXPORT           __set_psp
+   79 00000014         __set_psp
+                               PROC
+   80 00000014 F380 8809       MSR              PSP, r0
+   81 00000018 4770            BX               LR
+   82 0000001A                 ENDP
+   83 0000001A         
+   84 0000001A         
+   85 0000001A         ;-------------------------------------------------------
+                       ------------------------
+   86 0000001A         ; Function:     __get_psp
+   87 0000001A         ; Purpose:     Get the value of the Process Stack Pointe
+                       r
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   88 0000001A         ; Arguments:  -
+   89 0000001A         ; Returns:   
+   90 0000001A         ;  R0 - value of PSP
+   91 0000001A         ;-------------------------------------------------------
+                       ------------------------
+   92 0000001A                 EXPORT           __get_psp
+   93 0000001A         __get_psp
+                               PROC
+   94 0000001A F3EF 8009       MRS              R0, PSP
+   95 0000001E 4770            BX               LR
+   96 00000020                 ENDP
+   97 00000020         
+   98 00000020         
+   99 00000020         ;-------------------------------------------------------
+                       ------------------------
+  100 00000020         ; Function:     __enable_fpu
+  101 00000020         ; Purpose:     Enable the floating-point unit co-process
+                       or
+  102 00000020         ; Arguments:  -
+  103 00000020         ; Returns:   - 
+  104 00000020         ;-------------------------------------------------------
+                       ------------------------
+  105 00000020                 EXPORT           __enable_fpu
+  106 00000020         __enable_fpu
+                               PROC
+  107 00000020 480D            LDR              R0, =0xE000ED88
+  108 00000022 6801            LDR              R1, [R0]
+  109 00000024 F441 0170       ORR              R1, R1, #(0xF << 20)
+  110 00000028 6001            STR              R1, [R0]
+  111 0000002A 4770            BX               LR
+  112 0000002C                 ENDP
+  113 0000002C         
+  114 0000002C         
+  115 0000002C         ;-------------------------------------------------------
+                       ------------------------
+  116 0000002C         ; Function:     __disable_fpu
+  117 0000002C         ; Purpose:     Enable the floating-point unit co-process
+                       or
+  118 0000002C         ; Arguments:  -
+  119 0000002C         ; Returns:   - 
+  120 0000002C         ;-------------------------------------------------------
+                       ------------------------
+  121 0000002C                 EXPORT           __disable_fpu
+  122 0000002C         __disable_fpu
+                               PROC
+  123 0000002C 480A            LDR              R0, =0xE000ED88
+  124 0000002E 6801            LDR              R1, [R0]
+  125 00000030 F421 0170       BIC              R1, R1, #(0xF << 20)
+  126 00000034 6001            STR              R1, [R0]
+  127 00000036 4770            BX               LR
+  128 00000038                 ENDP
+  129 00000038         
+  130 00000038         
+  131 00000038         ;-------------------------------------------------------
+                       ------------------------
+  132 00000038         ; Function:     __set_control
+  133 00000038         ; Purpose:     Set the value of the CONTROL register
+  134 00000038         ; Arguments:  
+  135 00000038         ;  R0 - value to set
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  136 00000038         ; Returns:   - 
+  137 00000038         ;-------------------------------------------------------
+                       ------------------------
+  138 00000038                 EXPORT           __set_control
+  139 00000038         __set_control
+                               PROC
+  140 00000038 F380 8814       MSR              CONTROL, r0
+  141 0000003C 4770            BX               LR
+  142 0000003E                 ENDP
+  143 0000003E         
+  144 0000003E         
+  145 0000003E         ;-------------------------------------------------------
+                       ------------------------
+  146 0000003E         ; Function:     __get_control
+  147 0000003E         ; Purpose:     Get the value from the CONTROL register
+  148 0000003E         ; Arguments:  - 
+  149 0000003E         ; Returns:   
+  150 0000003E         ;  R0 - value from CONTROL register
+  151 0000003E         ;-------------------------------------------------------
+                       ------------------------
+  152 0000003E                 EXPORT           __get_control
+  153 0000003E         __get_control
+                               PROC
+  154 0000003E F3EF 8014       MRS              R0, CONTROL
+  155 00000042 4770            BX               LR
+  156 00000044                 ENDP
+  157 00000044         
+  158 00000044         
+  159 00000044         ;-------------------------------------------------------
+                       ------------------------
+  160 00000044         ; Function:     __start_critical
+  161 00000044         ; Purpose:     Enter critical section by disabling inter
+                       rupts and saving the 
+  162 00000044         ;     prevous interrupt control value in PRIMASK registe
+                       r
+  163 00000044         ; Arguments:  - 
+  164 00000044         ; Returns:   -
+  165 00000044         ;-------------------------------------------------------
+                       ------------------------
+  166 00000044                 EXPORT           __start_critical
+  168 00000044         __start_critical
+                               PROC
+  169 00000044 F3EF 8010       MRS              R0, PRIMASK
+  170 00000048 B401            PUSH             {R0}
+  171 0000004A B672            CPSID            I
+  172 0000004C 4770            BX               LR
+  173 0000004E                 ENDP
+  174 0000004E         
+  175 0000004E         
+  176 0000004E         ;-------------------------------------------------------
+                       ------------------------
+  177 0000004E         ; Function:     __end_critical
+  178 0000004E         ; Purpose:     End critical section by restoring the pre
+                       vious value of PRIMASK
+  179 0000004E         ; Arguments:  - 
+  180 0000004E         ; Returns:   -
+  181 0000004E         ;-------------------------------------------------------
+                       ------------------------
+  182 0000004E                 EXPORT           __end_critical
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  183 0000004E         __end_critical
+                               PROC
+  184 0000004E BC01            POP              {R0}
+  185 00000050 F380 8810       MSR              PRIMASK, R0
+  186 00000054 4770            BX               LR
+  187 00000056                 ENDP
+  188 00000056         
+  189 00000056         
+  190 00000056         
+  191 00000056 00 00           ALIGN
+  192 00000058                 END
+              E000ED88 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\special_reg_access.d -o.\special_reg_access.o -I"C:\Users\Krz
+ysztof Koch\Documents\KrisRTOS\RTE" -IC:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\D
+evice\Include\TM4C123 -IC:\Keil_v5\ARM\CMSIS\Include --predefine="__EVAL SETA 1
+" --predefine="__UVISION_VERSION SETA 520" --predefine="TM4C123GH6PM SETA 1" --
+list=.\special_reg_access.lst special_reg_access.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 16 in file special_reg_access.s
+   Uses
+      None
+Comment: .text unused
+__disable_fpu 0000002C
+
+Symbol: __disable_fpu
+   Definitions
+      At line 122 in file special_reg_access.s
+   Uses
+      At line 121 in file special_reg_access.s
+Comment: __disable_fpu used once
+__disable_irqs 00000000
+
+Symbol: __disable_irqs
+   Definitions
+      At line 24 in file special_reg_access.s
+   Uses
+      At line 23 in file special_reg_access.s
+Comment: __disable_irqs used once
+__enable_fpu 00000020
+
+Symbol: __enable_fpu
+   Definitions
+      At line 106 in file special_reg_access.s
+   Uses
+      At line 105 in file special_reg_access.s
+Comment: __enable_fpu used once
+__enable_irqs 00000004
+
+Symbol: __enable_irqs
+   Definitions
+      At line 37 in file special_reg_access.s
+   Uses
+      At line 36 in file special_reg_access.s
+Comment: __enable_irqs used once
+__end_critical 0000004E
+
+Symbol: __end_critical
+   Definitions
+      At line 183 in file special_reg_access.s
+   Uses
+      At line 182 in file special_reg_access.s
+Comment: __end_critical used once
+__get_base_prio 0000000E
+
+Symbol: __get_base_prio
+   Definitions
+      At line 66 in file special_reg_access.s
+   Uses
+      At line 65 in file special_reg_access.s
+Comment: __get_base_prio used once
+__get_control 0000003E
+
+Symbol: __get_control
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 153 in file special_reg_access.s
+   Uses
+      At line 152 in file special_reg_access.s
+Comment: __get_control used once
+__get_psp 0000001A
+
+Symbol: __get_psp
+   Definitions
+      At line 93 in file special_reg_access.s
+   Uses
+      At line 92 in file special_reg_access.s
+Comment: __get_psp used once
+__set_base_prio 00000008
+
+Symbol: __set_base_prio
+   Definitions
+      At line 52 in file special_reg_access.s
+   Uses
+      At line 51 in file special_reg_access.s
+Comment: __set_base_prio used once
+__set_control 00000038
+
+Symbol: __set_control
+   Definitions
+      At line 139 in file special_reg_access.s
+   Uses
+      At line 138 in file special_reg_access.s
+Comment: __set_control used once
+__set_psp 00000014
+
+Symbol: __set_psp
+   Definitions
+      At line 79 in file special_reg_access.s
+   Uses
+      At line 78 in file special_reg_access.s
+Comment: __set_psp used once
+__start_critical 00000044
+
+Symbol: __start_critical
+   Definitions
+      At line 168 in file special_reg_access.s
+   Uses
+      At line 166 in file special_reg_access.s
+Comment: __start_critical used once
+13 symbols
+349 symbols in table

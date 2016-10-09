@@ -8,9 +8,8 @@
 *
 * Note: 	
 *******************************************************************************/
-
-#include "heap.h"
 #include "system.h"
+#include "heap.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -22,13 +21,15 @@
 void OS_init(void) {
 	
 	// Initialise the system and important peripherals
-	__disable_irqs();										// switch off interrupts
-	systick_config(SYSTEM_CLOCK_FREQ / 100000);				// set up periodic irqs
-	uart_init(11520); 										// set up UART
+	__disable_irqs();								// switch off interrupts
+	__enable_fpu(); 								// switch on the FPU
+	system_clock_config(MAIN_OSC, 10);				// set up the system clock
+	systick_config(SYSTEM_CLOCK_FREQ);				// set up periodic irqs
+	uart_init(9600, 3, 0, 0, 0); 
 	
 	// Initialise the OS components
-	heap_init();											// initialise the heap
-	__enable_irqs();										// enable interrupts again
+	heap_init();									// initialise the heap
+	__enable_irqs();								// enable interrupts again
 }
 
 
@@ -41,4 +42,5 @@ void OS_init(void) {
 void SysTick_Handler(void) {
 	TICKS++;
 }
+
 

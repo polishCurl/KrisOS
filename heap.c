@@ -40,7 +40,7 @@
 #if HEAP_MANAGER == 1
 
 static uint8_t heap[HEAP_SIZE];		// the heap - array of bytes
-static size_t bytesUsed = 0;		// number of bytes already used 
+static size_t bytesUsed;		// number of bytes already used 
 
 
 /*-------------------------------------------------------------------------------
@@ -49,7 +49,9 @@ static size_t bytesUsed = 0;		// number of bytes already used
 * Arguments:	- 	
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void heap_init(void){}					
+void heap_init(void){
+	bytesUsed = 0;		// number of bytes already used 
+}					
 	
 	
 /*-------------------------------------------------------------------------------

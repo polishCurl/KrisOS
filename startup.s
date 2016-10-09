@@ -1,22 +1,21 @@
 ; ******************************************************************************
-; File:     	system_asm.s
-; Brief:    	System related assembly code
+; File:     	startup.s
+; Brief:    	System startup code
 ; Author: 		Krzysztof Koch
 ; Version:		V1.00
 ; Date created:	26/09/2016
 ; Last mod: 	27/09/2016
 ;
-; Note: 		System startup code containing stack definition as well as 
-;				exception vectors. Routines for accessing special purpose 
-;				registers inside the MCU.
+; Note: 		System startup code containing stack and heap definitions as well 
+;				as simple exception and interrupt handlers.
 ; ******************************************************************************
 
 
 ;-------------------------------------------------------------------------------
 ; Stack Configuration, double stacking in use
 ;-------------------------------------------------------------------------------
-Handler_Stack_Size	EQU     0x00000200		  ; Stack size for handler mode (MSP)
-Thread_Stack_Size	EQU     0x00000200		  ; Stack size for thread mode (PSP)
+Handler_Stack_Size	EQU     0x00000100		  ; Stack size for handler mode (MSP)
+Thread_Stack_Size	EQU     0x00000500		  ; Stack size for thread mode (PSP)
 
 ; Stack memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3 
@@ -27,6 +26,17 @@ __initial_handler_sp
 Thread_Stack   	SPACE   Thread_Stack_Size
 __initial_sp	
 
+
+;-------------------------------------------------------------------------------
+; Heap Configuration
+;-------------------------------------------------------------------------------
+				EXPORT 	Heap_Size
+Heap_Size       EQU     0x00000080
+
+; HEAP memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
+                AREA    HEAP, NOINIT, READWRITE, ALIGN=3
+Heap_Mem        SPACE   Heap_Size
+__heap_limit
 
 
 ;-------------------------------------------------------------------------------
@@ -201,17 +211,21 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
 ;-------------------------------------------------------------------------------
 ; Reset Handler
 ;-------------------------------------------------------------------------------			
-				AREA    |.text|, CODE, READONLY	  ; Instructions to be placed in ROM
+				AREA    |.text|, CODE, READONLY	  	; Instructions to be placed in ROM
 
 				EXPORT  Reset_Handler             
 Reset_Handler   PROC
-				LDR 	R0, =__initial_handler_sp ; load the proces stack pointer
+				LDR 	R0, =__initial_handler_sp 	; load the proces stack pointer
 				MSR 	PSP, R0
-				IMPORT  system_init				  ; run the system initialisation 
-                LDR     R0, =system_init
+                IMPORT  OS_init
+                LDR     R0, =OS_init				; Run the main method
                 BLX     R0
-                IMPORT  main
-                LDR     R0, =main				  ; Run the main method
+				IMPORT  __set_control
+                LDR     R1, =__set_control			; Switch to unprivileged Thread mode with PSP
+				MOV     R0, #0x7					
+                BLX     R1
+				IMPORT  main
+                LDR     R0, =main				  	; Run the main method
                 BX      R0
                 ENDP
 
@@ -492,62 +506,29 @@ PWM1_3_Handler
 PWM1_FAULT_Handler 
 				B       .
                 ENDP
-				ALIGN
 					
 					
 ;-------------------------------------------------------------------------------
-; Function:    	__disable_irqs
-; Purpose:    	Disable interrupts by setting the I bit in PRIMASK register
-; Arguments:	-
-; Returns: 		-
-;-------------------------------------------------------------------------------
-__disable_irqs	PROC
-				EXPORT	__disable_irqs
-				CPSID	I
-				BX 		LR
-				ENDP
-				
-				
-;-------------------------------------------------------------------------------
-; Function:    	__enable_irqs
-; Purpose:    	Enable interrupts by clearing the I bit in PRIMASK register
-; Arguments:	-
-; Returns: 		-
-;-------------------------------------------------------------------------------
-__enable_irqs	PROC
-				EXPORT	__enable_irqs
-				CPSIE	I
-				BX 		LR
-				ENDP
-				
-		
-;-------------------------------------------------------------------------------
-; Function:    	__set_base_prio
-; Purpose:    	Set the base priority, disables interrupts with priority lower than
-;				the argument. Writing 0 turns of priority masking
-; Arguments:
-;		R0 - base priority
-; Returns: 		-
-;-------------------------------------------------------------------------------	
-__set_base_prio	PROC
-				EXPORT 	__set_base_prio
-				MSR 	BASEPRI, R0
-				BX 		LR
-				ENDP
-					
-
-;-------------------------------------------------------------------------------
-; Function:    	__get_base_prio
-; Purpose:    	Read the masking priority level
+; Function:    	__user_initial_stackheap
+; Purpose:    	Returns the locations of the initial stack and heap.
 ; Arguments:	-
 ; Returns: 		
-;		R0 - masking priority level
+;		R0 - heap base address
+; 		R1 - stack limit address
+;		R2 - heap limit address
+; 		R3 - stack base address
 ;-------------------------------------------------------------------------------	
-__get_base_prio	PROC
-				EXPORT 	__get_base_prio
-				MRS 	R0, BASEPRI
-				BX 		LR
-				ENDP
+				IMPORT __use_two_region_memory
+				EXPORT 	__user_initial_stackheap
+__user_initial_stackheap\
+				PROC
+                LDR     R0, =  Heap_Mem
+                LDR     R1, = (Handler_Stack + Handler_Stack_Size)
+                LDR     R2, = (Heap_Mem + Heap_Size)
+                LDR     R3, = Handler_Stack
+                BX      LR
+				ENDP				
 					
-					
-                END
+				ALIGN
+				END
+				
