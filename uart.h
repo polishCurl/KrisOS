@@ -33,7 +33,7 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 *		character - character to send
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void send_char(uint8_t character);
+void uart_send_char(uint8_t character);
 
 
 /*-------------------------------------------------------------------------------
@@ -43,4 +43,4 @@ void send_char(uint8_t character);
 * Returns: 		
 *		character received
 --------------------------------------------------------------------------------*/
-uint8_t get_char(void);
+uint8_t uart_get_char(void);

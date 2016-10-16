@@ -13,6 +13,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define test_null_pointer(ptr) 					\
+	if (ptr == NULL) {							\
+		printf("NULL pointer! ");		\
+		exit(1); 								\
+	}				
+		
+	
 /*-------------------------------------------------------------------------------
 * Floating point data type defnitions
 *------------------------------------------------------------------------------*/

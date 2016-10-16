@@ -1,6 +1,6 @@
 /*******************************************************************************
-* File:     	kris_embed_os.h
-* Brief:    	Interface for the embedded operating system
+* File:     	os.h
+* Brief:    	os.c header file
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
@@ -9,12 +9,16 @@
 * Note: 		Method declarations visible to OS users for accessing its 
 *				functionality
 *******************************************************************************/
+#include "svc.h"
+#include "heap.h"
+#include "fifo.h"
+
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	OS_init
-* Purpose:    	Initialise the operating system
+* Function:    	os_init
+* Purpose:    	KrisOS initialisation method
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void OS_init(void);
+extern void os_init(void);

@@ -383,9 +383,19 @@
               <FilePath>.\heap.c</FilePath>
             </File>
             <File>
-              <FileName>kris_embed_os.c</FileName>
+              <FileName>svc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\kris_embed_os.c</FilePath>
+              <FilePath>.\svc.c</FilePath>
+            </File>
+            <File>
+              <FileName>os.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\os.c</FilePath>
+            </File>
+            <File>
+              <FileName>fifo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fifo.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -426,6 +436,11 @@
               <FileName>retarget.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\retarget.c</FilePath>
+            </File>
+            <File>
+              <FileName>nvic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nvic.c</FilePath>
             </File>
           </Files>
         </Group>

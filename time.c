@@ -36,20 +36,20 @@ uint64_t TICKS;
 --------------------------------------------------------------------------------*/
 void system_clock_config(OSCSRC oscSrc, uint8_t divider) {
 		
-	SYSCTL->RCC2 &= ~(1U << 31);
-	SYSCTL->RCC |= (1 << 11);
-	SYSCTL->RCC &= ~(0x1F << 6);		// Clear the XTAL bits
-	SYSCTL->RCC |= (0x15 << 6);			// Set the freqency of the oscilator used						   
-	SYSCTL->RCC &= ~(0x3 << 4); 		// Clear the OSCSRC bits
-	SYSCTL->RCC |= (oscSrc << 4); 		// Set the oscilator source	
+	SYSCTL->RCC2 &= ~(1U << USERCC2_Pos); 	// use RCC (not RCC2)
+	SYSCTL->RCC |= (1 << BYPASS_Pos); 		// bypass the PLL for the configuration time
+	SYSCTL->RCC &= ~(0x1F << XTAL_Pos);		// Clear the XTAL bits
+	SYSCTL->RCC |= (0x15 << XTAL_Pos);		// Set the freqency of the oscilator used						   
+	SYSCTL->RCC &= ~(0x3 << OSCSRC_Pos);	// Clear the OSCSRC bits
+	SYSCTL->RCC |= (oscSrc << OSCSRC_Pos); 	// Set the oscilator source	
 	
 	if (divider > 0) {
-		SYSCTL->RCC &= ~(1 << 13); 		// Power up the PLL
-		SYSCTL->RCC |= (1 << 22); 		// Use the system clock divider
-		SYSCTL->RCC &= ~(0xF << 23); 	// Set the clock divider
-		SYSCTL->RCC |= ((divider - 1) << 23); 	// Set the clock divider
-		while ((SYSCTL->RIS & (1 << 6)) == 0); 	// wait for PLL to stabilise
-		SYSCTL->RCC &= ~(1 << 11); 		// Clear the PLL BYPASS bit
+		SYSCTL->RCC &= ~(1 << PWRDN_Pos); 	// Power up the PLL
+		SYSCTL->RCC |= (1 << USESYSDIV_Pos);// Use the system clock divider
+		SYSCTL->RCC &= ~(0xF << SYSDIV_Pos);// Set the clock divider
+		SYSCTL->RCC |= ((divider - 1) << SYSDIV_Pos);
+		while ((SYSCTL->RIS & (1 << PLLRIS_Pos)) == 0); // wait for PLL to stabilise
+		SYSCTL->RCC &= ~(1 << BYPASS_Pos); 	// Clear the PLL BYPASS bit
 	}				   
 	
 	if (oscSrc == MAIN_OSC || oscSrc == INT_OSC_16MHz) 
@@ -75,7 +75,9 @@ void systick_config(uint32_t cycles) {
 	
 	SYSTICK->CTRL = 0; 				// Disable SysTick for the time of configuration
 	SYSTICK->RELOAD = cycles - 1; 	// Set reload value, counts down to 0, so decrement needed
-	SYSTICK->CURRENT = 0; 			// Clear the counter
-	SYSTICK->CTRL |= 0x7;			// Main clock as source, SysTick enabled with IRQs
+	SYSTICK->CURRENT = 0; 			// Clear the current counter value
+	
+	// Main clock as source, SysTick enabled with IRQs
+	SYSTICK->CTRL |= (1 << CLK_SRC_Pos) | (1 << INTEN_Pos) | (1 << ENABLE_Pos);			
 	TICKS = 0;
 }

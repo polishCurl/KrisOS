@@ -27,3 +27,25 @@ void heap_init(void);
 * 		number of bytes still possible for allocation
 --------------------------------------------------------------------------------*/
 size_t get_free_heap_size(void);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	heap_alloc
+* Purpose:    	Dynamically allocate bytesToAlloc bytes on the heap
+* Arguments:	
+*		bytesToAlloc - number of bytes to allocate	
+* Returns: 
+* 		pointer to the memory block allocated or a NULL pointer if unsuccessful
+--------------------------------------------------------------------------------*/
+void* heap_alloc(size_t bytesToAlloc);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	heap_free
+* Purpose:    	Free the allocated block of memory
+* Arguments:	
+*		toFree - block of heap memory to free
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void heap_free(void* toFree);
+

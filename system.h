@@ -12,3 +12,4 @@
 #include "uart.h"
 #include "time.h"
 #include "special_reg_access.h"
+#include "nvic.h"

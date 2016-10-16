@@ -217,13 +217,10 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
 Reset_Handler   PROC
 				LDR 	R0, =__initial_handler_sp 	; load the proces stack pointer
 				MSR 	PSP, R0
-                IMPORT  OS_init
-                LDR     R0, =OS_init				; Run the main method
-                BLX     R0
 				IMPORT  __set_control
                 LDR     R1, =__set_control			; Switch to unprivileged Thread mode with PSP
-				MOV     R0, #0x7					
-                BLX     R1
+				MOV     R0, #0x7					; Handler mode will be using MSP. Also, set the 
+                BLX     R1 							; floating-point context active
 				IMPORT  main
                 LDR     R0, =main				  	; Run the main method
                 BX      R0
@@ -259,10 +256,21 @@ UsageFault_Handler\
                 EXPORT  UsageFault_Handler        [WEAK]
                 B       .
                 ENDP
+					
+;-------------------------------------------------------------------------------
+; Reset Handler
+;-------------------------------------------------------------------------------					
 SVC_Handler     PROC
-                EXPORT  SVC_Handler               [WEAK]
-                B       .
+                EXPORT  SVC_Handler               
+                TST 	LR, #4
+				ITE		EQ					; determine which stack was used before 
+				MRSEQ	R0, MSP				; the SVC call
+				MRSNE	R0, PSP
+				IMPORT 	SVC_Handler_C
+				B 		SVC_Handler_C
                 ENDP
+					
+					
 DebugMon_Handler\
                 PROC
                 EXPORT  DebugMon_Handler          [WEAK]

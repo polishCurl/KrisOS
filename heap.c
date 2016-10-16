@@ -55,7 +55,7 @@ void heap_init(void){
 	
 	
 /*-------------------------------------------------------------------------------
-* Function:    	heap_allocate
+* Function:    	malloc
 * Purpose:    	Dynamically allocate bytesToAlloc bytes on the heap
 * Arguments:	
 *		bytesToAlloc - number of bytes to allocate	
@@ -83,7 +83,7 @@ void* malloc(size_t bytesToAlloc) {
 }
 
 /*-------------------------------------------------------------------------------
-* Function:    	heap_free
+* Function:    	free
 * Purpose:    	Free the allocated block of memory
 * Arguments:	
 *		toFree - block of heap memory to free

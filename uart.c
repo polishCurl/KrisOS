@@ -38,20 +38,25 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 	dividerFrac -= dividerInt;
 	dividerFrac = dividerFrac * 64 + 0.5f;
 	
-	SYSCTL->RCGCUART |= 0x1;		// Activate UART0
-	SYSCTL->RCGCGPIO |= 0x1; 		// UART0 on port A
-	GPIOA->AFSEL |= 0x3;			// set GPIOA pins 1-0 to alternative function
-	GPIOA->DEN |= 0x3;				// enable digitial I/O on pins 1-0 of GPIOA
-	GPIOA->PCTL |= (1 << 4) | (1 << 0);
+	SYSCTL->RCGCUART |= (1 << RCGCUART_UART0_Pos);		// Activate UART0
+	SYSCTL->RCGCGPIO |= (1 << RCGCGPIO_PORTA_Pos); 		// UART0 on port A
+	GPIOA->AFSEL |= (1 << PIN0_Pos) | (1 << PIN1_Pos);	// set GPIOA pins 1-0 to alternative function
+	GPIOA->DEN |= (1 << PIN0_Pos) | (1 << PIN1_Pos);	// enable digitial I/O on pins 1-0 of GPIOA
 					
-	UART0->CTL &= ~(0x1); 			// Disable UART device for time of configuration
-	UART0->IBRD = dividerInt; 		// divider, integer part
-	UART0->FBRD = (int32_t) dividerFrac; // divider, fractional part 	
+	// Enable port A pins 1 and 0
+	GPIOA->PCTL |= (1 << GPIOPCTL_PMC1_Pos) | (1 << GPIOPCTL_PMC0_Pos); 
+					
+	UART0->CTL &= ~(1 << UARTCTL_UARTEN_Pos); 			// Disable UART device for time of configuration
+	UART0->IBRD = dividerInt; 							// divider, integer part
+	UART0->FBRD = (int32_t) dividerFrac; 				// divider, fractional part 	
 	
 	// Set the parameters of serial communication
-	UART0->LCRH = (parityUsed << 7) | (uartWordLen << 5) | (stopBits << 3) | 
-				   (oddEven << 2) | (parityUsed << 1);  
-	UART0->CTL |= 0x0301;			// enable RXE, TXE, UARTEN
+	UART0->LCRH = (parityUsed << UARTLCHR_SPS_Pos) | (uartWordLen << UARTLCHR_WLEN_Pos) | 
+				  (stopBits << UARTLCHR_STP2_Pos) | (oddEven << UARTLCHR_EPS_Pos) | 
+				   (parityUsed << UARTLCHR_PEN_Pos);  
+				   
+	// Enable the receive, transmitter and the whole UART module
+	UART0->CTL |= (1 << UARTCTL_RXE_Pos) | (1 << UARTCTL_TXE_Pos) | (1 << UARTCTL_UARTEN_Pos);			
 }
 				
 
@@ -62,7 +67,7 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 *		character - character to send
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void send_char(uint8_t character) {
+void uart_send_char(uint8_t character) {
 	while (UART0->FR & (1 << 5)); 	// wait for TX buffer to be not full
 	UART0->DR = character;
 }
@@ -74,7 +79,7 @@ void send_char(uint8_t character) {
 * Returns: 		
 *		character received
 --------------------------------------------------------------------------------*/
-uint8_t get_char(void) {
+uint8_t uart_get_char(void) {
 	while (UART0->FR & (1 << 4)); 	// wait for RX buffer to be not empty
 	return (uint8_t) UART0->DR & 0xFF;
 }

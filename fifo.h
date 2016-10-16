@@ -7,15 +7,16 @@
 * Last mod: 	28/09/2016
 *
 * Note: 		FIFO build macro allowing specification of FIFOs with
-* 				different names, datatypes and sizes
+* 				different names, datatypes and sizes. Also, interface to the 
+* 				dynamically allocated fifos
 *******************************************************************************/
 #include "special_reg_access.h"
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	add_fifo
+* Function:    	KrisOS_static_fifo
 * Purpose:    	Creates a new FIFO together with methods for initialisation and
-* 				access.
+* 				access at compile-time.
 *					1. <NAME>Fifo[SIZE]
 *					2. void <NAME>_fifo_init(void);
 *					3. int32_t <NAME>_fifo_put(TYPE item); (0 - failure, 1 - success)
@@ -26,7 +27,7 @@
 *		NAME - prefix for creating FIFO and methods with unique names
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-#define add_fifo(TYPE, SIZE, NAME) 						\
+#define KrisOS_static_fifo(TYPE, SIZE, NAME) 			\
 														\
 	/* Fifo elements */									\
 	TYPE NAME ## Fifo[SIZE];							\
@@ -59,7 +60,7 @@
 		__start_critical();								\
 		*item = NAME ## Fifo[NAME ## Tail];				\
 		NAME ## Tail = (NAME ## Tail + 1) % SIZE;		\
-		__end_critical();				\
+		__end_critical();								\
 		return 1;										\
 	}													\
 }										

@@ -108,6 +108,8 @@ __enable_fpu	PROC
 				LDR     R1, [R0]
 				ORR     R1, R1, #(0xF << 20)
 				STR     R1, [R0]
+				DSB							; wait for store to complete
+				ISB 						; flush the pipeline	
 				BX 		LR
 				ENDP
 
@@ -124,6 +126,8 @@ __disable_fpu	PROC
 				LDR     R1, [R0]
 				BIC     R1, R1, #(0xF << 20)
 				STR     R1, [R0]
+				DSB							; wait for store to complete
+				ISB 						; flush the pipeline	
 				BX 		LR
 				ENDP
 				
@@ -138,6 +142,7 @@ __disable_fpu	PROC
 				EXPORT	__set_control
 __set_control	PROC
 				MSR		CONTROL, r0
+				ISB							; flush the pipeline
 				BX 		LR
 				ENDP
 
@@ -185,7 +190,7 @@ __end_critical	PROC
 				MSR		PRIMASK, R0
 				BX 		LR
 				ENDP
-					
+
 				
 				
 				ALIGN

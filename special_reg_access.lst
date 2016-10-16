@@ -159,122 +159,132 @@ ARM Macro Assembler    Page 3
   105 00000020                 EXPORT           __enable_fpu
   106 00000020         __enable_fpu
                                PROC
-  107 00000020 480D            LDR              R0, =0xE000ED88
+  107 00000020 4812            LDR              R0, =0xE000ED88
   108 00000022 6801            LDR              R1, [R0]
   109 00000024 F441 0170       ORR              R1, R1, #(0xF << 20)
   110 00000028 6001            STR              R1, [R0]
-  111 0000002A 4770            BX               LR
-  112 0000002C                 ENDP
-  113 0000002C         
-  114 0000002C         
-  115 0000002C         ;-------------------------------------------------------
+  111 0000002A F3BF 8F4F       DSB                          ; wait for store to
+                                                             complete
+  112 0000002E F3BF 8F6F       ISB                          ; flush the pipelin
+                                                            e 
+  113 00000032 4770            BX               LR
+  114 00000034                 ENDP
+  115 00000034         
+  116 00000034         
+  117 00000034         ;-------------------------------------------------------
                        ------------------------
-  116 0000002C         ; Function:     __disable_fpu
-  117 0000002C         ; Purpose:     Enable the floating-point unit co-process
+  118 00000034         ; Function:     __disable_fpu
+  119 00000034         ; Purpose:     Enable the floating-point unit co-process
                        or
-  118 0000002C         ; Arguments:  -
-  119 0000002C         ; Returns:   - 
-  120 0000002C         ;-------------------------------------------------------
+  120 00000034         ; Arguments:  -
+  121 00000034         ; Returns:   - 
+  122 00000034         ;-------------------------------------------------------
                        ------------------------
-  121 0000002C                 EXPORT           __disable_fpu
-  122 0000002C         __disable_fpu
+  123 00000034                 EXPORT           __disable_fpu
+  124 00000034         __disable_fpu
                                PROC
-  123 0000002C 480A            LDR              R0, =0xE000ED88
-  124 0000002E 6801            LDR              R1, [R0]
-  125 00000030 F421 0170       BIC              R1, R1, #(0xF << 20)
-  126 00000034 6001            STR              R1, [R0]
-  127 00000036 4770            BX               LR
-  128 00000038                 ENDP
-  129 00000038         
-  130 00000038         
-  131 00000038         ;-------------------------------------------------------
-                       ------------------------
-  132 00000038         ; Function:     __set_control
-  133 00000038         ; Purpose:     Set the value of the CONTROL register
-  134 00000038         ; Arguments:  
-  135 00000038         ;  R0 - value to set
+  125 00000034 480D            LDR              R0, =0xE000ED88
+  126 00000036 6801            LDR              R1, [R0]
+  127 00000038 F421 0170       BIC              R1, R1, #(0xF << 20)
+  128 0000003C 6001            STR              R1, [R0]
+  129 0000003E F3BF 8F4F       DSB                          ; wait for store to
+                                                             complete
+  130 00000042 F3BF 8F6F       ISB                          ; flush the pipelin
+                                                            e 
+  131 00000046 4770            BX               LR
+  132 00000048                 ENDP
 
 
 
 ARM Macro Assembler    Page 4 
 
 
-  136 00000038         ; Returns:   - 
-  137 00000038         ;-------------------------------------------------------
+  133 00000048         
+  134 00000048         
+  135 00000048         ;-------------------------------------------------------
                        ------------------------
-  138 00000038                 EXPORT           __set_control
-  139 00000038         __set_control
+  136 00000048         ; Function:     __set_control
+  137 00000048         ; Purpose:     Set the value of the CONTROL register
+  138 00000048         ; Arguments:  
+  139 00000048         ;  R0 - value to set
+  140 00000048         ; Returns:   - 
+  141 00000048         ;-------------------------------------------------------
+                       ------------------------
+  142 00000048                 EXPORT           __set_control
+  143 00000048         __set_control
                                PROC
-  140 00000038 F380 8814       MSR              CONTROL, r0
-  141 0000003C 4770            BX               LR
-  142 0000003E                 ENDP
-  143 0000003E         
-  144 0000003E         
-  145 0000003E         ;-------------------------------------------------------
+  144 00000048 F380 8814       MSR              CONTROL, r0
+  145 0000004C F3BF 8F6F       ISB                          ; flush the pipelin
+                                                            e
+  146 00000050 4770            BX               LR
+  147 00000052                 ENDP
+  148 00000052         
+  149 00000052         
+  150 00000052         ;-------------------------------------------------------
                        ------------------------
-  146 0000003E         ; Function:     __get_control
-  147 0000003E         ; Purpose:     Get the value from the CONTROL register
-  148 0000003E         ; Arguments:  - 
-  149 0000003E         ; Returns:   
-  150 0000003E         ;  R0 - value from CONTROL register
-  151 0000003E         ;-------------------------------------------------------
+  151 00000052         ; Function:     __get_control
+  152 00000052         ; Purpose:     Get the value from the CONTROL register
+  153 00000052         ; Arguments:  - 
+  154 00000052         ; Returns:   
+  155 00000052         ;  R0 - value from CONTROL register
+  156 00000052         ;-------------------------------------------------------
                        ------------------------
-  152 0000003E                 EXPORT           __get_control
-  153 0000003E         __get_control
+  157 00000052                 EXPORT           __get_control
+  158 00000052         __get_control
                                PROC
-  154 0000003E F3EF 8014       MRS              R0, CONTROL
-  155 00000042 4770            BX               LR
-  156 00000044                 ENDP
-  157 00000044         
-  158 00000044         
-  159 00000044         ;-------------------------------------------------------
+  159 00000052 F3EF 8014       MRS              R0, CONTROL
+  160 00000056 4770            BX               LR
+  161 00000058                 ENDP
+  162 00000058         
+  163 00000058         
+  164 00000058         ;-------------------------------------------------------
                        ------------------------
-  160 00000044         ; Function:     __start_critical
-  161 00000044         ; Purpose:     Enter critical section by disabling inter
+  165 00000058         ; Function:     __start_critical
+  166 00000058         ; Purpose:     Enter critical section by disabling inter
                        rupts and saving the 
-  162 00000044         ;     prevous interrupt control value in PRIMASK registe
+  167 00000058         ;     prevous interrupt control value in PRIMASK registe
                        r
-  163 00000044         ; Arguments:  - 
-  164 00000044         ; Returns:   -
-  165 00000044         ;-------------------------------------------------------
+  168 00000058         ; Arguments:  - 
+  169 00000058         ; Returns:   -
+  170 00000058         ;-------------------------------------------------------
                        ------------------------
-  166 00000044                 EXPORT           __start_critical
-  168 00000044         __start_critical
+  171 00000058                 EXPORT           __start_critical
+  173 00000058         __start_critical
                                PROC
-  169 00000044 F3EF 8010       MRS              R0, PRIMASK
-  170 00000048 B401            PUSH             {R0}
-  171 0000004A B672            CPSID            I
-  172 0000004C 4770            BX               LR
-  173 0000004E                 ENDP
-  174 0000004E         
-  175 0000004E         
-  176 0000004E         ;-------------------------------------------------------
-                       ------------------------
-  177 0000004E         ; Function:     __end_critical
-  178 0000004E         ; Purpose:     End critical section by restoring the pre
-                       vious value of PRIMASK
-  179 0000004E         ; Arguments:  - 
-  180 0000004E         ; Returns:   -
-  181 0000004E         ;-------------------------------------------------------
-                       ------------------------
-  182 0000004E                 EXPORT           __end_critical
+  174 00000058 F3EF 8010       MRS              R0, PRIMASK
+  175 0000005C B401            PUSH             {R0}
+  176 0000005E B672            CPSID            I
+  177 00000060 4770            BX               LR
+  178 00000062                 ENDP
+  179 00000062         
+  180 00000062         
 
 
 
 ARM Macro Assembler    Page 5 
 
 
-  183 0000004E         __end_critical
+  181 00000062         ;-------------------------------------------------------
+                       ------------------------
+  182 00000062         ; Function:     __end_critical
+  183 00000062         ; Purpose:     End critical section by restoring the pre
+                       vious value of PRIMASK
+  184 00000062         ; Arguments:  - 
+  185 00000062         ; Returns:   -
+  186 00000062         ;-------------------------------------------------------
+                       ------------------------
+  187 00000062                 EXPORT           __end_critical
+  188 00000062         __end_critical
                                PROC
-  184 0000004E BC01            POP              {R0}
-  185 00000050 F380 8810       MSR              PRIMASK, R0
-  186 00000054 4770            BX               LR
-  187 00000056                 ENDP
-  188 00000056         
-  189 00000056         
-  190 00000056         
-  191 00000056 00 00           ALIGN
-  192 00000058                 END
+  189 00000062 BC01            POP              {R0}
+  190 00000064 F380 8810       MSR              PRIMASK, R0
+  191 00000068 4770            BX               LR
+  192 0000006A                 ENDP
+  193 0000006A         
+  194 0000006A         
+  195 0000006A         
+  196 0000006A 00 00           ALIGN
+  197 0000006C                 END
               E000ED88 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\special_reg_access.d -o.\special_reg_access.o -I"C:\Users\Krz
@@ -296,13 +306,13 @@ Symbol: .text
    Uses
       None
 Comment: .text unused
-__disable_fpu 0000002C
+__disable_fpu 00000034
 
 Symbol: __disable_fpu
    Definitions
-      At line 122 in file special_reg_access.s
+      At line 124 in file special_reg_access.s
    Uses
-      At line 121 in file special_reg_access.s
+      At line 123 in file special_reg_access.s
 Comment: __disable_fpu used once
 __disable_irqs 00000000
 
@@ -328,13 +338,13 @@ Symbol: __enable_irqs
    Uses
       At line 36 in file special_reg_access.s
 Comment: __enable_irqs used once
-__end_critical 0000004E
+__end_critical 00000062
 
 Symbol: __end_critical
    Definitions
-      At line 183 in file special_reg_access.s
+      At line 188 in file special_reg_access.s
    Uses
-      At line 182 in file special_reg_access.s
+      At line 187 in file special_reg_access.s
 Comment: __end_critical used once
 __get_base_prio 0000000E
 
@@ -344,7 +354,7 @@ Symbol: __get_base_prio
    Uses
       At line 65 in file special_reg_access.s
 Comment: __get_base_prio used once
-__get_control 0000003E
+__get_control 00000052
 
 Symbol: __get_control
 
@@ -354,9 +364,9 @@ ARM Macro Assembler    Page 2 Alphabetic symbol ordering
 Relocatable symbols
 
    Definitions
-      At line 153 in file special_reg_access.s
+      At line 158 in file special_reg_access.s
    Uses
-      At line 152 in file special_reg_access.s
+      At line 157 in file special_reg_access.s
 Comment: __get_control used once
 __get_psp 0000001A
 
@@ -374,13 +384,13 @@ Symbol: __set_base_prio
    Uses
       At line 51 in file special_reg_access.s
 Comment: __set_base_prio used once
-__set_control 00000038
+__set_control 00000048
 
 Symbol: __set_control
    Definitions
-      At line 139 in file special_reg_access.s
+      At line 143 in file special_reg_access.s
    Uses
-      At line 138 in file special_reg_access.s
+      At line 142 in file special_reg_access.s
 Comment: __set_control used once
 __set_psp 00000014
 
@@ -390,13 +400,13 @@ Symbol: __set_psp
    Uses
       At line 78 in file special_reg_access.s
 Comment: __set_psp used once
-__start_critical 00000044
+__start_critical 00000058
 
 Symbol: __start_critical
    Definitions
-      At line 168 in file special_reg_access.s
+      At line 173 in file special_reg_access.s
    Uses
-      At line 166 in file special_reg_access.s
+      At line 171 in file special_reg_access.s
 Comment: __start_critical used once
 13 symbols
 349 symbols in table

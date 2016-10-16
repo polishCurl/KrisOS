@@ -8,9 +8,9 @@
 *
 * Note: 		
 *******************************************************************************/
-
 #include <stdio.h>
 #include <rt_misc.h>
+#include "svc.h"
 
 /*-------------------------------------------------------------------------------
 * Semihosting is not supported by MDK-ARM. Semihosting is a mechanism that enables 
@@ -18,8 +18,7 @@
 * on a host computer that is running a debugger.
 --------------------------------------------------------------------------------*/
 #pragma import(__use_no_semihosting_swi)
-extern void send_char(uint8_t character);		
-extern uint8_t get_char(void);		
+		
 
 
 /*-------------------------------------------------------------------------------
@@ -70,17 +69,27 @@ int ferror(FILE *f) {
 	return EOF;
 }
 
+
 /*-------------------------------------------------------------------------------
-* Function:    	SysTick_Handler
-* Purpose:    	SysTick timer interrupt handler
-* Arguments:	-
+* Function:    	_ttywrch
+* Purpose:    	Write a character to the console.
+* Arguments:	
+*		character - character to write
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void _ttywrch(int c) {
-	send_char(c);
+void _ttywrch(int character) {
+	send_char(character);
 }
 
 
+/*-------------------------------------------------------------------------------
+* Function:    	_sys_exit
+* Purpose:    	Library exit function, must not return. 
+* Arguments:	
+*		return_code - advisory
+* Returns: 		-
+--------------------------------------------------------------------------------*/
 void _sys_exit(int return_code) {
+	printf("Exiting...");
 	while(1);
 }
