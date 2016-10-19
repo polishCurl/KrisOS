@@ -21,5 +21,8 @@
 #define SVC_HEAP_FREE 4 		// free the allocated block of memory
 
 
+/*-------------------------------------------------------------------------------
+* SVC calls renaming for ease of use
+--------------------------------------------------------------------------------*/
 void __svc(SVC_UART_SEND) send_char(uint8_t character);
 uint8_t __svc(SVC_UART_GET) get_char(void);

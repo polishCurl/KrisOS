@@ -13,13 +13,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define test_null_pointer(ptr) 					\
-	if (ptr == NULL) {							\
-		printf("NULL pointer! ");		\
+
+/*-------------------------------------------------------------------------------
+* Macro:    	TEST_NULL_POINTER
+* Purpose:    	Test if given pointer is a NULL one. if so, exit
+* Arguments:	
+*		ptr - pointer to test
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+#define TEST_NULL_POINTER(PTR) 					\
+	if (PTR == NULL) {							\
+		printf("NULL pointer! ");				\
 		exit(1); 								\
-	}				
-		
+	}						
+			
 	
+	
+		
 /*-------------------------------------------------------------------------------
 * Floating point data type defnitions
 *------------------------------------------------------------------------------*/

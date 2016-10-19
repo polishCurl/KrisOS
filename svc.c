@@ -13,10 +13,15 @@
 #include "system.h"
 
 
-
+/*-------------------------------------------------------------------------------
+* Function:    	SVC_Handler_C
+* Purpose:    	Part of the SVC_Handler written in C
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
 void SVC_Handler_C(uint32_t* svcArgs) {
 	
-	// Extract the SVC number
+	// Extract the SVC number and use it to run the right subroutine
 	uint8_t svcNumber = ((uint8_t*) svcArgs[6])[-2];
 	switch(svcNumber) {
 		case SVC_OS_START: os_init(); break;

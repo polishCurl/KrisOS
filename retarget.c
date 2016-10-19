@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <rt_misc.h>
 #include "svc.h"
+#include "special_reg_access.h"
+#include "uart.h"
+
 
 /*-------------------------------------------------------------------------------
 * Semihosting is not supported by MDK-ARM. Semihosting is a mechanism that enables 
@@ -41,7 +44,13 @@ FILE __stdin;
 *		0 upon sucessful completion
 --------------------------------------------------------------------------------*/
 int fputc(int character, FILE *file) {
-	send_char(character);		// send the desired character over UART serial port
+	
+	// Read the current mode and run the method according to privilege levek
+	if (__get_control() & 0x2)
+		send_char(character);			// SVC call to write the character to UART 
+	else
+		uart_send_char(character); 		// Already in privileged mode, send character directly
+	
 	return 0;
 }
 

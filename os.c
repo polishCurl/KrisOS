@@ -19,12 +19,12 @@
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void os_init(void) {
-	
+
 	// Initialise the system and important peripherals
 	__disable_irqs();								// switch off interrupts
 	__enable_fpu(); 								// switch on the FPU
 	system_clock_config(MAIN_OSC, 10);				// set up the system clock
-	systick_config(SYSTEM_CLOCK_FREQ);				// set up periodic irqs
+	systick_config(SYSTEM_CLOCK_FREQ / 100);		// set up periodic irqs
 	uart_init(9600, 3, 0, 0, 0); 					// initialise the uart serial interface
 	//nvic_enable_irq(QEI1_IRQn);
 	//nvic_set_pending(QEI1_IRQn);
@@ -32,7 +32,10 @@ void os_init(void) {
 	
 	// Initialise the OS components
 	heap_init();									// initialise the heap
-	__enable_irqs();								// enable interrupts again
+	__enable_irqs();								// enable interrupts again	
+	
+	malloc(sizeof(int32_t));
+	
 }
 
 

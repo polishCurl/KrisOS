@@ -3,9 +3,8 @@
 .\fifo.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\fifo.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\fifo.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-.\fifo.o: KrisOS.h
-.\fifo.o: svc.h
-.\fifo.o: common.h
 .\fifo.o: fifo.h
+.\fifo.o: special_reg_access.h
+.\fifo.o: common.h
 .\fifo.o: special_reg_access.h
 .\fifo.o: common.h

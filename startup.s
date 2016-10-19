@@ -215,12 +215,11 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
 
 				EXPORT  Reset_Handler             
 Reset_Handler   PROC
-				LDR 	R0, =__initial_handler_sp 	; load the proces stack pointer
+				LDR 	R0, =__initial_handler_sp 	; Load the proces stack pointer
 				MSR 	PSP, R0
-				IMPORT  __set_control
-                LDR     R1, =__set_control			; Switch to unprivileged Thread mode with PSP
-				MOV     R0, #0x7					; Handler mode will be using MSP. Also, set the 
-                BLX     R1 							; floating-point context active
+				IMPORT	__set_control
+				MOV 	R0, #0x7
+				BL 		__set_control 				; Use double stacking
 				IMPORT  main
                 LDR     R0, =main				  	; Run the main method
                 BX      R0

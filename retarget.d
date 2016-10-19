@@ -6,3 +6,7 @@
 .\retarget.o: svc.h
 .\retarget.o: common.h
 .\retarget.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\retarget.o: special_reg_access.h
+.\retarget.o: common.h
+.\retarget.o: uart.h
+.\retarget.o: common.h
