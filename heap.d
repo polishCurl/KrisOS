@@ -5,3 +5,5 @@
 .\heap.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\heap.o: heap.h
 .\heap.o: common.h
+.\heap.o: special_reg_access.h
+.\heap.o: common.h

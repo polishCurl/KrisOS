@@ -33,9 +33,6 @@ void os_init(void) {
 	// Initialise the OS components
 	heap_init();									// initialise the heap
 	__enable_irqs();								// enable interrupts again	
-	
-	malloc(sizeof(int32_t));
-	
 }
 
 

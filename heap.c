@@ -15,6 +15,7 @@
 *------------------------------------------------------------------------------*/
 #include "common.h"
 #include "heap.h"
+#include "special_reg_access.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -34,7 +35,7 @@
 /*-------------------------------------------------------------------------------
 * Heap size in bytes, both the desired and aligned one
 *------------------------------------------------------------------------------*/
-#define HEAP_SIZE 192				
+#define HEAP_SIZE 1000				
 #define ALIGNED_HEAP_SIZE (HEAP_SIZE % HEAP_BYTE_ALIGN ? 									\
 							(HEAP_SIZE + (HEAP_BYTE_ALIGN - HEAP_SIZE % HEAP_BYTE_ALIGN)) :	\
 							HEAP_SIZE)
@@ -99,18 +100,20 @@ void heap_init(void){
 --------------------------------------------------------------------------------*/
 void* malloc(size_t bytesToAlloc) {
 	
-	// pointer to the memory allocates
+	// Pointer to the memory allocated
 	void* pointer;
+	
+	// Ensure byte-alignment required
+	bytesToAlloc = align_byte_number(bytesToAlloc);
 	
 	// Check if enough space available and the number of bytes is valid
 	if ((bytesToAlloc > 0) && (bytesToAlloc < ALIGNED_HEAP_SIZE - bytesUsed)) {
 		
-		// Ensure byte-alignment required
-		bytesToAlloc = align_byte_number(bytesToAlloc);
-		
 		// Update the heap and return the pointer to newly allocated memory
+		__start_critical();
 		pointer = &heap[bytesUsed];
 		bytesUsed += bytesToAlloc;
+		__end_critical();
 	}
 	return pointer;
 }
@@ -130,20 +133,26 @@ void free(void* toFree) {}
 /////////////////////////////////////////////////////////////////////////////////
 #elif HEAP_MANAGER == 2
 /////////////////////////////////////////////////////////////////////////////////
-
+	
 /*-------------------------------------------------------------------------------
 * Heap free block definition
 --------------------------------------------------------------------------------*/
-typedef struct FreeBlock {
+typedef struct HeapBlock {
 	size_t blockSize; 				// size in bytes
-	struct FreeBlock* next; 		// pointer to the next free heap block
-} FreeBlock;
+	struct HeapBlock* next; 		// pointer to the next free heap block
+} HeapBlock;
+
+
+/*-------------------------------------------------------------------------------
+* Minimum heap free block size that can still be divided into smaller ones
+--------------------------------------------------------------------------------*/
+#define MIN_BLOCK_SIZE (2 * sizeof(HeapBlock))
 
 
 /*-------------------------------------------------------------------------------
 * Beginning and end of the list of free blocks. (Can't be assigned data)
 --------------------------------------------------------------------------------*/
-FreeBlock startBlock, endBlock;
+HeapBlock startBlock, endBlock;
 
 
 /*-------------------------------------------------------------------------------
@@ -153,12 +162,17 @@ FreeBlock startBlock, endBlock;
 *		toInsert - pointer to the block to insert
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void insert_free_block(FreeBlock* toInsert) {
+void insert_free_block(HeapBlock* toInsert) {
+	
+	// Iterator through the list of free blocks and the size of block to insert
+	HeapBlock* iterator;
+	size_t blockSize;
+	blockSize = toInsert->blockSize;
 	
 	// Iterate through the linked list of blocks until one that has bigger size
 	// is next
-	FreeBlock* iterator = &startBlock;
-	while (iterator->blockSize < iterator->next->blockSize) 
+	iterator = &startBlock;
+	while (iterator->next->blockSize < blockSize) 
 		iterator = iterator->next;
 	
 	// Insert the block
@@ -176,7 +190,7 @@ void insert_free_block(FreeBlock* toInsert) {
 void heap_init(void){
 
 	// Pointer to the first free block of data that can be used
-	FreeBlock* firstBlock;
+	HeapBlock* firstBlock;
 	
 	// Reset the counter
 	bytesUsed = 0;					
@@ -209,37 +223,89 @@ void* malloc(size_t bytesToAlloc) {
 	void* allocatedMemory;
 	
 	// Block pointers used for traversing the list
-	FreeBlock *previousBlock, *iterator;
+	HeapBlock *previousBlock, *iterator;
 	
+	// Pointer to a new block can be created if there is no free block closely
+	// matching the number of bytes requested
+	HeapBlock *subBlock;
+	
+	// Check if the request is valid and add extra number of bytes to the request
+	// so that the HeapBlock for heap management can be stored inside the allocated
+	// memory. Also ensure correct memory alignment
 	if (bytesToAlloc > 0) {
-		bytesToAlloc += sizeof(FreeBlock);
+		bytesToAlloc += sizeof(HeapBlock);
 		bytesToAlloc = align_byte_number(bytesToAlloc);
 	}
 	
-	if (bytesToAlloc > 0 && bytesToAlloc < HEAP_BYTE_ALIGN) {
+	// If the heap is big enough to meet the request
+	if (bytesToAlloc > 0 && bytesToAlloc < ALIGNED_HEAP_SIZE) {
+		
+		__start_critical();
+		
+		// Go through all the existing free blocks until a large enough is found
+		// or we reached the endBlock 
 		previousBlock = &startBlock;
-		iterator = (void*) &heap[0];
+		iterator = startBlock.next;
 		
 		while ((iterator->blockSize < bytesToAlloc) && (iterator->next != NULL)) {
 			previousBlock = iterator;
 			iterator = iterator->next;
 		}
 		
+		// If such block exists, join its neighbours and update the pointer
 		if (iterator != &endBlock) {
-			allocatedMemory = ((void*) ((uint8_t*) previousBlock->next) + sizeof(FreeBlock));
+			allocatedMemory = (void*) (((uint8_t*) previousBlock->next) + sizeof(HeapBlock));
 			previousBlock->next = iterator->next;
 			
+			// If the difference between the requested memory size and the assigned block
+			// size is too big then split the block into two and insert the unallocated
+			// part to the list of heap blocks
+			if (iterator->blockSize - bytesToAlloc > MIN_BLOCK_SIZE) {
+				subBlock = (void*) (((uint8_t*) iterator) + bytesToAlloc);
+				subBlock->blockSize = iterator->blockSize - bytesToAlloc;
+				iterator->blockSize = bytesToAlloc;
+				insert_free_block(subBlock);
+			}
 			
-			
-			
-			
+			bytesUsed += iterator->blockSize;
 		}
-		
-		
-		
+		__end_critical();
 	}
-	
+	return allocatedMemory;	
 }
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	free
+* Purpose:    	Free the allocated block of memory
+* Arguments:	
+*		toFree - block of heap memory to free
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void free(void* toFree) {
+	
+	// Byte array and actual heap block to free
+	uint8_t* bytesToFree;
+	HeapBlock* blockToFree;
+	
+	// If the pointer is meaninful, then cast it into heap block that shall be
+	// added back to the list of free blocks. Updates the number of bytes used
+	if (toFree != NULL) {
+		bytesToFree = (uint8_t*) toFree;
+		bytesToFree -= sizeof(HeapBlock);
+		blockToFree = (HeapBlock*) bytesToFree;
+		__start_critical();
+		insert_free_block(blockToFree);
+		bytesUsed -= blockToFree->blockSize;
+		__end_critical();
+	}
+		
+		
+	
+
+
+
+}	
 
 
 #endif
