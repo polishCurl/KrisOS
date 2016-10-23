@@ -63,7 +63,6 @@ typedef struct
 #define VECACT_Pos 0					// Interrupt Active Vector Number
 
 
-
 /*-------------------------------------------------------------------------------
 * System control registers
 *------------------------------------------------------------------------------*/
@@ -301,8 +300,6 @@ typedef struct {                        // SYSCTL Structure
 // RIS register bit numbers
 #define PLLRIS_Pos 6
 
-
-
 /*-------------------------------------------------------------------------------
 * NVIC registers
 *------------------------------------------------------------------------------*/
@@ -324,7 +321,6 @@ typedef struct
 }  NVIC_Type;
 #define NVIC_Base 0xE000E100
 #define NVIC ((NVIC_Type*) NVIC_Base)
-
 
 
 /*-------------------------------------------------------------------------------
@@ -387,14 +383,14 @@ typedef struct {                       // GPIOA Structure
 #define GPIOD ((GPIO_Type*) GPIOD_Base)
 
 // GPIOPCTL register bit numbers
-#define PCTL_PMC0_Pos 0
-#define PCTL_PMC1_Pos 4
-#define PCTL_PMC2_Pos 8
-#define PCTL_PMC3_Pos 12
-#define PCTL_PMC4_Pos 16
-#define PCTL_PMC5_Pos 20
-#define PCTL_PMC6_Pos 24
-#define PCTL_PMC7_Pos 28
+#define GPIOPCTL_PMC0_Pos 0
+#define GPIOPCTL_PMC1_Pos 4
+#define GPIOPCTL_PMC2_Pos 8
+#define GPIOPCTL_PMC3_Pos 12
+#define GPIOPCTL_PMC4_Pos 16
+#define GPIOPCTL_PMC5_Pos 20
+#define GPIOPCTL_PMC6_Pos 24
+#define GPIOPCTL_PMC7_Pos 28
 
 // PIN offsets
 #define PIN0_Pos 0
@@ -438,35 +434,27 @@ typedef struct {                     	// UART0 Structure
 #define UART0 ((UART_Type*) UART0_Base)
 
 // CTL register bit numbers
-#define CTL_CTSEN_Pos 15
-#define CTL_RTSEN_Pos 14
-#define CTL_RTS_Pos 11
-#define CTL_RXE_Pos 9
-#define CTL_TXE_Pos 8
-#define CTL_LBE_Pos 7
-#define CTL_HSE_Pos 5
-#define CTL_EOT_Pos 4
-#define CTL_SMART_Pos 3
-#define CTL_SIRLP_Pos 2
-#define CTL_SIREN_Pos 1
-#define CTL_UARTEN_Pos 0
+#define UARTCTL_CTSEN_Pos 15
+#define UARTCTL_RTSEN_Pos 14
+#define UARTCTL_RTS_Pos 11
+#define UARTCTL_RXE_Pos 9
+#define UARTCTL_TXE_Pos 8
+#define UARTCTL_LBE_Pos 7
+#define UARTCTL_HSE_Pos 5
+#define UARTCTL_EOT_Pos 4
+#define UARTCTL_SMART_Pos 3
+#define UARTCTL_SIRLP_Pos 2
+#define UARTCTL_SIREN_Pos 1
+#define UARTCTL_UARTEN_Pos 0
 
 // LCRH register bit numbers
-#define LCHR_SPS_Pos 7
-#define LCHR_WLEN_Pos 5
-#define LCHR_FEN_Pos 4
-#define LCHR_STP2_Pos 3
-#define LCHR_EPS_Pos 2
-#define LCHR_PEN_Pos 1
-#define LCHR_BRK_Pos 0
-
-// FR register bit numbers
-#define TXFE_Pos 7 				// Transmit FIFO empty
-#define RXFF_Pos 6				// Receive FIFO full
-#define TXFF_Pos 5 				// Transmit FIFO full
-#define RXFE_Pos 4 				// Receive FIFO empty
-#define BUSY_Pos 3 				// UART busy
-#define CTS_Pos 0 				// Clear to send
+#define UARTLCHR_SPS_Pos 7
+#define UARTLCHR_WLEN_Pos 5
+#define UARTLCHR_FEN_Pos 4
+#define UARTLCHR_STP2_Pos 3
+#define UARTLCHR_EPS_Pos 2
+#define UARTLCHR_PEN_Pos 1
+#define UARTLCHR_BRK_Pos 0
 
 
 

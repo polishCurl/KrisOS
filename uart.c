@@ -44,19 +44,19 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 	GPIOA->DEN |= (1 << PIN0_Pos) | (1 << PIN1_Pos);	// enable digitial I/O on pins 1-0 of GPIOA
 					
 	// Enable port A pins 1 and 0
-	GPIOA->PCTL |= (1 << GPIOPCTL_PMC1_Pos) | (1 << GPIOPCTL_PMC0_Pos); 
+	GPIOA->PCTL |= (1 << PCTL_PMC1_Pos) | (1 << PCTL_PMC0_Pos); 
 					
-	UART0->CTL &= ~(1 << UARTCTL_UARTEN_Pos); 			// Disable UART device for time of configuration
+	UART0->CTL &= ~(1 << CTL_UARTEN_Pos); 			// Disable UART device for time of configuration
 	UART0->IBRD = dividerInt; 							// divider, integer part
 	UART0->FBRD = (int32_t) dividerFrac; 				// divider, fractional part 	
 	
 	// Set the parameters of serial communication
-	UART0->LCRH = (parityUsed << UARTLCHR_SPS_Pos) | (uartWordLen << UARTLCHR_WLEN_Pos) | 
-				  (stopBits << UARTLCHR_STP2_Pos) | (oddEven << UARTLCHR_EPS_Pos) | 
-				   (parityUsed << UARTLCHR_PEN_Pos);  
+	UART0->LCRH = (parityUsed << LCHR_SPS_Pos) | (uartWordLen << LCHR_WLEN_Pos) | 
+				  (stopBits << LCHR_STP2_Pos) | (oddEven << LCHR_EPS_Pos) | 
+				   (parityUsed << LCHR_PEN_Pos);  
 				   
 	// Enable the receive, transmitter and the whole UART module
-	UART0->CTL |= (1 << UARTCTL_RXE_Pos) | (1 << UARTCTL_TXE_Pos) | (1 << UARTCTL_UARTEN_Pos);			
+	UART0->CTL |= (1 << CTL_RXE_Pos) | (1 << CTL_TXE_Pos) | (1 << CTL_UARTEN_Pos);			
 }
 				
 
@@ -68,7 +68,9 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void uart_send_char(uint8_t character) {
-	while (UART0->FR & (1 << 5)); 	// wait for TX buffer to be not full
+	
+	// Wait for TX buffer to be not full and then insert the value to FIFO
+	while (UART0->FR & (1 << TXFF_Pos)); 	
 	UART0->DR = character;
 }
 
@@ -80,6 +82,8 @@ void uart_send_char(uint8_t character) {
 *		character received
 --------------------------------------------------------------------------------*/
 uint8_t uart_get_char(void) {
-	while (UART0->FR & (1 << 4)); 	// wait for RX buffer to be not empty
+	
+	// Wait for RX buffer to be not empty and return the value from FIFO
+	while (UART0->FR & (1 << RXFE_Pos)); 	
 	return (uint8_t) UART0->DR & 0xFF;
 }

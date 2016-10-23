@@ -17,8 +17,6 @@
 #define SVC_OS_START 0			// start the operating system
 #define SVC_UART_SEND 1 		// send a character over uart
 #define SVC_UART_GET 2 			// receive a character from uart
-#define SVC_HEAP_ALLOC 3 		// dynamically allocate memory
-#define SVC_HEAP_FREE 4 		// free the allocated block of memory
 
 
 /*-------------------------------------------------------------------------------

@@ -8,7 +8,7 @@
 *
 * Note: 		Contains interrupt numbers for each interrupt source
 *******************************************************************************/
-
+#include "common.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -148,3 +148,34 @@ void nvic_set_pending(IRQn_Type irq);
 --------------------------------------------------------------------------------*/
 void nvic_clear_pending(IRQn_Type irq);
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	nvic_read_active
+* Purpose:    	Check if given Interrupt is currently active
+* Arguments: 	
+*		irq - interrupt to have its status checked
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+uint32_t nvic_read_active(IRQn_Type irq);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	nvic_set_priority
+* Purpose:    	Set the priority of given interrupt
+* Arguments: 	
+*		irq - interrupt number to set the priority of
+* 		priority - priority to set, from 0 (highest) to 7 (lowest)
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void nvic_set_priority(IRQn_Type irq, uint32_t priority);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	nvic_get_priority
+* Purpose:    	Get the priority of given interrupt
+* Arguments: 	
+*		irq - interrupt number to get the priority of
+* Returns: 		
+*		priority of given IRQ (0 - highest, 7 - lowest)
+--------------------------------------------------------------------------------*/
+uint32_t nvic_get_priority(IRQn_Type irq);

@@ -7,3 +7,6 @@
 .\heap.o: common.h
 .\heap.o: special_reg_access.h
 .\heap.o: common.h
+.\heap.o: KrisOS.h
+.\heap.o: svc.h
+.\heap.o: common.h

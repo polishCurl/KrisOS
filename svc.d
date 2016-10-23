@@ -3,14 +3,9 @@
 .\svc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\svc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\svc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-.\svc.o: os.h
 .\svc.o: svc.h
 .\svc.o: common.h
-.\svc.o: heap.h
-.\svc.o: common.h
-.\svc.o: fifo.h
-.\svc.o: special_reg_access.h
-.\svc.o: common.h
+.\svc.o: os.h
 .\svc.o: system.h
 .\svc.o: common.h
 .\svc.o: uart.h
@@ -20,3 +15,6 @@
 .\svc.o: special_reg_access.h
 .\svc.o: common.h
 .\svc.o: nvic.h
+.\svc.o: common.h
+.\svc.o: tm4c123gh6pm.h
+.\svc.o: common.h

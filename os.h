@@ -9,10 +9,6 @@
 * Note: 		Method declarations visible to OS users for accessing its 
 *				functionality
 *******************************************************************************/
-#include "svc.h"
-#include "heap.h"
-#include "fifo.h"
-
 
 
 /*-------------------------------------------------------------------------------

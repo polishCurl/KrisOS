@@ -375,7 +375,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>KrisEmbedOS</GroupName>
+          <GroupName>KrisOS</GroupName>
           <Files>
             <File>
               <FileName>heap.c</FileName>
@@ -397,10 +397,20 @@
               <FileType>1</FileType>
               <FilePath>.\fifo.c</FilePath>
             </File>
+            <File>
+              <FileName>retarget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\retarget.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_scheduling.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_scheduling.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>OSTest</GroupName>
+          <GroupName>User</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
@@ -410,7 +420,7 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>HAL</GroupName>
+          <GroupName>HAL &amp; Drivers</GroupName>
           <Files>
             <File>
               <FileName>uart.c</FileName>
@@ -428,19 +438,14 @@
               <FilePath>.\special_reg_access.s</FilePath>
             </File>
             <File>
-              <FileName>startup.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\startup.s</FilePath>
-            </File>
-            <File>
-              <FileName>retarget.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\retarget.c</FilePath>
-            </File>
-            <File>
               <FileName>nvic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\nvic.c</FilePath>
+            </File>
+            <File>
+              <FileName>startup.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\startup.s</FilePath>
             </File>
           </Files>
         </Group>

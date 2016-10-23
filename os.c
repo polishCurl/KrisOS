@@ -9,7 +9,8 @@
 * Note: 	
 *******************************************************************************/
 #include "system.h"
-#include "os.h"
+#include "heap.h"
+#include "KrisOs.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -20,19 +21,26 @@
 --------------------------------------------------------------------------------*/
 void os_init(void) {
 
-	// Initialise the system and important peripherals
-	__disable_irqs();								// switch off interrupts
-	__enable_fpu(); 								// switch on the FPU
-	system_clock_config(MAIN_OSC, 10);				// set up the system clock
-	systick_config(SYSTEM_CLOCK_FREQ / 100);		// set up periodic irqs
-	uart_init(9600, 3, 0, 0, 0); 					// initialise the uart serial interface
-	//nvic_enable_irq(QEI1_IRQn);
-	//nvic_set_pending(QEI1_IRQn);
+	// Switch off interrupts and enable the FPU
+	__disable_irqs();								
+	__enable_fpu();
 	
+	// Set up the system clock
+	system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);				
 	
-	// Initialise the OS components
-	heap_init();									// initialise the heap
-	__enable_irqs();								// enable interrupts again	
+	// Set up periodic interrupts
+	systick_config(TIME_SLICE);		
+	
+	// initialise the uart serial interface
+	uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
+			  SERIAL_MONITOR_D0_PARITY_CHECK, SERIAL_MONITOR_PARITY, 
+			  SERIAL_MONITOR_STOP_BITS); 
+	
+	// Initialise the heap
+	heap_init();		
+
+	// Re-enable interrupts	
+	__enable_irqs();	
 }
 
 
@@ -43,7 +51,9 @@ void os_init(void) {
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void SysTick_Handler(void) {
-	TICKS++;
+	TICKS++;							// Increment the clock ticks counter
+	//run_scheduler(); 					// Run the task scheduler
+	//SCB->ICSR |= (1 << PENDSV_Pos);		// Set the PendSV_IRQ
 }
 
 

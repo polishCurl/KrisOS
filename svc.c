@@ -9,6 +9,7 @@
 * Note: 		
 *******************************************************************************/
 #include "common.h"
+#include "svc.h"
 #include "os.h"
 #include "system.h"
 
@@ -27,8 +28,6 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_OS_START: os_init(); break;
 		case SVC_UART_SEND: uart_send_char(svcArgs[0]); break;
 		case SVC_UART_GET: svcArgs[0] = uart_get_char(); break;
-		case SVC_HEAP_ALLOC: svcArgs[0] = (uint32_t) malloc(svcArgs[0]); break;
-		case SVC_HEAP_FREE: free((void*) svcArgs[0]); break;
 		default: break;
 	}
 	return;

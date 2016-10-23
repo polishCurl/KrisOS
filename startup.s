@@ -207,18 +207,16 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
                 DCD     PWM1_FAULT_Handler        ; 138: PWM 1 Fault
 
 
-
+				AREA    |.text|, CODE, READONLY	  	; Instructions to be placed in ROM
 ;-------------------------------------------------------------------------------
 ; Reset Handler
-;-------------------------------------------------------------------------------			
-				AREA    |.text|, CODE, READONLY	  	; Instructions to be placed in ROM
-
-				EXPORT  Reset_Handler             
+;-------------------------------------------------------------------------------
 Reset_Handler   PROC
+				EXPORT  Reset_Handler 
 				LDR 	R0, =__initial_handler_sp 	; Load the proces stack pointer
 				MSR 	PSP, R0
 				IMPORT	__set_control
-				MOV 	R0, #0x7
+				MOV 	R0, #0x3
 				BL 		__set_control 				; Use double stacking
 				IMPORT  main
                 LDR     R0, =main				  	; Run the main method
@@ -260,7 +258,6 @@ UsageFault_Handler\
 ; Reset Handler
 ;-------------------------------------------------------------------------------					
 SVC_Handler     PROC
-                EXPORT  SVC_Handler               
                 TST 	LR, #4
 				ITE		EQ					; determine which stack was used before 
 				MRSEQ	R0, MSP				; the SVC call
@@ -275,6 +272,10 @@ DebugMon_Handler\
                 EXPORT  DebugMon_Handler          [WEAK]
                 B       .
                 ENDP
+					
+;-------------------------------------------------------------------------------
+; PendSV Interrupt Handler
+;-------------------------------------------------------------------------------	
 PendSV_Handler\
                 PROC
                 EXPORT  PendSV_Handler            [WEAK]
