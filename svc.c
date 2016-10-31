@@ -11,6 +11,7 @@
 #include "common.h"
 #include "svc.h"
 #include "os.h"
+#include "task_scheduling.h"
 #include "system.h"
 
 
@@ -25,9 +26,12 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 	// Extract the SVC number and use it to run the right subroutine
 	uint8_t svcNumber = ((uint8_t*) svcArgs[6])[-2];
 	switch(svcNumber) {
-		case SVC_OS_START: os_init(); break;
+		case SVC_OS_INIT: os_init(); break;
 		case SVC_UART_SEND: uart_send_char(svcArgs[0]); break;
 		case SVC_UART_GET: svcArgs[0] = uart_get_char(); break;
+		case SVC_ADD_USER_TASK: svcArgs[0] = create_task((void*) svcArgs[0], svcArgs[1], svcArgs[2], 
+														 svcArgs[3], 0); break;
+		case SVC_OS_START: os_start();
 		default: break;
 	}
 	return;

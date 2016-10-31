@@ -6,6 +6,8 @@
 .\svc.o: svc.h
 .\svc.o: common.h
 .\svc.o: os.h
+.\svc.o: task_scheduling.h
+.\svc.o: common.h
 .\svc.o: system.h
 .\svc.o: common.h
 .\svc.o: uart.h

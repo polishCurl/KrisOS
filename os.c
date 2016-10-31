@@ -11,6 +11,8 @@
 #include "system.h"
 #include "heap.h"
 #include "KrisOs.h"
+#include "task_scheduling.h"
+
 
 
 /*-------------------------------------------------------------------------------
@@ -26,10 +28,7 @@ void os_init(void) {
 	__enable_fpu();
 	
 	// Set up the system clock
-	system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);				
-	
-	// Set up periodic interrupts
-	systick_config(TIME_SLICE);		
+	system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
 	
 	// initialise the uart serial interface
 	uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
@@ -37,11 +36,19 @@ void os_init(void) {
 			  SERIAL_MONITOR_STOP_BITS); 
 	
 	// Initialise the heap
-	heap_init();		
+	heap_init();	
+
+	// Initialse the task control block
+	tcb_init();
+	
+	// Set the IRQ priority of SysTick (highest possible) and PendSV (lowest possible) IRQs
+	nvic_set_priority(PendSV_IRQn, 0xFF);
+	nvic_set_priority(SysTick_IRQn, 0x0);
 
 	// Re-enable interrupts	
 	__enable_irqs();	
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -52,8 +59,7 @@ void os_init(void) {
 --------------------------------------------------------------------------------*/
 void SysTick_Handler(void) {
 	TICKS++;							// Increment the clock ticks counter
-	//run_scheduler(); 					// Run the task scheduler
-	//SCB->ICSR |= (1 << PENDSV_Pos);		// Set the PendSV_IRQ
+	SCB->ICSR |= (1 << PENDSV_Pos);		// Set the PendSV_IRQ
 }
 
 

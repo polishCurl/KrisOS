@@ -51,20 +51,20 @@ FIFO* request_fifo(size_t size) {
 *		item - pointer to the element to enqueue in the FIFO
 *		fifo - pointer to the FIFO that should be updated
 * Returns: 		
-* 		0 - failure, 1 - success
+* 		exit status
 --------------------------------------------------------------------------------*/
 int32_t fifo_put(void *item, FIFO* fifo) {
 	
 	// Test if FIFO is full, otherwise insert the item and update head
 	if ((fifo->head + 1) % fifo->size == fifo->tail) {
-		return 0;
+		return EXIT_FAILURE;
 	}
 	else {
 		__start_critical();
 		fifo->data[fifo->head] = item;
 		fifo->head = (fifo->head + 1) % fifo->size;
 		__end_critical();
-		return 1;
+		return EXIT_SUCCESS;
 	}
 }
 

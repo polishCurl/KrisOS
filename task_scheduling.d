@@ -6,3 +6,17 @@
 .\task_scheduling.o: KrisOS.h
 .\task_scheduling.o: svc.h
 .\task_scheduling.o: common.h
+.\task_scheduling.o: system.h
+.\task_scheduling.o: common.h
+.\task_scheduling.o: uart.h
+.\task_scheduling.o: common.h
+.\task_scheduling.o: time.h
+.\task_scheduling.o: common.h
+.\task_scheduling.o: special_reg_access.h
+.\task_scheduling.o: common.h
+.\task_scheduling.o: nvic.h
+.\task_scheduling.o: common.h
+.\task_scheduling.o: tm4c123gh6pm.h
+.\task_scheduling.o: common.h
+.\task_scheduling.o: task_scheduling.h
+.\task_scheduling.o: common.h

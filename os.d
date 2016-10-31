@@ -19,3 +19,5 @@
 .\os.o: KrisOs.h
 .\os.o: svc.h
 .\os.o: common.h
+.\os.o: task_scheduling.h
+.\os.o: common.h

@@ -46,26 +46,26 @@
 	/* Put element into fifo */									\
 	int32_t NAME ## _fifo_put(TYPE item) {						\
 		if ((NAME ## Head + 1) % (SIZE + 1) == NAME ## Tail)	\
-			return 0;											\
+			return EXIT_FAILURE;											\
 		else {													\
 			__start_critical();									\
 			NAME ## Fifo[NAME ## Head] = item;					\
 			NAME ## Head = (NAME ## Head + 1) % (SIZE + 1);		\
 			__end_critical();									\
-			return 1;											\
+			return EXIT_SUCCESS;											\
 		}														\
 	}															\
 																\
 	/* Get element from fifo */									\
 	int32_t NAME ## _fifo_get(TYPE* item) {						\
 	if (NAME ## Tail == NAME ## Head )							\
-		return 0;												\
+		return EXIT_FAILURE;												\
 	else {														\
 		__start_critical();										\
 		*item = NAME ## Fifo[NAME ## Tail];						\
 		NAME ## Tail = (NAME ## Tail + 1) % (SIZE + 1);				\
 		__end_critical();										\
-		return 1;												\
+		return EXIT_SUCCESS;												\
 	}															\
 }										
 	
@@ -101,7 +101,7 @@ FIFO* request_fifo(size_t size);
 *		item - pointer to the element to enqueue in the FIFO
 *		fifo - pointer to the FIFO that should be updated
 * Returns: 		
-* 		0 - failure, 1 - success
+* 		exit status
 --------------------------------------------------------------------------------*/
 int32_t fifo_put(void *item, FIFO* fifo);
 

@@ -28,19 +28,23 @@
 extern uint32_t OS_CLOCK_FREQ; 
 
 // Quantum (time slice) length in number of clock cycles
-#define TIME_SLICE (OS_CLOCK_FREQ / 100)
+#define TIME_SLICE (OS_CLOCK_FREQ / 10)
 
 
 
 /*-------------------------------------------------------------------------------
-* Task Control Block setup
+* Task scheduler setup
 *------------------------------------------------------------------------------*/
 // Maximum number of tasks that can be run concurrently
-#define MAX_TASKS 3
+#define MAX_TASKS 5
 
-// Size of stack allocated to each of the tasts (TASK_STACK_SIZE * 8bytes)
-#define TASK_STACK_SIZE 50
+// Minimum and maximum task priority
+#define MIN_TASK_PRIO 7
+#define MAX_TASK_PRIO 0
 
+/* Type of scheduler used:
+	1. Round-robin - preemptive, circular sheduler */
+#define TASK_SCHEDULER 1
 
 
 /*-------------------------------------------------------------------------------
@@ -52,7 +56,7 @@ extern uint32_t OS_CLOCK_FREQ;
 #define HEAP_MANAGER 2
 
 // Heap size (in bytes)
-#define HEAP_SIZE 5000		
+#define HEAP_SIZE 20000		
 
 
 
@@ -91,5 +95,27 @@ extern uint32_t OS_CLOCK_FREQ;
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void __svc(SVC_OS_START) KrisOS_init(void);
+void __svc(SVC_OS_INIT) KrisOS_init(void);
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_create_task
+* Purpose:    	Create a user-defined task and add it to the scheduler
+* Arguments:	
+*		start_address - starting address of the task to add
+*		task_id - unique task identifier
+*		task_prio - the higher the number the lower the priority
+*		stack_size - stack size (in bytes) required by the task
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_ADD_USER_TASK) KrisOS_create_task(void* start_address, int32_t task_id, 
+													 int32_t task_prio, size_t stack_size);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_start
+* Purpose:    	Start the operating system
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void __svc(SVC_OS_START) KrisOS_start(void);

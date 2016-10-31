@@ -212,13 +212,13 @@ __Vectors		DCD     __initial_sp              ; Top of Stack
 ; Reset Handler
 ;-------------------------------------------------------------------------------
 Reset_Handler   PROC
+				IMPORT	__set_control
+				IMPORT  main
 				EXPORT  Reset_Handler 
 				LDR 	R0, =__initial_handler_sp 	; Load the proces stack pointer
 				MSR 	PSP, R0
-				IMPORT	__set_control
 				MOV 	R0, #0x3
 				BL 		__set_control 				; Use double stacking
-				IMPORT  main
                 LDR     R0, =main				  	; Run the main method
                 BX      R0
                 ENDP
@@ -258,12 +258,18 @@ UsageFault_Handler\
 ; Reset Handler
 ;-------------------------------------------------------------------------------					
 SVC_Handler     PROC
+				IMPORT 	svc_exc_return
+				IMPORT 	SVC_Handler_C
                 TST 	LR, #4
 				ITE		EQ					; determine which stack was used before 
 				MRSEQ	R0, MSP				; the SVC call
 				MRSNE	R0, PSP
-				IMPORT 	SVC_Handler_C
-				B 		SVC_Handler_C
+				LDR 	R1, =svc_exc_return	; save the EXC_RETURN
+				STR 	LR, [R1] 
+				BL 		SVC_Handler_C
+				LDR 	R1, =svc_exc_return	; restore the EXC_RETURN
+				LDR		LR, [R1]
+				BX 		LR
                 ENDP
 					
 					
@@ -276,11 +282,38 @@ DebugMon_Handler\
 ;-------------------------------------------------------------------------------
 ; PendSV Interrupt Handler
 ;-------------------------------------------------------------------------------	
-PendSV_Handler\
-                PROC
-                EXPORT  PendSV_Handler            [WEAK]
-                B       .
+PendSV_Handler	PROC
+				IMPORT 	runPtr
+                EXPORT  PendSV_Handler
+					
+				; Save current context
+				MRS 	R0, PSP				; get current PSP
+				TST 	LR, #0x10			; check if floating point context should 
+                IT 		EQ					; be saved
+				VSTMDBEQ R0!, {S16-S31} 	; save floating point registers
+				MOV 	R2, LR
+				MRS 	R3, CONTROL
+				STMDB 	R0!, {R2-R11} 		; save LR, CONTROL and R4 to R11 registers
+				LDR 	R1, =runPtr			; save the PSP into current task's metadata
+				LDR 	R2, [R1]
+				STR 	R0, [R2] 		
+
+				; Load next context
+				LDR 	R0, [R2, #4] 		; load the next task to run
+				STR		R0, [R1]			; update the runPtr
+				LDR		R0, [R0]
+				LDMIA 	R0!, {R2-R11} 		; load LR, CONTROL and R4 to R11 
+				MOV		LR, R2
+				MSR 	CONTROL, R3
+				ISB
+				TST 	LR, #0x10
+				IT		EQ 					; Test bit 4. If zero, need to unstack 
+				VLDMIAEQ R0!, {S16-S31} 	; floating point registers
+				MSR 	PSP, R0 			; set PSP to next task
+				BX 		LR					; return
                 ENDP
+					
+					
 SysTick_Handler\
                 PROC
                 EXPORT  SysTick_Handler           [WEAK]

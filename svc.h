@@ -14,9 +14,11 @@
 /*-------------------------------------------------------------------------------
 * SVC numbers
 --------------------------------------------------------------------------------*/
-#define SVC_OS_START 0			// start the operating system
+#define SVC_OS_INIT 0			// start the operating system
 #define SVC_UART_SEND 1 		// send a character over uart
 #define SVC_UART_GET 2 			// receive a character from uart
+#define SVC_ADD_USER_TASK 3 	// add a user-defined task to the scheduler
+#define SVC_OS_START 4 			// start the operating system
 
 
 /*-------------------------------------------------------------------------------
