@@ -36,7 +36,7 @@ extern uint32_t OS_CLOCK_FREQ;
 * Task scheduler setup
 *------------------------------------------------------------------------------*/
 // Maximum number of tasks that can be run concurrently
-#define MAX_TASKS 5
+#define MAX_TASKS 10
 
 // Minimum and maximum task priority
 #define MIN_TASK_PRIO 7
@@ -64,7 +64,7 @@ extern uint32_t OS_CLOCK_FREQ;
 * Serial Monitor setup (UART0 used)
 *------------------------------------------------------------------------------*/
 // UART0 baud rate
-#define SERIAL_MONITOR_BAUD_RATE 9600	
+#define SERIAL_MONITOR_BAUD_RATE 115200	
 
 /* UART0 word length
 	0 - 5bits
@@ -99,6 +99,15 @@ void __svc(SVC_OS_INIT) KrisOS_init(void);
 
 
 /*-------------------------------------------------------------------------------
+* Function:    	KrisOS_start
+* Purpose:    	Start the operating system
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void __svc(SVC_OS_START) KrisOS_start(void);
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	KrisOS_create_task
 * Purpose:    	Create a user-defined task and add it to the scheduler
 * Arguments:	
@@ -113,9 +122,34 @@ uint32_t __svc(SVC_ADD_USER_TASK) KrisOS_create_task(void* start_address, int32_
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_start
-* Purpose:    	Start the operating system
-* Arguments:	-
-* Returns: 		-
+* Function:    	KrisOS_suspend_task
+* Purpose:    	Suspend the given task
+* Arguments:	
+*		toSuspendID - ID of the task to suspend
+* Returns: 		
+*		exit status
 --------------------------------------------------------------------------------*/
-void __svc(SVC_OS_START) KrisOS_start(void);
+uint32_t __svc(SVC_SUSPEND_USER_TASK) KrisOS_suspend_task(uint32_t toSuspendID);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_resume_task
+* Purpose:    	Resume the execution of given task
+* Arguments:	
+*		toResumeID - ID of the task to resume
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_RESUME_USER_TASK) KrisOS_resume_task(uint32_t toResumeID);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_delete_task
+* Purpose:    	Pernamently remove given task so it is no longer possible to schedule
+* Arguments:	
+*		toDeleteID - ID of the task to delete
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_DELETE_USER_TASK) KrisOS_delete_task(uint32_t toDeleteID);
+

@@ -18,5 +18,6 @@
 .\task_scheduling.o: common.h
 .\task_scheduling.o: tm4c123gh6pm.h
 .\task_scheduling.o: common.h
+.\task_scheduling.o: os.h
 .\task_scheduling.o: task_scheduling.h
 .\task_scheduling.o: common.h

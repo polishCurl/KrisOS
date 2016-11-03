@@ -6,23 +6,23 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (heap.h)(0x5803DF1F)
 I (special_reg_access.h)(0x58067B5B)
-I (KrisOS.h)(0x5817189E)
-I (svc.h)(0x5814D9A0)
-F (.\svc.c)(0x5814D9E4)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\svc.o --omf_browse .\svc.crf --depend .\svc.d)
+I (KrisOS.h)(0x581A6A59)
+I (svc.h)(0x5817B1AA)
+F (.\svc.c)(0x581A57C5)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\svc.o --omf_browse .\svc.crf --depend .\svc.d)
 I (common.h)(0x5814BA4A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
-I (svc.h)(0x5814D9A0)
-I (os.h)(0x580A2755)
-I (task_scheduling.h)(0x581714BA)
+I (svc.h)(0x5817B1AA)
+I (os.h)(0x581A53FB)
+I (task_scheduling.h)(0x581B0BD4)
 I (system.h)(0x580CAF7B)
 I (uart.h)(0x580386D5)
 I (time.h)(0x580CEC17)
 I (special_reg_access.h)(0x58067B5B)
 I (nvic.h)(0x580CEDD5)
 I (tm4c123gh6pm.h)(0x580CEA7C)
-F (.\os.c)(0x5814F68D)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\os.o --omf_browse .\os.crf --depend .\os.d)
+F (.\os.c)(0x581B0981)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\os.o --omf_browse .\os.crf --depend .\os.d)
 I (system.h)(0x580CAF7B)
 I (common.h)(0x5814BA4A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
@@ -34,9 +34,10 @@ I (special_reg_access.h)(0x58067B5B)
 I (nvic.h)(0x580CEDD5)
 I (tm4c123gh6pm.h)(0x580CEA7C)
 I (heap.h)(0x5803DF1F)
-I (KrisOs.h)(0x5817189E)
-I (svc.h)(0x5814D9A0)
-I (task_scheduling.h)(0x581714BA)
+I (KrisOs.h)(0x581A6A59)
+I (svc.h)(0x5817B1AA)
+I (task_scheduling.h)(0x581B0BD4)
+I (os.h)(0x581A53FB)
 F (.\fifo.c)(0x58139D19)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\fifo.o --omf_browse .\fifo.crf --depend .\fifo.d)
 I (common.h)(0x5814BA4A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
@@ -49,28 +50,29 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\rt_misc.h)(0x56FEA544)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
-I (svc.h)(0x5814D9A0)
+I (svc.h)(0x5817B1AA)
 I (common.h)(0x5814BA4A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (special_reg_access.h)(0x58067B5B)
 I (uart.h)(0x580386D5)
-F (.\task_scheduling.c)(0x58171D59)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\task_scheduling.o --omf_browse .\task_scheduling.crf --depend .\task_scheduling.d)
+F (.\task_scheduling.c)(0x581B0E06)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\task_scheduling.o --omf_browse .\task_scheduling.crf --depend .\task_scheduling.d)
 I (common.h)(0x5814BA4A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
-I (KrisOS.h)(0x5817189E)
-I (svc.h)(0x5814D9A0)
+I (KrisOS.h)(0x581A6A59)
+I (svc.h)(0x5817B1AA)
 I (system.h)(0x580CAF7B)
 I (uart.h)(0x580386D5)
 I (time.h)(0x580CEC17)
 I (special_reg_access.h)(0x58067B5B)
 I (nvic.h)(0x580CEDD5)
 I (tm4c123gh6pm.h)(0x580CEA7C)
-I (task_scheduling.h)(0x581714BA)
-F (.\main.c)(0x58172457)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\main.o --omf_browse .\main.crf --depend .\main.d)
-I (KrisOS.h)(0x5817189E)
-I (svc.h)(0x5814D9A0)
+I (os.h)(0x581A53FB)
+I (task_scheduling.h)(0x581B0BD4)
+F (.\main.c)(0x581B0C3C)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\main.o --omf_browse .\main.crf --depend .\main.d)
+I (KrisOS.h)(0x581A6A59)
+I (svc.h)(0x5817B1AA)
 I (common.h)(0x5814BA4A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
@@ -97,4 +99,4 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (tm4c123gh6pm.h)(0x580CEA7C)
-F (.\startup.s)(0x5814FE73)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\startup.lst --xref -o .\startup.o --depend .\startup.d)
+F (.\startup.s)(0x58173ABE)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\startup.lst --xref -o .\startup.o --depend .\startup.d)

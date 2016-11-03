@@ -161,17 +161,29 @@
           <WinNumber>1</WinNumber>
           <ItemText>TICKS</ItemText>
         </Ww>
+      </WatchWindow1>
+      <WatchWindow2>
+        <Ww>
+          <count>0</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>blockedQueue</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>i</ItemText>
+        </Ww>
         <Ww>
           <count>2</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>readyQueue</ItemText>
+          <WinNumber>2</WinNumber>
+          <ItemText>\\KrisRTOS\task_scheduling.c\readyQueue</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>runPtr</ItemText>
+          <WinNumber>2</WinNumber>
+          <ItemText>\\KrisRTOS\task_scheduling.c\runPtr</ItemText>
         </Ww>
-      </WatchWindow1>
+      </WatchWindow2>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
@@ -264,7 +276,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\fifo.c</PathWithFileName>

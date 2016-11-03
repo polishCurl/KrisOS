@@ -287,6 +287,7 @@ PendSV_Handler	PROC
                 EXPORT  PendSV_Handler
 					
 				; Save current context
+				CPSID	I 					; disable Interrupts
 				MRS 	R0, PSP				; get current PSP
 				TST 	LR, #0x10			; check if floating point context should 
                 IT 		EQ					; be saved
@@ -297,11 +298,15 @@ PendSV_Handler	PROC
 				LDR 	R1, =runPtr			; save the PSP into current task's metadata
 				LDR 	R2, [R1]
 				STR 	R0, [R2] 		
+				MOV 	R0, #1 				; set the status of the task to READY
+				STR 	R0, [R2, #8]
 
 				; Load next context
 				LDR 	R0, [R2, #4] 		; load the next task to run
 				STR		R0, [R1]			; update the runPtr
-				LDR		R0, [R0]
+				MOV 	R1, #0 				; set the task's status to RUNNING
+				STR 	R1, [R0, #8]
+				LDR		R0, [R0]	
 				LDMIA 	R0!, {R2-R11} 		; load LR, CONTROL and R4 to R11 
 				MOV		LR, R2
 				MSR 	CONTROL, R3
@@ -310,6 +315,7 @@ PendSV_Handler	PROC
 				IT		EQ 					; Test bit 4. If zero, need to unstack 
 				VLDMIAEQ R0!, {S16-S31} 	; floating point registers
 				MSR 	PSP, R0 			; set PSP to next task
+				CPSIE	I					; re-enable Interrupts 
 				BX 		LR					; return
                 ENDP
 					

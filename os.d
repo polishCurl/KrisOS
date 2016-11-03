@@ -21,3 +21,4 @@
 .\os.o: common.h
 .\os.o: task_scheduling.h
 .\os.o: common.h
+.\os.o: os.h

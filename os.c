@@ -12,6 +12,7 @@
 #include "heap.h"
 #include "KrisOs.h"
 #include "task_scheduling.h"
+#include "os.h"
 
 
 
@@ -42,13 +43,25 @@ void os_init(void) {
 	tcb_init();
 	
 	// Set the IRQ priority of SysTick (highest possible) and PendSV (lowest possible) IRQs
-	nvic_set_priority(PendSV_IRQn, 0xFF);
+	// as well as SVC cals
+	nvic_set_priority(PendSV_IRQn, 0x7);
 	nvic_set_priority(SysTick_IRQn, 0x0);
+	nvic_set_priority(SVCall_IRQn, 0x6);
 
 	// Re-enable interrupts	
 	__enable_irqs();	
 }
 
+
+/*-------------------------------------------------------------------------------
+* Function:		os_sleep
+* Purpose:    	Put the operating system into power-saving mode
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void os_sleep(void) {
+	__wfi();
+}
 
 
 /*-------------------------------------------------------------------------------
@@ -58,8 +71,13 @@ void os_init(void) {
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void SysTick_Handler(void) {
-	TICKS++;							// Increment the clock ticks counter
-	SCB->ICSR |= (1 << PENDSV_Pos);		// Set the PendSV_IRQ
+	
+	// Increment the clock ticks counter
+	TICKS++;				
+
+	// Check if context switch should be performed. This happens only if the next
+	// task to run and the current one are different
+	test_context_switch();
 }
 
 

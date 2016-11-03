@@ -29,9 +29,12 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_OS_INIT: os_init(); break;
 		case SVC_UART_SEND: uart_send_char(svcArgs[0]); break;
 		case SVC_UART_GET: svcArgs[0] = uart_get_char(); break;
+		case SVC_OS_START: os_start(); break;
 		case SVC_ADD_USER_TASK: svcArgs[0] = create_task((void*) svcArgs[0], svcArgs[1], svcArgs[2], 
 														 svcArgs[3], 0); break;
-		case SVC_OS_START: os_start();
+		case SVC_SUSPEND_USER_TASK: svcArgs[0] = suspend_task(svcArgs[0]); break;
+		case SVC_RESUME_USER_TASK: svcArgs[0] = resume_task(svcArgs[0]); break;
+		case SVC_DELETE_USER_TASK: svcArgs[0] = delete_task(svcArgs[0]); break;
 		default: break;
 	}
 	return;

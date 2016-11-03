@@ -50,6 +50,48 @@ void tcb_init(void);
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t create_task(void* startAddr, uint32_t id, uint32_t priority, 
+uint32_t create_task(void* startAddr, int32_t id, uint32_t priority, 
 					 size_t stackSize, uint32_t privileged);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	suspend_task
+* Purpose:    	Suspend the given task
+* Arguments:	
+*		toSuspendID - ID of the task to suspend
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t suspend_task(int32_t toSuspendID);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	resume_task
+* Purpose:    	Resume the execution of given task
+* Arguments:	
+*		toResumeID - ID of the task to resume
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t resume_task(int32_t toResumeID);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	delete_task
+* Purpose:    	Pernamently remove given task so it is no longer possible to schedule
+* Arguments:	
+*		toDeleteID - ID of the task to delete
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t delete_task(int32_t toDeleteID);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	test_context_switch
+* Purpose:    	Check if context switch should be performed
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void test_context_switch(void);
 
