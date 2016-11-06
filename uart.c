@@ -74,6 +74,7 @@ void uart_send_char(uint8_t character) {
 	UART0->DR = character;
 }
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	getChar
 * Purpose:    	Get character from UART

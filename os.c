@@ -9,11 +9,15 @@
 * Note: 	
 *******************************************************************************/
 #include "system.h"
-#include "heap.h"
 #include "KrisOs.h"
-#include "task_scheduling.h"
-#include "os.h"
+#include "heap.h"
+#include "scheduler.h"
 
+
+/*-------------------------------------------------------------------------------
+* Flag indicating whether the operating system is running
+--------------------------------------------------------------------------------*/
+uint32_t OS_RUNNING;
 
 
 /*-------------------------------------------------------------------------------
@@ -27,6 +31,8 @@ void os_init(void) {
 	// Switch off interrupts and enable the FPU
 	__disable_irqs();								
 	__enable_fpu();
+	
+	OS_RUNNING = 0;
 	
 	// Set up the system clock
 	system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
@@ -54,13 +60,48 @@ void os_init(void) {
 
 
 /*-------------------------------------------------------------------------------
+* Function:    	os_start
+* Purpose:    	Start the operating system
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void os_start(void) {
+	
+	// Helper pointer for specifying register address within the task's stack frame
+	uint32_t* taskFramePtr; 	
+	
+	// Index of the first task to run
+	runPtr = readyQueue.tasks[readyQueue.noOfTasks - 1];
+	
+	// Set the initial value of svc_exc_return, CONTROL register as well as PSP.
+	// PSP should be pointing to the position of PC in the stack frame of the first task
+	// to run.
+	__set_psp(runPtr->sp + (STACK_FRAME_R0 << WORD_ACCESS_SHIFT)); 
+	taskFramePtr = (uint32_t*) (runPtr->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));
+	__set_control(*taskFramePtr);
+	taskFramePtr = (uint32_t*) runPtr->sp;
+	svc_exc_return = *taskFramePtr;
+
+	// Set the status of the first task to run as RUNNING
+	runPtr->status = RUNNING;
+	
+	// Schedule the tasks
+	run_scheduler();
+	
+	// Set up periodic interrupts
+	systick_config(TIME_SLICE);	
+	OS_RUNNING = 1;
+}
+
+
+/*-------------------------------------------------------------------------------
 * Function:		os_sleep
 * Purpose:    	Put the operating system into power-saving mode
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void os_sleep(void) {
-	__wfi();
+	while(1) __wfi();
 }
 
 
@@ -75,9 +116,13 @@ void SysTick_Handler(void) {
 	// Increment the clock ticks counter
 	TICKS++;				
 
-	// Check if context switch should be performed. This happens only if the next
-	// task to run and the current one are different
-	test_context_switch();
+	// Update task counters
+	update_counters();
+	
+	// Set the PendSV_IRQ only if the next task to run is different from 
+	// the current one
+	if (runPtr != runPtr->next)
+		SCB->ICSR |= (1 << PENDSV_Pos);	
 }
 
 

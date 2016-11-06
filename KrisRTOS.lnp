@@ -4,7 +4,7 @@
 ".\os.o"
 ".\fifo.o"
 ".\retarget.o"
-".\task_scheduling.o"
+".\priority_scheduler.o"
 ".\main.o"
 ".\uart.o"
 ".\time.o"

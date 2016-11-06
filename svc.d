@@ -6,7 +6,13 @@
 .\svc.o: svc.h
 .\svc.o: common.h
 .\svc.o: os.h
-.\svc.o: task_scheduling.h
+.\svc.o: common.h
+.\svc.o: scheduler.h
+.\svc.o: common.h
+.\svc.o: task.h
+.\svc.o: common.h
+.\svc.o: KrisOS.h
+.\svc.o: svc.h
 .\svc.o: common.h
 .\svc.o: system.h
 .\svc.o: common.h

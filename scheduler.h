@@ -1,14 +1,15 @@
 /*******************************************************************************
-* File:     	task_scheduling.h
-* Brief:    	Header file for task_scheduling.c
+* File:     	scheduler.h
+* Brief:    	Header file for scheduler.c
 * Author: 		Krzysztof Koch
 * Version:		V1.00
-* Date created:	28/10/2016
-* Last mod: 	28/10/2016
+* Date created:	04/11/2016
+* Last mod: 	04/11/2016
 *
 * Note: 		
 *******************************************************************************/
 #include "common.h"
+#include "task.h"
 
 
 /*-------------------------------------------------------------------------------
@@ -28,6 +29,15 @@ void os_start(void);
 --------------------------------------------------------------------------------*/
 void run_scheduler(void);
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	update_counters
+* Purpose:    	Update counter counters of all the tasks in BLOCKED queue
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void update_counters(void);
+	
 
 /*-------------------------------------------------------------------------------
 * Function:    	tcb_init
@@ -59,10 +69,12 @@ uint32_t create_task(void* startAddr, int32_t id, uint32_t priority,
 * Purpose:    	Suspend the given task
 * Arguments:	
 *		toSuspendID - ID of the task to suspend
+* 		ticks - number of OS clock ticks task should be suspended for (if 0, task 
+*				is suspended until explicitly resumed
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t suspend_task(int32_t toSuspendID);
+uint32_t suspend_task(int32_t toSuspendID, int32_t ticks);
 
 
 /*-------------------------------------------------------------------------------
@@ -88,10 +100,44 @@ uint32_t delete_task(int32_t toDeleteID);
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	test_context_switch
-* Purpose:    	Check if context switch should be performed
+* Function:    	task_complete_handler
+* Purpose:    	Routine performed once a task's execution is complete
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void test_context_switch(void);
+void task_complete_handler(void);
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	add_to_queue
+* Purpose:    	Add the given task to the specified queue
+* Arguments:	
+*		toAdd - task to add
+*		queue - queue to update
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void add_to_queue(Task* toAdd, TCB* queue);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	remove_from_queue
+* Purpose:    	Remove the task from the specified queue
+* Arguments:	
+*		index - index of the task to remove in the queue
+*		queue - queue from which the task should be removed
+* Returns: 		
+*		pointer to the task that is removed
+--------------------------------------------------------------------------------*/
+Task* remove_from_queue(uint32_t index, TCB* queue);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	find_task
+* Purpose:    	Try to find the task with specified ID in the given queue
+* Arguments:	
+*		id - ID of the task to find
+*		queue - queue in which the task should be searched for
+* Returns: 		
+*		index of the task in the queue, or -1 (if not found)
+--------------------------------------------------------------------------------*/
+int32_t find_task(int32_t id, TCB* queue);

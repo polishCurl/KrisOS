@@ -21,6 +21,12 @@
 
 
 /*-------------------------------------------------------------------------------
+* Macro for expressing that an item wasn't found
+*------------------------------------------------------------------------------*/
+#define NOT_FOUND -1
+
+
+/*-------------------------------------------------------------------------------
 * Macro:    	TEST_NULL_POINTER
 * Purpose:    	Test if given pointer is a NULL one. if so, exit
 * Arguments:	

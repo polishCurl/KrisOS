@@ -42,9 +42,8 @@ extern uint32_t OS_CLOCK_FREQ;
 #define MIN_TASK_PRIO 7
 #define MAX_TASK_PRIO 0
 
-/* Type of scheduler used:
-	1. Round-robin - preemptive, circular sheduler */
-#define TASK_SCHEDULER 1
+// Difference of time slice size between two tasks with priorities differing by 1
+#define TIME_SLICE_MUL_PRIORITY 1
 
 
 /*-------------------------------------------------------------------------------
@@ -64,7 +63,7 @@ extern uint32_t OS_CLOCK_FREQ;
 * Serial Monitor setup (UART0 used)
 *------------------------------------------------------------------------------*/
 // UART0 baud rate
-#define SERIAL_MONITOR_BAUD_RATE 115200	
+#define SERIAL_MONITOR_BAUD_RATE 9600
 
 /* UART0 word length
 	0 - 5bits
@@ -153,3 +152,14 @@ uint32_t __svc(SVC_RESUME_USER_TASK) KrisOS_resume_task(uint32_t toResumeID);
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_DELETE_USER_TASK) KrisOS_delete_task(uint32_t toDeleteID);
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_delay_task
+* Purpose:    	Delay the execution of given task
+* Arguments:	
+*		toDelayID - ID of the task to resume
+*		ticks - Number of OS ticks to delay by
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_DELAY_USER_TASK) KrisOS_delay_task(uint32_t toDelayID, int32_t ticks);

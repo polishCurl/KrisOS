@@ -22,6 +22,7 @@
 #define SVC_SUSPEND_USER_TASK 5 	// suspend a user-defined task
 #define SVC_RESUME_USER_TASK 6		// resume execution of a user defined task
 #define SVC_DELETE_USER_TASK 7		// delete a use-defined task
+#define SVC_DELAY_USER_TASK 8		// delay a use-defined task
 
 
 /*-------------------------------------------------------------------------------

@@ -253,7 +253,8 @@ UsageFault_Handler\
                 EXPORT  UsageFault_Handler        [WEAK]
                 B       .
                 ENDP
-					
+
+
 ;-------------------------------------------------------------------------------
 ; Reset Handler
 ;-------------------------------------------------------------------------------					
@@ -278,9 +279,42 @@ DebugMon_Handler\
                 EXPORT  DebugMon_Handler          [WEAK]
                 B       .
                 ENDP
-					
+
+
 ;-------------------------------------------------------------------------------
 ; PendSV Interrupt Handler
+;
+;	Registers saved by the software (PendSV_Handler):
+;	+------------+
+;	| EXC_RETURN | <- Saved SP (orig. SP - 72 bytes), sp in Task Control Block 
+;	|  Control   |    initially points here
+;	|     R8     | 
+;	|     R9     |
+;	|     R10    |
+;	|     R11    |
+;	|     R4     |
+;	|     R5     |
+;	|     R6     |
+;	|     R7     |
+;	+------------+
+;
+;	Exception frame saved by the NVIC hardware onto stack:
+;	+------+
+;	|  R0  | <- SP after entering interrupt (orig. SP - 32 bytes)
+;	|  R1  |
+;	|  R2  |
+;	|  R3  |
+;	|  R12 |
+;	|  LR  |
+;	|  PC  |
+;	| xPSR |
+;	|      | <- SP before interrupt (orig. SP), bottom of task's stack
+;	+------+
+;
+; At context switch in addition to the registers that are save by NVIC implictly, 
+; the remaining ones are also saved together with the value of CONTROL register and 
+; SVC_EXC_RETURN. This is for determining whether the task saved has priviliged 
+; access level (system task) or not and if the task was using FPU or not. 
 ;-------------------------------------------------------------------------------	
 PendSV_Handler	PROC
 				IMPORT 	runPtr
@@ -294,7 +328,7 @@ PendSV_Handler	PROC
 				VSTMDBEQ R0!, {S16-S31} 	; save floating point registers
 				MOV 	R2, LR
 				MRS 	R3, CONTROL
-				STMDB 	R0!, {R2-R11} 		; save LR, CONTROL and R4 to R11 registers
+				STMDB 	R0!, {R2-R11} 		; push the LR, CONTROL and R4 to R11 registers
 				LDR 	R1, =runPtr			; save the PSP into current task's metadata
 				LDR 	R2, [R1]
 				STR 	R0, [R2] 		
@@ -306,8 +340,8 @@ PendSV_Handler	PROC
 				STR		R0, [R1]			; update the runPtr
 				MOV 	R1, #0 				; set the task's status to RUNNING
 				STR 	R1, [R0, #8]
-				LDR		R0, [R0]	
-				LDMIA 	R0!, {R2-R11} 		; load LR, CONTROL and R4 to R11 
+				LDR		R0, [R0]			; load the SP of the next task
+				LDMIA 	R0!, {R2-R11} 		; pop LR, CONTROL and R4 to R11 
 				MOV		LR, R2
 				MSR 	CONTROL, R3
 				ISB

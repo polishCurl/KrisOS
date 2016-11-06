@@ -11,7 +11,7 @@
 #include "common.h"
 #include "svc.h"
 #include "os.h"
-#include "task_scheduling.h"
+#include "scheduler.h"
 #include "system.h"
 
 
@@ -32,9 +32,10 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_OS_START: os_start(); break;
 		case SVC_ADD_USER_TASK: svcArgs[0] = create_task((void*) svcArgs[0], svcArgs[1], svcArgs[2], 
 														 svcArgs[3], 0); break;
-		case SVC_SUSPEND_USER_TASK: svcArgs[0] = suspend_task(svcArgs[0]); break;
+		case SVC_SUSPEND_USER_TASK: svcArgs[0] = suspend_task(svcArgs[0], NULL); break;
 		case SVC_RESUME_USER_TASK: svcArgs[0] = resume_task(svcArgs[0]); break;
 		case SVC_DELETE_USER_TASK: svcArgs[0] = delete_task(svcArgs[0]); break;
+		case SVC_DELAY_USER_TASK: svcArgs[0] = suspend_task(svcArgs[0], svcArgs[1]); break;
 		default: break;
 	}
 	return;
