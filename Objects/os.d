@@ -1,0 +1,28 @@
+.\objects\os.o: src\Kernel\os.c
+.\objects\os.o: .\src\HAL & Drivers\system.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\os.o: .\src\HAL & Drivers\uart.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: .\src\HAL & Drivers\time.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: .\src\HAL & Drivers\special_reg_access.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: .\src\HAL & Drivers\nvic.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\KrisOs.h
+.\objects\os.o: src\Kernel\svc.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\heap.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\scheduler.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\task.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\KrisOS.h
+.\objects\os.o: src\Kernel\svc.h
+.\objects\os.o: .\src\Common\common.h

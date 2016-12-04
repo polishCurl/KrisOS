@@ -1,0 +1,16 @@
+--cpu Cortex-M4.fp
+".\objects\heap.o"
+".\objects\os.o"
+".\objects\svc.o"
+".\objects\scheduler.o"
+".\objects\main.o"
+".\objects\fifo.o"
+".\objects\nvic.o"
+".\objects\retarget.o"
+".\objects\time.o"
+".\objects\uart.o"
+".\objects\special_reg_access.o"
+".\objects\startup.o"
+--ro-base 0x00000000 --entry 0x00000000 --rw-base 0x20000000 --entry Reset_Handler --first __Vectors --strict --summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\KrisOS.map" -o .\Objects\KrisOS.axf

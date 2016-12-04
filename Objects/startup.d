@@ -1,1 +1,1 @@
-.\objects\startup.o: startup.s
+.\objects\startup.o: src\HAL & Drivers\startup.s

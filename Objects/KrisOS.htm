@@ -1,9 +1,9 @@
 <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
 <html><head>
-<title>Static Call Graph - [.\KrisOS.axf]</title></head>
+<title>Static Call Graph - [.\Objects\KrisOS.axf]</title></head>
 <body><HR>
-<H1>Static Call Graph for image .\KrisOS.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Sun Dec 04 11:55:34 2016
+<H1>Static Call Graph for image .\Objects\KrisOS.axf</H1><HR>
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Sun Dec 04 15:20:59 2016
 <BR><P>
 <H3>Maximum Stack Usage =        200 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -144,8 +144,8 @@ Function Pointers
  <LI><a href="#[7a]">_printf_input_char</a> from _printf_char_common.o(.text) referenced from _printf_char_common.o(.text)
  <LI><a href="#[79]">fputc</a> from retarget.o(i.fputc) referenced from _printf_char_file.o(.text)
  <LI><a href="#[78]">main</a> from main.o(i.main) referenced from startup.o(.text)
- <LI><a href="#[80]">os_sleep</a> from os.o(i.os_sleep) referenced from round_robin.o(i.tcb_init)
- <LI><a href="#[7b]">task_complete_handler</a> from round_robin.o(i.task_complete_handler) referenced from round_robin.o(i.create_task)
+ <LI><a href="#[80]">os_sleep</a> from os.o(i.os_sleep) referenced from scheduler.o(i.tcb_init)
+ <LI><a href="#[7b]">task_complete_handler</a> from scheduler.o(i.task_complete_handler) referenced from scheduler.o(i.create_task)
  <LI><a href="#[7c]">testTask1</a> from main.o(i.testTask1) referenced from main.o(i.main)
  <LI><a href="#[7d]">testTask2</a> from main.o(i.testTask2) referenced from main.o(i.main)
  <LI><a href="#[7e]">testTask3</a> from main.o(i.testTask3) referenced from main.o(i.main)
@@ -323,8 +323,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[ad]"></a>__get_control</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_complete_handler
-<LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
+<BR><BR>[Called By]<UL><LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
+<LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_complete_handler
 </UL>
 
 <P><STRONG><a name="[a6]"></a>__start_critical</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, special_reg_access.o(.text))
@@ -735,11 +735,11 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_file
 </UL>
-<BR>[Called By]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;testTask4
+<BR>[Called By]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sys_exit
+<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;testTask4
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;testTask3
 <LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;testTask2
 <LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;testTask1
-<LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sys_exit
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;create_task
 </UL>
 
@@ -807,10 +807,10 @@ Global Symbols
 <LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uart_get_char
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;suspend_task
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;resume_task
-<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
-<LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 <LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delete_task
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;create_task
+<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
+<LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler
 </UL>
@@ -830,7 +830,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_exit_exit
 </UL>
 
-<P><STRONG><a name="[ba]"></a>add_to_queue</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, round_robin.o(i.add_to_queue))
+<P><STRONG><a name="[ba]"></a>add_to_queue</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, scheduler.o(i.add_to_queue))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;suspend_task
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;resume_task
 </UL>
@@ -839,7 +839,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 </UL>
 
-<P><STRONG><a name="[a1]"></a>create_task</STRONG> (Thumb, 366 bytes, Stack size 32 bytes, round_robin.o(i.create_task))
+<P><STRONG><a name="[a1]"></a>create_task</STRONG> (Thumb, 366 bytes, Stack size 32 bytes, scheduler.o(i.create_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 160 + Unknown Stack Size
 <LI>Call Chain = create_task &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -850,11 +850,11 @@ Global Symbols
 <LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 </UL>
-<BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcb_init
-<LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+<BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcb_init
 </UL>
 
-<P><STRONG><a name="[a4]"></a>delete_task</STRONG> (Thumb, 132 bytes, Stack size 16 bytes, round_robin.o(i.delete_task))
+<P><STRONG><a name="[a4]"></a>delete_task</STRONG> (Thumb, 132 bytes, Stack size 16 bytes, scheduler.o(i.delete_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = delete_task &rArr; free
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;remove_from_queue
@@ -872,7 +872,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_file
 </UL>
 
-<P><STRONG><a name="[aa]"></a>find_task</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, round_robin.o(i.find_task))
+<P><STRONG><a name="[aa]"></a>find_task</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, scheduler.o(i.find_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = find_task
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;suspend_task
@@ -898,7 +898,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delete_task
 </UL>
 
-<P><STRONG><a name="[b4]"></a>heap_init</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, heap.o(i.heap_init))
+<P><STRONG><a name="[b4]"></a>heap_init</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, heap.o(i.heap_init))
 <BR><BR>[Called By]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
@@ -912,7 +912,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup.o(.text)
 </UL>
-<P><STRONG><a name="[a7]"></a>malloc</STRONG> (Thumb, 118 bytes, Stack size 24 bytes, heap.o(i.malloc))
+<P><STRONG><a name="[a7]"></a>malloc</STRONG> (Thumb, 124 bytes, Stack size 24 bytes, heap.o(i.malloc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = malloc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
@@ -946,7 +946,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[80]"></a>os_sleep</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, os.o(i.os_sleep))
-<BR>[Address Reference Count : 1]<UL><LI> round_robin.o(i.tcb_init)
+<BR>[Address Reference Count : 1]<UL><LI> scheduler.o(i.tcb_init)
 </UL>
 <P><STRONG><a name="[a0]"></a>os_start</STRONG> (Thumb, 92 bytes, Stack size 16 bytes, os.o(i.os_start))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = os_start
@@ -959,13 +959,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[ab]"></a>remove_from_queue</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, round_robin.o(i.remove_from_queue))
+<P><STRONG><a name="[ab]"></a>remove_from_queue</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, scheduler.o(i.remove_from_queue))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;suspend_task
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;resume_task
 <LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delete_task
 </UL>
 
-<P><STRONG><a name="[a3]"></a>resume_task</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, round_robin.o(i.resume_task))
+<P><STRONG><a name="[a3]"></a>resume_task</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, scheduler.o(i.resume_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = resume_task &rArr; find_task
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;remove_from_queue
@@ -975,19 +975,19 @@ Global Symbols
 <LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
 <LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;update_counters
-<LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+<BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;update_counters
 </UL>
 
-<P><STRONG><a name="[a8]"></a>run_scheduler</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, round_robin.o(i.run_scheduler))
+<P><STRONG><a name="[a8]"></a>run_scheduler</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, scheduler.o(i.run_scheduler))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;suspend_task
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;resume_task
-<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 <LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delete_task
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;create_task
+<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 </UL>
 
-<P><STRONG><a name="[a2]"></a>suspend_task</STRONG> (Thumb, 100 bytes, Stack size 24 bytes, round_robin.o(i.suspend_task))
+<P><STRONG><a name="[a2]"></a>suspend_task</STRONG> (Thumb, 100 bytes, Stack size 24 bytes, scheduler.o(i.suspend_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = suspend_task &rArr; find_task
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;remove_from_queue
@@ -1008,15 +1008,15 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 </UL>
 
-<P><STRONG><a name="[7b]"></a>task_complete_handler</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, round_robin.o(i.task_complete_handler))
+<P><STRONG><a name="[7b]"></a>task_complete_handler</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, scheduler.o(i.task_complete_handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = task_complete_handler &rArr; delete_task &rArr; free
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__get_control
 <LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delete_task
 </UL>
-<BR>[Address Reference Count : 1]<UL><LI> round_robin.o(i.create_task)
+<BR>[Address Reference Count : 1]<UL><LI> scheduler.o(i.create_task)
 </UL>
-<P><STRONG><a name="[b5]"></a>tcb_init</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, round_robin.o(i.tcb_init))
+<P><STRONG><a name="[b5]"></a>tcb_init</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, scheduler.o(i.tcb_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 168 + Unknown Stack Size
 <LI>Call Chain = tcb_init &rArr; create_task &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -1068,7 +1068,7 @@ Global Symbols
 <LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[a5]"></a>update_counters</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, round_robin.o(i.update_counters))
+<P><STRONG><a name="[a5]"></a>update_counters</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, scheduler.o(i.update_counters))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = update_counters &rArr; resume_task &rArr; find_task
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;resume_task
