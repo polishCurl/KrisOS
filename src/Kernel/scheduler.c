@@ -1,139 +1,193 @@
 /*******************************************************************************
-* File:     	round_robin.c
-* Brief:    	Round-Robin preemptive circular scheduler
+* File:     	scheduler.c
+* Brief:    	Task scheduler implementation
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	21/10/2016
-* Last mod: 	21/10/2016
+* Last mod: 	09/12/2016
 *
 * Note: 		
-* All task except the idle one (created at system initialisation) are chained 
-* into a circle using the *next pointer. The scheduler only runs if the state
-* of tasks in the readyQueue is changed. 
-*
-* There are two queues maintained by the scheduler. 
-*	1. readyQueue   - contains all the tasks that are ready to be run. Among these
-*	   				  one task has RUNNING state and is currently executed
-*	2. blockedQueue - contains all the tasks that can't be picked to run for any
-*					  reason (for example, the task is suspended or is delayed
-*					  by some time
-*
-* runPtr - points to the metadata of the task that is currently running
-*
 *******************************************************************************/
 #include "common.h"
-#include "KrisOS.h"
-#include "system.h"
 #include "scheduler.h"
+#include "system.h"
 #include "os.h"
 
 
+
 /*-------------------------------------------------------------------------------
-* Store the value of exception return for SVC calls
+* Scheduler declaration
+--------------------------------------------------------------------------------*/
+Scheduler scheduler;
+
+
+
+/*-------------------------------------------------------------------------------
+* Value of exception return for SVC calls
 --------------------------------------------------------------------------------*/
 uint32_t svc_exc_return;
 
-/*-------------------------------------------------------------------------------
-* Pointer to the task that is currently running
---------------------------------------------------------------------------------*/
-Task* runPtr; 					
-
-/*-------------------------------------------------------------------------------
-* Ready and Blocked task queues
---------------------------------------------------------------------------------*/
-TCB readyQueue; 			
-TCB blockedQueue;
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	tcb_init
-* Purpose:    	Initialise the Task Control Block
+* Function:		idle_task
+* Purpose:    	Idle task. Lowest priority task for power saving.
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void tcb_init(void) {
+void idle_task(void) {
+	while(1) __wfi();
+}
+
+// Idle task parameters
+Task idleTask;
+const size_t idleTaskStackSize = 100;
+uint8_t idleTaskStack[idleTaskStackSize];
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	scheduler_init
+* Purpose:    	Initialise the scheduler
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void scheduler_init(void) {
 	
-	// Reset the task counters in both ready and blocked queues
-	readyQueue.noOfTasks = 0;	
-	blockedQueue.noOfTasks = 0; 
+	// Initialise each of the queues in the scheduler to NULL, which means they are
+	// empty
+	int32_t queueIndex;
+	for (queueIndex = 0; queueIndex <= TASK_PRIO_LVL_NO; queueIndex++)
+		scheduler.readyTasks[queueIndex] = NULL;
+	scheduler.delayedTasks = NULL;
 	
-	// Create the first system task. It will be run only if there are no other tasks
-	// to run 
-	create_task(os_sleep, -1, 7, 100, 1);
-	readyQueue.tasks[0]->next = readyQueue.tasks[0];
+	// No tasks to wake, so set the time of the soonest task to be made ready to 
+	// 'infinity'
+	scheduler.nextToWake = UINT64_MAX;
+	
+	// Start assigning task IDs from 1. (Actually +-1 as system tasks have negative 
+	// IDs and user tasks have positive IDs
+	scheduler.lastIDUsed = 1;
+	
+	// Create the background idle task (priviliged, lowest possible task priority)
+	task_declare(&idleTask, idle_task, &idleTaskStack[idleTaskStackSize], TASK_PRIO_LVL_NO, 1);
+
+	// Initialise the run ptr to the idle task
+	scheduler.runPtr = scheduler.readyTasks[TASK_PRIO_LVL_NO];
 }
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	run_scheduler
-* Purpose:    	Run the scheduler
+* Function:    	scheduler_run
+* Purpose:    	Run the scheduler to determine the next task to run.
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void run_scheduler(void) {
-
-	uint32_t i;
+void scheduler_run(void) {
 	
-	// If there is only one task READY left (the idle one) then make the last task
-	// that used to be running point to the idle one. Otherwise Chain all the ready 
-	// tasks (except the idle one) into a circle
-	if (readyQueue.noOfTasks == 1) 
-		readyQueue.tasks[1]->next = readyQueue.tasks[0];
-	else {
-		for (i = 1; i < readyQueue.noOfTasks; i++)
-			readyQueue.tasks[i]->next = i < readyQueue.noOfTasks - 1 ?
-										readyQueue.tasks[i + 1] : readyQueue.tasks[1];
+	// Go through the ready queues in decreasing priority orded, and as soon as there
+	// is at least one task in a given queue, then it must be the one of the highest 
+	// priority ready tasks at given time. 
+	int32_t queueIndex;
+	__start_critical();
+	for (queueIndex = 0; queueIndex <= TASK_PRIO_LVL_NO; queueIndex++) {
+		if (scheduler.readyTasks[queueIndex] != NULL) {
+			
+			// If currently running task has the same priority as the top priority one, then
+			// run the next task the current task points to (round-robin).
+			if (scheduler.runPtr->waitCounter == 0 && scheduler.runPtr->priority == queueIndex)
+				scheduler.topPrioTask = scheduler.runPtr->next;
+			// Otherwise, pick the first task in specified queue to be next to run
+			else
+				scheduler.topPrioTask = scheduler.readyTasks[queueIndex];
+			
+			__end_critical();
+			return;		
+		}
 	}
 }
 
 
+
 /*-------------------------------------------------------------------------------
-* Function:    	update_counters
-* Purpose:    	Update counter counters of all the tasks in BLOCKED queue
+* Function:    	scheduler_wake_tasks
+* Purpose:    	Check which tasks are ready, and wake them up
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void update_counters(void) {
+void scheduler_wake_tasks(void) {
 	
-	// Go through all the tasks in BLOCKED queue. If it is delayed one (not 
-	// permanently suspended) then decrement its sleep time counter. If the task's
-	// counter reaches 0 the task should be resumed
-	uint32_t i;
-	for (i = 0; i < blockedQueue.noOfTasks; i++)
-		if (blockedQueue.tasks[i]->counter > 0)
-			blockedQueue.tasks[i]->counter--;
-		else if (blockedQueue.tasks[i]->counter == 0)
-			resume_task(blockedQueue.tasks[i]->id);
+	// Iterator through the list of delayed tasks and a pointer to the task to wake
+	Task* iterator;
+	Task* toWake;
+	
+	// The new earliest task to wake, after the now-ready tasksa are woken up
+	uint64_t nextEarliestTask = UINT64_MAX;
+	
+	// Iterate through the list of delayed tasks
+	__start_critical();
+	iterator = scheduler.delayedTasks;
+	while (iterator->next != scheduler.delayedTasks) {
+		
+		// If the current task is to be woken up, remove it from the delayed queue and 
+		// add it back to the ready queue of tasks with priority specified. Iterator
+		// needs to be updated before the task is put in the ready queue, as in the meantime
+		// the ->next pointer is modified. Also reset the waitCounter
+		if (iterator->waitCounter == scheduler.nextToWake) {
+			toWake = remove_from_queue(&scheduler.delayedTasks, iterator->id);
+			iterator = iterator->next;
+			toWake->waitCounter = 0;
+			add_to_queue(&scheduler.readyTasks[iterator->priority], toWake);
+		}
+		// Otherwise, if a task is not yet ready, but will be ready sooner than nextEarliestTask,
+		// then update the nextEarliestTask
+		else {
+			nextEarliestTask = iterator->waitCounter < nextEarliestTask ? iterator->waitCounter : nextEarliestTask;
+			iterator = iterator->next;
+		}
+	}
+	
+	// When the loop terminates there is still one more task to check
+	if (iterator->waitCounter == scheduler.nextToWake) {
+		toWake = remove_from_queue(&scheduler.delayedTasks, iterator->id);
+		toWake->waitCounter = 0;
+		add_to_queue(&scheduler.readyTasks[iterator->priority], toWake);
+	}
+	else if (iterator->waitCounter < nextEarliestTask) {
+		nextEarliestTask = iterator->waitCounter;
+	}
+			
+	// Update the cache for the soonest task to be ready and run the scheduler
+	scheduler.nextToWake = nextEarliestTask;
+	__end_critical();
+	scheduler_run();
 }
 
 
+
 /*-------------------------------------------------------------------------------
-* Function:    	create_task
-* Purpose:    	Create a user-defined task and add it to the scheduler
+* Function:    	task_create
+* Purpose:    	Create a task and add it to the ready queue
 * Arguments:	
-*		start_address - starting address of the task to add
-*		id - unique task identifier
+*		startAddr - starting address of the task to add
+*		stackSize - stack size (in bytes) required by the task
 *		priority - the higher the number the lower the priority
-*		stack_size - stack size (in bytes) required by the task
-*		privileged - 1 if privileged access level (system task), 0 otherwise
+*		isPrivileged - 1 if privileged access level (system task), 0 otherwise
 * Returns: 		
-*		exit status
+*		unique nonzero ID number of the task created, 0 otherwise
 --------------------------------------------------------------------------------*/
-uint32_t create_task(void* startAddr, int32_t id, uint32_t priority, 
-					 size_t stackSize, uint32_t privileged) {
+int32_t task_create(void* startAddr, size_t stackSize, uint32_t priority,
+					uint32_t isPrivileged) {
 	
-	// Helper pointer for specifying initial register values in the stack frame
-	uint32_t* taskFramePtr; 					 
+	// Pointer to the task to create
+	Task* toCreate;				 
 						 
-	// Test if the arguments are valid or the imit of tasks is reached
-	if (priority > MIN_TASK_PRIO || readyQueue.noOfTasks >= MAX_TASKS)
-		return EXIT_FAILURE;
-	TEST_NULL_POINTER(startAddr)
+	// Test if priority is matching one of the allowed priority levels
+	if (priority > TASK_PRIO_LVL_NO)
+		return 0;
 	
-	// User tasks have positive IDs while system ones (privileged) have
-	// negative
-	if ((privileged && id >= 0) || (!privileged && id < 0))
-		return EXIT_FAILURE;
+	// Check if the starting address of the task code is valid
+	TEST_NULL_POINTER(startAddr)
 	
 	// Adjust the stack size to comply with the stack alignment
 	if (stackSize % STACK_ALIGNMENT)
@@ -141,281 +195,235 @@ uint32_t create_task(void* startAddr, int32_t id, uint32_t priority,
 	
 	__start_critical();
 	
-	// Allocate memory for the task metadata and its stack memory
-	readyQueue.tasks[readyQueue.noOfTasks] = (Task*) malloc(sizeof(Task));
+	// Allocate memory for the task control block. 
+	toCreate = malloc(sizeof(Task));
+	TEST_NULL_POINTER(toCreate)
+	
+	// Allocate memory for the task's private stack
+	toCreate->stackBase = malloc(stackSize);
+	TEST_NULL_POINTER(toCreate->stackBase)
+	
+	// Assign the task's priority and id and sleep time. System tasks have negative
+	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
+	// initial stack pointer value
+	toCreate->priority = priority;
+	toCreate->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
+	scheduler.lastIDUsed++;
+	toCreate->waitCounter = 0;
+	toCreate->sp = ((uint32_t) toCreate->stackBase) + stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
+	
+	// Initialise the stack frame and add the newly created task to the ready 
+	// queue with specified priority
+	task_frame_init(toCreate, startAddr, isPrivileged);
+	add_to_queue(&scheduler.readyTasks[priority], toCreate);
+	__end_critical();
+	
+	// Return the ID of the task created
+	return toCreate->id;
+}
+					 
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_declare
+* Purpose:    	Register a statically allocated task at the scheduler
+* Arguments:	
+* 		tcb - pointer to the previously allocated task control block of the task to create
+*		startAddr - starting address of the task to add
+*		stackBase - pointer to the private stack area to be used by the task to create 
+*		priority - task priority
+*		isPrivileged - 1 if privileged access level (system task), 0 otherwise
+* Returns: 		
+*		unique nonzero ID number of the task created, 0 otherwise
+--------------------------------------------------------------------------------*/
+int32_t task_declare(void* tcb,  void* startAddr, void* stackBase, int32_t priority, 
+					 uint32_t isPrivileged) {
+	
+	// Task to create
+	Task* toDeclare;					 
+						 
+	// Test if input arguments are valid
+	if (priority > TASK_PRIO_LVL_NO)
+		return 0;
+	TEST_NULL_POINTER(tcb)
+	TEST_NULL_POINTER(stackBase)
 	TEST_NULL_POINTER(startAddr)
-	readyQueue.tasks[readyQueue.noOfTasks]->stackBase = malloc(stackSize);
-	TEST_NULL_POINTER(readyQueue.tasks[readyQueue.noOfTasks]->stackBase)
 	
-	// Assign the task's priority, status, id and sleep time
-	readyQueue.tasks[readyQueue.noOfTasks]->priority = priority;
-	readyQueue.tasks[readyQueue.noOfTasks]->id = id;
-	readyQueue.tasks[readyQueue.noOfTasks]->status = READY;
-	readyQueue.tasks[readyQueue.noOfTasks]->counter = 0;
+	// Attach the stack to the task control block of the task to declare
+	toDeclare = tcb;
+	toDeclare->stackBase = stackBase;
 	
-	// Set the initial stack pointer
-	readyQueue.tasks[readyQueue.noOfTasks]->sp = ((uint32_t) readyQueue.tasks[readyQueue.noOfTasks]->stackBase) + 
-												 stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
+	// Assign the task's priority and id and sleep time. System tasks have negative
+	// IDs while user ones have positive IDs. Reset the waitCounter
+	toDeclare->priority = priority;
+	toDeclare->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
+	scheduler.lastIDUsed++;
+	toDeclare->waitCounter = 0;
+	toDeclare->sp = ((uint32_t) toDeclare->stackBase) - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
 	
+	// Initialise the stack frame and add the newly created task to the ready 
+	// queue with specified priority
+	task_frame_init(tcb, startAddr, isPrivileged);
+	__start_critical();
+	add_to_queue(&scheduler.readyTasks[priority], toDeclare);
+	__end_critical();
+	
+	// Return the ID of the task created
+	return toDeclare->id;
+}
+					 
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_delay
+* Purpose:    	Delay given task by specified amount of OS 'ticks'
+* Arguments: 	
+*		delay - number of OS 'ticks' do suspend execution of the task by
+* Returns: 
+* 		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_delay(uint64_t delay) {
+	
+	// Remove the calling task (currently running) from the queue of delayed tasks
+	Task* toDelay = remove_from_queue(&scheduler.readyTasks[scheduler.runPtr->priority],
+									scheduler.runPtr->id);  
+	// Test if task found
+	if (toDelay == NULL)
+		return EXIT_FAILURE;
+	
+	// Update the wait counter and check if its less than current value of the soonest task.
+	// If so, this is now the earliest task to be made ready
+	toDelay->waitCounter = OS_TICKS + delay;
+	if (toDelay->waitCounter < scheduler.nextToWake)
+		scheduler.nextToWake = toDelay->waitCounter;
+	
+	// Add the task to timer blocked queue, reschedule tasks and force the immediate 
+	// context switch
+	add_to_queue(&scheduler.delayedTasks, toDelay);
+	scheduler_run();
+	SCB->ICSR |= (1 << PENDSV_Pos);	
+	return EXIT_SUCCESS;
+}
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_frame_init
+* Purpose:    	Initialise the stak frame of the task selected
+* Arguments: 	
+*		toInit - pointer to the task to have its stack frame initialised
+*		startAddr - starting address of the task to have its stack frame initialised
+*		privileged - 1 if privileged access level (system task), 0 otherwise
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void task_frame_init(Task* toInit, void* startAddr, uint32_t privileged) {
+	
+	// Helper pointer for specifying initial register values in the stack frame
+	uint32_t* taskFramePtr; 
+
 	// Set the initial PC to the starting address of task's code
-	taskFramePtr = (uint32_t*) (readyQueue.tasks[readyQueue.noOfTasks]->sp + 
-				   (STACK_FRAME_PC << WORD_ACCESS_SHIFT));	
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_PC << WORD_ACCESS_SHIFT));	
 	*taskFramePtr = (uint32_t) startAddr;
 	
-	// Set the initial value of xPSR, only the Thumb bit is set
-	taskFramePtr = (uint32_t*) (readyQueue.tasks[readyQueue.noOfTasks]->sp + 
-				   (STACK_FRAME_xPSR << WORD_ACCESS_SHIFT));				   
+	// Set the initial value of xPSR
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_xPSR << WORD_ACCESS_SHIFT));				   
 	*taskFramePtr = INIT_xPSR;
-	
-	// Set the initial value of LR, make LR point to a function for 
-	// self-termination and removal of the task that has no more processing
-	// to do
-	taskFramePtr = (uint32_t*) (readyQueue.tasks[readyQueue.noOfTasks]->sp + 
-				   (STACK_FRAME_LR << WORD_ACCESS_SHIFT));				   
-	*taskFramePtr = (uint32_t) task_complete_handler;
 	
 	// Set the initial value of EXC_RETURN, which specifies the use of stack pointer PSP or MSP and floating 
 	// point unit before and after return from this exception
-	taskFramePtr = (uint32_t*) (readyQueue.tasks[readyQueue.noOfTasks]->sp +
-				   (STACK_FRAME_EXC_RETURN << WORD_ACCESS_SHIFT));				   
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_EXC_RETURN << WORD_ACCESS_SHIFT));				   
 	*taskFramePtr = EXC_RETURN_2;
 	
 	// Set the initial value of control register according to privilege level. This will
 	// specify access level of the task
-	taskFramePtr = (uint32_t*) (readyQueue.tasks[readyQueue.noOfTasks]->sp +
-		           (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));				   
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));				   
 	*taskFramePtr = privileged ? 0x2 : 0x3;
-	
-	// Update the task count and run the scheduler if the OS is already running
-	readyQueue.noOfTasks++;
-	if (OS_RUNNING)
-		run_scheduler();
-	
-	__end_critical();
-	return EXIT_SUCCESS;
-}
-					 
-
-/*-------------------------------------------------------------------------------
-* Function:    	suspend_task
-* Purpose:    	Suspend the given task
-* Arguments:	
-*		toSuspendID - ID of the task to suspend
-* 		ticks - number of OS clock ticks task should be suspended for (if 0, task 
-*				is suspended until explicitly resumed
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t suspend_task(int32_t toSuspendID, int32_t ticks) {
-	
-	// Used to iterate through the Task Control Block
-	int32_t i;
-	Task* taskToSuspend;
-	
-	__start_critical();
-	
-	// Search for the task in the READY queue
-	i = find_task(toSuspendID, &readyQueue); 
-	
-	// if the task was found
-	if (i != NOT_FOUND) {
-		
-		// Update both queues
-		taskToSuspend = remove_from_queue(i, &readyQueue);
-		add_to_queue(taskToSuspend, &blockedQueue);
-		
-		// If there is time to wait specified, then set the counter to it.
-		// Otherwise set the sleep time to -1 to indicate that the function can only
-		// be resumed by calling task_resume
-		taskToSuspend->counter = ticks == NULL ? -1 : ticks;
-		
-		// Reschedule tasks if the OS is already running
-		if (OS_RUNNING)
-			run_scheduler();
-		
-		// if the task to suspend is the currently running one, context switch must be
-		// immediate, so the PendSV_IRQ is set
-		if (taskToSuspend->status == RUNNING)
-			SCB->ICSR |= (1 << PENDSV_Pos);	
-		
-		__end_critical();
-		return EXIT_SUCCESS;
-	}
-	__end_critical();
-	return EXIT_FAILURE;
 }
 
-
-/*-------------------------------------------------------------------------------
-* Function:    	resume_task
-* Purpose:    	Resume the execution of given task
-* Arguments:	
-*		toResumeID - ID of the task to resume
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t resume_task(int32_t toResumeID) {
-	
-	// Used to iterate through the Task Control Block
-	int32_t i;
-	__start_critical();
-	
-	// Search for the task in the BLOCKED queue
-	i = find_task(toResumeID, &blockedQueue);
-
-	// if the task was found
-	if (i != NOT_FOUND) {
-	
-		// Update both queues
-		add_to_queue(remove_from_queue(i, &blockedQueue), &readyQueue);
-		
-		// Reschedule tasks if the OS is already running
-		if (OS_RUNNING)
-			run_scheduler();
-
-		__end_critical();
-		return EXIT_SUCCESS;
-	}
-	__end_critical();
-	return EXIT_FAILURE;
-}
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	delete_task
-* Purpose:    	Pernamently remove given task so it is no longer possible to schedule
-* Arguments:	
-*		toDeleteID - ID of the task to delete
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t delete_task(int32_t toDeleteID) {
-
-	// Used to iterate through the Task Control Block
-	int32_t i;
-	Task* taskToDelete;
-	
-	i = 0;
-	__start_critical();
-	
-	// Search for the task in the READY queue
-	i = find_task(toDeleteID, &readyQueue); 
-	
-	// If the task is found
-	if (i != NOT_FOUND) {
-		// Remove the task from READY queue and free the memory it is occupying (both
-		// stack and Task Control Block entry)
-		taskToDelete = remove_from_queue(i, &readyQueue);
-		free(taskToDelete->stackBase);
-		
-		// Reschedule tasks if the OS is already running
-		if (OS_RUNNING)
-			run_scheduler();
-		
-		// if the task to suspend is the currently running one, context switch must be
-		// immediate, so the PendSV_IRQ is set
-		if (taskToDelete->status == RUNNING)
-			SCB->ICSR |= (1 << PENDSV_Pos);	
-		
-		free(taskToDelete);
-		__end_critical();
-		return EXIT_SUCCESS;
-	}
-
-	// Search for the task in the BLOCKED queue
-	i = find_task(toDeleteID, &blockedQueue); 
-
-	// If the task is found 
-	if (i != NOT_FOUND)  {
-		// Remove the task from BLOCKED queue and free the memory it is occupying (both
-		// stack and Task Control Block entry)
-		taskToDelete = remove_from_queue(i, &blockedQueue);
-		free(taskToDelete->stackBase);
-		free(taskToDelete);
-		__end_critical();
-		return EXIT_SUCCESS;
-	}
-	
-	__end_critical();
-	return EXIT_FAILURE;
-}
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	add_to_queue
-* Purpose:    	Add the given task to the specified queue
-* Arguments:	
-*		toAdd - task to add
-*		queue - queue to update
-* Returns: 		-
+* Purpose:    	Add given task to the queue specified
+* Arguments: 	
+*		queue - queue to add the task to
+* 		toAdd - task to add
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void add_to_queue(Task* toAdd, TCB* queue) {
-	queue->tasks[queue->noOfTasks] = toAdd;
-	queue->noOfTasks++;
+uint32_t add_to_queue(Task** queue, Task* toAdd) {
+	
+	// Helper iterator through the queue
+	Task* iterator;
+	__start_critical();
+	
+	// If the queue is empty then make the head point to the task to add
+	if (*queue == NULL) {
+		toAdd->next = toAdd;
+		*queue = toAdd;
+		__end_critical();
+		return EXIT_SUCCESS;
+	}
+	
+	// Otherwise insert the task at the end of the queue and close the list by
+	// making it a loop of tasks
+	iterator = *queue;
+	while(iterator->next != *queue)
+		iterator = iterator->next;
+	
+	toAdd->next = *queue;
+	iterator->next = toAdd;
+	__end_critical();
+	return EXIT_SUCCESS;
 }
+
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	remove_from_queue
-* Purpose:    	Remove the task from the specified queue
-* Arguments:	
-*		index - index of the task to remove in the queue
-*		queue - queue from which the task should be removed
-* Returns: 		
-*		pointer to the task that is removed
+* Purpose:    	Remove the task with given ID from the queue specified.
+* Arguments: 	
+*		queue - address of the pointer to the queue to remove the task from
+* 		id - ID of the task to remove
+* Returns: 
+* 		pointer to the task removed
 --------------------------------------------------------------------------------*/
-Task* remove_from_queue(uint32_t index, TCB* queue) {
+Task* remove_from_queue(Task** queue, int32_t id) {
 	
-	// Plase the last task in the queue in the position of the task to be removed
-	// and update the task counter
-	Task* toRemove = queue->tasks[index];
-	queue->tasks[index] = queue->tasks[queue->noOfTasks - 1];
-	queue->noOfTasks--;
+	// Pointer to the task to remove and a helper iterator through the queue
+	Task* toRemove;
+	Task* iterator;
+	
+	// If the queue is empty then the task is certainly not in it
+	if (*queue == NULL)
+		return NULL;
+	
+	// Initialise the pointers
+	__start_critical();
+	toRemove = NULL;
+	iterator = *queue;
+	
+	// Iterate through the queue until we reached the end of it, or a loop (ready tasks,
+	// round-robin) or we have found the task to remove
+	while (iterator->next != *queue && iterator->next->id != id)
+		iterator = iterator->next;
+	
+	// If the task is found...
+	if (iterator->next->id == id) {
+		toRemove = iterator->next;
+		
+		// This is the only task in the queue so set the pointer to the queue to NULL
+		if (iterator->next == iterator) {
+			*queue = NULL;
+		} 
+		// Otherwise, link the task before and the task after. If the readyQueue pointer
+		// is affected then update it too.
+		else {
+			if (iterator->next == *queue)
+				*queue = iterator->next->next;
+			iterator->next = iterator->next->next;
+		}
+	}
+	__end_critical();
 	return toRemove;
 }
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	find_task
-* Purpose:    	Try to find the task with specified ID in the given queue
-* Arguments:	
-*		id - ID of the task to find
-*		queue - queue in which the task should be searched for
-* Returns: 		
-*		index of the task in the queue, or -1 (if not ffound)
---------------------------------------------------------------------------------*/
-int32_t find_task(int32_t id, TCB* queue) {
-	
-	int32_t i;
-	Task* toFind;
-	
-	// Iterate through the queue until the task with specified ID is found or
-	// we've searched through all the tasks with no success 
-	i = 0;
-	toFind = queue->tasks[i];
-	while(toFind->id != id && i < queue->noOfTasks)
-		toFind = queue->tasks[++i];
-	
-	// If the task couln't be found then return -1
-	if (i == queue->noOfTasks)
-		return -1;
-	
-	return i;
-}
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	task_complete_handler
-* Purpose:    	Routine performed once a task's execution is complete
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void task_complete_handler(void) {
-	// Pernamently remove the currently executed task
-	if (__get_control() & 0x1)
-		KrisOS_delete_task(runPtr->id);
-	else
-		delete_task(runPtr->id);
-}
-

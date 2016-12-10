@@ -4,7 +4,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	10/10/2016
-* Last mod: 	10/10/2016
+* Last mod: 	05/12/2016
 *
 * Note: 		
 *******************************************************************************/
@@ -15,7 +15,7 @@
 /*-------------------------------------------------------------------------------
 * Bit masks and shift values	
 --------------------------------------------------------------------------------*/
-#define PRIO_Pos 5 				// Position of prioprity bit
+#define PRIO_Pos 5 				// LSB position of priority within given byte
 #define PRIO_Msk 0x7 			// Interrupt priority mask
 #define ACT_Msk 0x1 			// Interrupt-active mask
 #define EXCEPTION_No 15 		// Number of Cortex-M4 processor exceptions

@@ -11,16 +11,19 @@
 #include "common.h"
 
 
+
 /*-------------------------------------------------------------------------------
 * System clock speed
 *------------------------------------------------------------------------------*/
 extern uint32_t SYSTEM_CLOCK_FREQ;
 
 
+
 /*-------------------------------------------------------------------------------
 * Clock ticks
 *------------------------------------------------------------------------------*/
-extern uint64_t TICKS;
+extern uint64_t OS_TICKS;
+
 
 
 /*-------------------------------------------------------------------------------
@@ -32,6 +35,7 @@ typedef enum {
 	INT_OSC_4MHz = 0x2, 		// 4MHz internal oscilator (can't drive the PLL)
 	INT_OSC_30kHz = 0x3, 		// 30kHz internal oscilator (can't drive the PLL)
 } OSCSRC;
+
 
 
 /*-------------------------------------------------------------------------------
@@ -46,6 +50,7 @@ typedef enum {
 void system_clock_config(uint32_t oscSrc, uint32_t divider);
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	systick_config
 * Purpose:    	Set periodic interrupts every 'cycles' clock cycles using SysTick
@@ -54,3 +59,5 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider);
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void systick_config(uint32_t cycles);
+
+

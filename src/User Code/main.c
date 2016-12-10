@@ -2,27 +2,29 @@
 #include "common.h"
 
 
-#define TASK1_ID 1
-#define TASK2_ID 2
-#define TASK3_ID 3
-#define TASK4_ID 4
+int32_t task1ID, task2ID, task3ID;
 
+uint32_t seconds_elapsed;
+uint32_t s10_elapsed;
 
 void testTask1(void);
 void testTask2(void);
 void testTask3(void);
-void testTask4(void);
 
-void os_sleep(void);
+
+const size_t task2StackSize = 304;
+uint8_t task2Stack[task2StackSize];
+Task task2;
+
+
 
 int main(void) {	
 	
 	KrisOS_init();
 	
-	KrisOS_create_task(testTask1, TASK1_ID, 1, 1000);
-	KrisOS_create_task(testTask2, TASK2_ID, 2, 500);
-	KrisOS_create_task(testTask3, TASK3_ID, 3, 600);
-	KrisOS_create_task(testTask4, TASK4_ID, 4, 1000);
+	task1ID = KrisOS_create_task(testTask1, 300, 0);
+	task2ID = KrisOS_declare_task(&task2, testTask2, &task2Stack[task2StackSize], 1);
+	task3ID = KrisOS_create_task(testTask3, 300, 2);
 	KrisOS_start();
 	
 	while(1);
@@ -31,19 +33,28 @@ int main(void) {
 
 
 void testTask1(void) {
-	while(1) printf("X");
-};
+	seconds_elapsed = 0;
+	while(1) {
+		KrisOS_delay_task(1000);
+		seconds_elapsed--;
+	}
+}
 
 void testTask2(void) {
-	while(1) printf("Y");
-};
-
+	
+	while(1) {
+		printf("w");
+		KrisOS_delay_task(247);
+		
+	}		
+}
 
 void testTask3(void) {
-	while(1) printf("Z");
-	
-};
-
-void testTask4(void) {
-	while(1) printf("W");
+	seconds_elapsed = 0;
+	while(1) {
+		KrisOS_delay_task(1000);
+		seconds_elapsed++;
+	}		
 }
+
+

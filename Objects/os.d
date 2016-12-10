@@ -14,15 +14,9 @@
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\os.o: .\src\Common\common.h
-.\objects\os.o: src\Kernel\KrisOs.h
-.\objects\os.o: src\Kernel\svc.h
-.\objects\os.o: .\src\Common\common.h
 .\objects\os.o: src\Kernel\heap.h
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: src\Kernel\scheduler.h
 .\objects\os.o: .\src\Common\common.h
-.\objects\os.o: src\Kernel\task.h
-.\objects\os.o: .\src\Common\common.h
 .\objects\os.o: src\Kernel\KrisOS.h
-.\objects\os.o: src\Kernel\svc.h
 .\objects\os.o: .\src\Common\common.h

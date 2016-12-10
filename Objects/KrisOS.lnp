@@ -1,7 +1,6 @@
 --cpu Cortex-M4.fp
 ".\objects\heap.o"
 ".\objects\os.o"
-".\objects\svc.o"
 ".\objects\scheduler.o"
 ".\objects\main.o"
 ".\objects\fifo.o"

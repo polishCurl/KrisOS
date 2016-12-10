@@ -388,11 +388,6 @@
               <FilePath>.\src\Kernel\os.c</FilePath>
             </File>
             <File>
-              <FileName>svc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\Kernel\svc.c</FilePath>
-            </File>
-            <File>
               <FileName>scheduler.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Kernel\scheduler.c</FilePath>

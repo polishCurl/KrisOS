@@ -8,5 +8,4 @@
 .\objects\heap.o: .\src\HAL & Drivers\special_reg_access.h
 .\objects\heap.o: .\src\Common\common.h
 .\objects\heap.o: src\Kernel\KrisOS.h
-.\objects\heap.o: src\Kernel\svc.h
 .\objects\heap.o: .\src\Common\common.h

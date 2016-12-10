@@ -12,10 +12,12 @@
 #include "common.h"
 
 
+
 /*-------------------------------------------------------------------------------
 * Flag indicating whether the operating system is running
 --------------------------------------------------------------------------------*/
 extern uint32_t OS_RUNNING;
+
 
 
 /*-------------------------------------------------------------------------------
@@ -27,6 +29,17 @@ extern uint32_t OS_RUNNING;
 extern void os_init(void);
 
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	os_start
+* Purpose:    	Start the operating system
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void os_start(void);
+
+
+
 /*-------------------------------------------------------------------------------
 * Function:		os_sleep
 * Purpose:    	Put the operating system into power-saving mode
@@ -34,3 +47,13 @@ extern void os_init(void);
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void os_sleep(void);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:		idle_task
+* Purpose:    	Idle task. Lowest priority task for power saving.
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void idle_task(void);

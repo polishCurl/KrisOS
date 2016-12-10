@@ -10,7 +10,6 @@
 *******************************************************************************/
 #include <stdio.h>
 #include <rt_misc.h>
-#include "svc.h"
 #include "special_reg_access.h"
 #include "uart.h"
 
@@ -44,13 +43,7 @@ FILE __stdin;
 *		0 upon sucessful completion
 --------------------------------------------------------------------------------*/
 int fputc(int character, FILE *file) {
-	
-	// Read the current mode and run the method according to privilege levek
-	if (__get_control() & 0x2)
-		send_char(character);			// SVC call to write the character to UART 
-	else
-		uart_send_char(character); 		// Already in privileged mode, send character directly
-	
+	uart_send_char(character); 		
 	return 0;
 }
 
@@ -64,7 +57,7 @@ int fputc(int character, FILE *file) {
 *		character read
 --------------------------------------------------------------------------------*/
 int fgetc(FILE *f) {
-	return get_char();			// read the character from UART serial port
+	return uart_get_char();	
 }
 
 
@@ -87,7 +80,7 @@ int ferror(FILE *f) {
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void _ttywrch(int character) {
-	send_char(character);
+	uart_send_char(character);
 }
 
 

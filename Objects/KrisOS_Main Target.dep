@@ -6,59 +6,37 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (src\Kernel\heap.h)(0x58442162)
 I (.\src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
-I (src\Kernel\KrisOS.h)(0x58442130)
-I (src\Kernel\svc.h)(0x581DF8FC)
-F (.\src\Kernel\os.c)(0x584403E9)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\os.o --omf_browse .\objects\os.crf --depend .\objects\os.d)
+I (src\Kernel\KrisOS.h)(0x584C21DE)
+F (.\src\Kernel\os.c)(0x584C733B)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\os.o --omf_browse .\objects\os.crf --depend .\objects\os.d)
 I (.\src\HAL & Drivers\system.h)(0x580CAF7B)
 I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (.\src\HAL & Drivers\uart.h)(0x580386D5)
-I (.\src\HAL & Drivers\time.h)(0x5844019E)
+I (.\src\HAL & Drivers\time.h)(0x58493E89)
 I (.\src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
-I (.\src\HAL & Drivers\nvic.h)(0x580CEDD5)
+I (.\src\HAL & Drivers\nvic.h)(0x5845424D)
 I (.\src\HAL & Drivers\tm4c123gh6pm.h)(0x584402DC)
-I (src\Kernel\KrisOs.h)(0x58442130)
-I (src\Kernel\svc.h)(0x581DF8FC)
 I (src\Kernel\heap.h)(0x58442162)
-I (src\Kernel\scheduler.h)(0x581E23FE)
-I (src\Kernel\task.h)(0x581F3548)
-F (.\src\Kernel\svc.c)(0x58441F73)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\svc.o --omf_browse .\objects\svc.crf --depend .\objects\svc.d)
+I (src\Kernel\scheduler.h)(0x584C6CF4)
+I (src\Kernel\KrisOS.h)(0x584C21DE)
+F (.\src\Kernel\scheduler.c)(0x584C7413)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\scheduler.o --omf_browse .\objects\scheduler.crf --depend .\objects\scheduler.d)
 I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
-I (src\Kernel\svc.h)(0x581DF8FC)
-I (src\Kernel\os.h)(0x581DDC49)
-I (src\Kernel\scheduler.h)(0x581E23FE)
-I (src\Kernel\task.h)(0x581F3548)
-I (src\Kernel\KrisOS.h)(0x58442130)
+I (src\Kernel\scheduler.h)(0x584C6CF4)
+I (src\Kernel\KrisOS.h)(0x584C21DE)
 I (.\src\HAL & Drivers\system.h)(0x580CAF7B)
 I (.\src\HAL & Drivers\uart.h)(0x580386D5)
-I (.\src\HAL & Drivers\time.h)(0x5844019E)
+I (.\src\HAL & Drivers\time.h)(0x58493E89)
 I (.\src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
-I (.\src\HAL & Drivers\nvic.h)(0x580CEDD5)
+I (.\src\HAL & Drivers\nvic.h)(0x5845424D)
 I (.\src\HAL & Drivers\tm4c123gh6pm.h)(0x584402DC)
-F (.\src\Kernel\scheduler.c)(0x581E28A7)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\scheduler.o --omf_browse .\objects\scheduler.crf --depend .\objects\scheduler.d)
-I (.\src\Common\common.h)(0x5844005D)
-I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
-I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
-I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
-I (src\Kernel\KrisOS.h)(0x58442130)
-I (src\Kernel\svc.h)(0x581DF8FC)
-I (.\src\HAL & Drivers\system.h)(0x580CAF7B)
-I (.\src\HAL & Drivers\uart.h)(0x580386D5)
-I (.\src\HAL & Drivers\time.h)(0x5844019E)
-I (.\src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
-I (.\src\HAL & Drivers\nvic.h)(0x580CEDD5)
-I (.\src\HAL & Drivers\tm4c123gh6pm.h)(0x584402DC)
-I (src\Kernel\scheduler.h)(0x581E23FE)
-I (src\Kernel\task.h)(0x581F3548)
-I (src\Kernel\os.h)(0x581DDC49)
-F (.\src\User Code\main.c)(0x581F4223)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
-I (.\src\Kernel\KrisOS.h)(0x58442130)
-I (.\src\Kernel\svc.h)(0x581DF8FC)
+I (src\Kernel\os.h)(0x584C7289)
+F (.\src\User Code\main.c)(0x584C87CA)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (.\src\Kernel\KrisOS.h)(0x584C21DE)
 I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
@@ -70,25 +48,24 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (src\HAL & Drivers\fifo.h)(0x58139E23)
 I (src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
-F (.\src\HAL & Drivers\nvic.c)(0x580D1487)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\nvic.o --omf_browse .\objects\nvic.crf --depend .\objects\nvic.d)
-I (src\HAL & Drivers\nvic.h)(0x580CEDD5)
+F (.\src\HAL & Drivers\nvic.c)(0x58453CFF)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\nvic.o --omf_browse .\objects\nvic.crf --depend .\objects\nvic.d)
+I (src\HAL & Drivers\nvic.h)(0x5845424D)
 I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (src\HAL & Drivers\tm4c123gh6pm.h)(0x584402DC)
-F (.\src\HAL & Drivers\retarget.c)(0x580758B7)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\retarget.o --omf_browse .\objects\retarget.crf --depend .\objects\retarget.d)
+F (.\src\HAL & Drivers\retarget.c)(0x584B3A5D)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\retarget.o --omf_browse .\objects\retarget.crf --depend .\objects\retarget.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\rt_misc.h)(0x56FEA544)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
-I (.\src\Kernel\svc.h)(0x581DF8FC)
+I (src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
 I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
-I (src\HAL & Drivers\special_reg_access.h)(0x58067B5B)
 I (src\HAL & Drivers\uart.h)(0x580386D5)
-F (.\src\HAL & Drivers\time.c)(0x58148538)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\time.o --omf_browse .\objects\time.crf --depend .\objects\time.d)
-I (src\HAL & Drivers\time.h)(0x5844019E)
+F (.\src\HAL & Drivers\time.c)(0x58493E79)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code"-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\time.o --omf_browse .\objects\time.crf --depend .\objects\time.d)
+I (src\HAL & Drivers\time.h)(0x58493E89)
 I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
@@ -99,7 +76,7 @@ I (.\src\Common\common.h)(0x5844005D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x56FEA54E)
-I (src\HAL & Drivers\time.h)(0x5844019E)
+I (src\HAL & Drivers\time.h)(0x58493E89)
 I (src\HAL & Drivers\tm4c123gh6pm.h)(0x584402DC)
 F (.\src\HAL & Drivers\special_reg_access.s)(0x580CA90F)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\listings\special_reg_access.lst --xref -o .\objects\special_reg_access.o --depend .\objects\special_reg_access.d)
-F (.\src\HAL & Drivers\startup.s)(0x581CA1F3)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\listings\startup.lst --xref -o .\objects\startup.o --depend .\objects\startup.d)
+F (.\src\HAL & Drivers\startup.s)(0x58495789)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\listings\startup.lst --xref -o .\objects\startup.o --depend .\objects\startup.d)

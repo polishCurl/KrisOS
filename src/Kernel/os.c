@@ -9,7 +9,6 @@
 * Note: 	
 *******************************************************************************/
 #include "system.h"
-#include "KrisOs.h"
 #include "heap.h"
 #include "scheduler.h"
 
@@ -17,7 +16,8 @@
 /*-------------------------------------------------------------------------------
 * Flag indicating whether the operating system is running
 --------------------------------------------------------------------------------*/
-uint32_t OS_RUNNING;
+uint32_t OS_RUNNING = 0;
+
 
 
 /*-------------------------------------------------------------------------------
@@ -32,8 +32,6 @@ void os_init(void) {
 	__disable_irqs();								
 	__enable_fpu();
 	
-	OS_RUNNING = 0;
-	
 	// Set up the system clock
 	system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
 	
@@ -45,18 +43,20 @@ void os_init(void) {
 	// Initialise the heap
 	heap_init();	
 
-	// Initialse the task control block
-	tcb_init();
+	// Initialse the scheduler
+	scheduler_init();
 	
-	// Set the IRQ priority of SysTick (highest possible) and PendSV (lowest possible) IRQs
-	// as well as SVC cals
-	nvic_set_priority(PendSV_IRQn, 0x7);
-	nvic_set_priority(SysTick_IRQn, 0x0);
-	nvic_set_priority(SVCall_IRQn, 0x6);
+	// Set the IRQ priority of Interrupts for task scheduling 
+	// 1. SysTick (highest possible)
+	// 2. SVC and PendSV (lowest possible) IRQs
+	nvic_set_priority(SysTick_IRQn, 0);
+	nvic_set_priority(PendSV_IRQn, 7);
+	nvic_set_priority(SVCall_IRQn, 7);
 
 	// Re-enable interrupts	
 	__enable_irqs();	
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -69,40 +69,26 @@ void os_start(void) {
 	
 	// Helper pointer for specifying register address within the task's stack frame
 	uint32_t* taskFramePtr; 	
-	
-	// Index of the first task to run
-	runPtr = readyQueue.tasks[readyQueue.noOfTasks - 1];
+
+	// Find the first task to run. Scheduler_run determines the next task to run so
+	// scheduler.runPtr is assigned mannually
+	scheduler_run();
+	scheduler.runPtr = scheduler.topPrioTask;
 	
 	// Set the initial value of svc_exc_return, CONTROL register as well as PSP.
 	// PSP should be pointing to the position of PC in the stack frame of the first task
 	// to run.
-	__set_psp(runPtr->sp + (STACK_FRAME_R0 << WORD_ACCESS_SHIFT)); 
-	taskFramePtr = (uint32_t*) (runPtr->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));
+	__set_psp(scheduler.runPtr->sp + (STACK_FRAME_R0 << WORD_ACCESS_SHIFT)); 
+	taskFramePtr = (uint32_t*) (scheduler.runPtr->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));
 	__set_control(*taskFramePtr);
-	taskFramePtr = (uint32_t*) runPtr->sp;
+	taskFramePtr = (uint32_t*) scheduler.runPtr->sp;
 	svc_exc_return = *taskFramePtr;
-
-	// Set the status of the first task to run as RUNNING
-	runPtr->status = RUNNING;
-	
-	// Schedule the tasks
-	run_scheduler();
 	
 	// Set up periodic interrupts
-	systick_config(TIME_SLICE);	
+	systick_config(SYSTEM_CLOCK_FREQ / OS_CLOCK_FREQ);	
 	OS_RUNNING = 1;
 }
 
-
-/*-------------------------------------------------------------------------------
-* Function:		os_sleep
-* Purpose:    	Put the operating system into power-saving mode
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void os_sleep(void) {
-	while(1) __wfi();
-}
 
 
 /*-------------------------------------------------------------------------------
@@ -113,16 +99,57 @@ void os_sleep(void) {
 --------------------------------------------------------------------------------*/
 void SysTick_Handler(void) {
 	
-	// Increment the clock ticks counter
-	TICKS++;				
-
-	// Update task counters
-	update_counters();
+	// Increment the OS ticks counter
+	OS_TICKS++;
 	
-	// Set the PendSV_IRQ only if the next task to run is different from 
-	// the current one
-	if (runPtr != runPtr->next)
+	// If a task(s) has just become ready then wake it up
+	if (OS_TICKS == scheduler.nextToWake)
+		scheduler_wake_tasks();
+	
+	// Otherwise, if the currently running task has used up its time slice then
+	// check if it should be preempted
+	else if (OS_TICKS % TIME_SLICE == 0) 
+		scheduler_run();
+	
+	// Perform context-switch only if the next task to run is different from the 
+	// current one, according to the scheduling policy
+	if (scheduler.topPrioTask != scheduler.runPtr)
 		SCB->ICSR |= (1 << PENDSV_Pos);	
+}
+
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	SVC_Handler_C
+* Purpose:    	User interface to the operating system. Part of the SVC_Handler 
+* 				written in C
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void SVC_Handler_C(uint32_t* svcArgs) {
+	
+	// Extract the SVC number and use it to run the right subroutine using the 
+	// arguments saved on the stack
+	uint8_t svcNumber = ((uint8_t*) svcArgs[6])[-2];
+	switch(svcNumber) {
+		case SVC_OS_INIT: os_init(); break;
+		case SVC_OS_START: os_start(); break;
+		case SVC_CREATE_TASK: svcArgs[0] = task_create((void*) svcArgs[0], svcArgs[1],  
+														 svcArgs[2], 0); break;
+		case SVC_DECLARE_TASK: svcArgs[0] = task_declare((void*) svcArgs[0], (void*) svcArgs[1],  
+														 (void*) svcArgs[2], svcArgs[3], 0); 
+		                                                 break;
+		case SVC_DELAY_TASK: svcArgs[0] = task_delay(svcArgs[0]);  break;
+		/*
+		case SVC_SUSPEND_TASK: svcArgs[0] = svcArgs[0] > 0 ? task_suspend(svcArgs[0]) : 
+											EXIT_FAILURE;  break;
+		case SVC_RESUME_TASK: svcArgs[0] = svcArgs[0] > 0 ? task_resume(svcArgs[0]) : 
+											EXIT_FAILURE;  break;
+		*/
+		default: break;
+	}
+	return;
 }
 
 

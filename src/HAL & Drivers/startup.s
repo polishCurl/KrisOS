@@ -317,7 +317,7 @@ DebugMon_Handler\
 ; access level (system task) or not and if the task was using FPU or not. 
 ;-------------------------------------------------------------------------------	
 PendSV_Handler	PROC
-				IMPORT 	runPtr
+				IMPORT 	scheduler
                 EXPORT  PendSV_Handler
 					
 				; Save current context
@@ -329,18 +329,14 @@ PendSV_Handler	PROC
 				MOV 	R2, LR
 				MRS 	R3, CONTROL
 				STMDB 	R0!, {R2-R11} 		; push the LR, CONTROL and R4 to R11 registers
-				LDR 	R1, =runPtr			; save the PSP into current task's metadata
-				LDR 	R2, [R1]
-				STR 	R0, [R2] 		
-				MOV 	R0, #1 				; set the status of the task to READY
-				STR 	R0, [R2, #8]
+				LDR 	R2, =scheduler		; save the PSP into current task's metadata
+				LDR 	R1, [R2]
+				STR 	R0, [R1] 		
 
 				; Load next context
-				LDR 	R0, [R2, #4] 		; load the next task to run
-				STR		R0, [R1]			; update the runPtr
-				MOV 	R1, #0 				; set the task's status to RUNNING
-				STR 	R1, [R0, #8]
-				LDR		R0, [R0]			; load the SP of the next task
+				LDR 	R3, [R2, #4] 		; load the next task to run
+				LDR		R0, [R3]			; load the SP of the next task
+				STR		R3, [R2]			; update the runPtr
 				LDMIA 	R0!, {R2-R11} 		; pop LR, CONTROL and R4 to R11 
 				MOV		LR, R2
 				MSR 	CONTROL, R3

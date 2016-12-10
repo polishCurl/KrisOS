@@ -53,7 +53,7 @@ uint32_t OS_CLOCK_FREQ;
 /*-------------------------------------------------------------------------------
 * Clock ticks
 *------------------------------------------------------------------------------*/
-uint64_t TICKS;
+uint64_t OS_TICKS;
 
 
 /*-------------------------------------------------------------------------------
@@ -92,8 +92,6 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider) {
 		SYSTEM_CLOCK_FREQ = 4000000;
 	else 
 		SYSTEM_CLOCK_FREQ = 30000;
-	
-	OS_CLOCK_FREQ = SYSTEM_CLOCK_FREQ;
 }
 
 
@@ -112,5 +110,7 @@ void systick_config(uint32_t cycles) {
 	
 	// Main clock as source, SysTick enabled with IRQs
 	SYSTICK->CTRL |= (1 << CLK_SRC_Pos) | (1 << INTEN_Pos) | (1 << ENABLE_Pos);			
-	TICKS = 0;
+	OS_TICKS = 0;
 }
+
+
