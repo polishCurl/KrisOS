@@ -70,10 +70,10 @@ void os_start(void) {
 	// Helper pointer for specifying register address within the task's stack frame
 	uint32_t* taskFramePtr; 	
 
-	// Find the first task to run. Scheduler_run determines the next task to run so
-	// scheduler.runPtr is assigned mannually
+	// Find the first task to run. 
 	scheduler_run();
 	scheduler.runPtr = scheduler.topPrioTask;
+	scheduler.topPrioTask->status = READY;
 	
 	// Set the initial value of svc_exc_return, CONTROL register as well as PSP.
 	// PSP should be pointing to the position of PC in the stack frame of the first task
@@ -84,8 +84,14 @@ void os_start(void) {
 	taskFramePtr = (uint32_t*) scheduler.runPtr->sp;
 	svc_exc_return = *taskFramePtr;
 	
+	// Initially it is assumed that the first task will run until it's time preempted
+	// (will use its time slice completely)
+	scheduler.status |= (1 << TIME_PREEMPT_Pos);
+	
 	// Set up periodic interrupts
 	systick_config(SYSTEM_CLOCK_FREQ / OS_CLOCK_FREQ);	
+	
+	// OS is now running
 	OS_RUNNING = 1;
 }
 
@@ -102,14 +108,18 @@ void SysTick_Handler(void) {
 	// Increment the OS ticks counter
 	OS_TICKS++;
 	
-	// If a task(s) has just become ready then wake it up
-	if (OS_TICKS == scheduler.nextToWake)
+	// If the soonest delayed task has become ready then wake all the currently ready tasks up
+	if (scheduler.queues[DELAYED] != NULL && scheduler.queues[DELAYED]->waitCounter <= OS_TICKS)
 		scheduler_wake_tasks();
 	
-	// Otherwise, if the currently running task has used up its time slice then
-	// check if it should be preempted
-	else if (OS_TICKS % TIME_SLICE == 0) 
-		scheduler_run();
+	// If the currently running task has used up its entire time slice, then
+	// it should be preempted.
+	if (OS_TICKS % TIME_SLICE == 0) {
+		if (scheduler.status & (1 << TIME_PREEMPT_Pos))
+			scheduler_run();
+		else
+			scheduler.status |= (1 << TIME_PREEMPT_Pos);
+	}
 	
 	// Perform context-switch only if the next task to run is different from the 
 	// current one, according to the scheduling policy
@@ -135,18 +145,15 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 	switch(svcNumber) {
 		case SVC_OS_INIT: os_init(); break;
 		case SVC_OS_START: os_start(); break;
-		case SVC_CREATE_TASK: svcArgs[0] = task_create((void*) svcArgs[0], svcArgs[1],  
+		case SVC_CREATE_TASK: svcArgs[0] = (uint32_t) task_create((void*) svcArgs[0], svcArgs[1],  
 														 svcArgs[2], 0); break;
 		case SVC_DECLARE_TASK: svcArgs[0] = task_declare((void*) svcArgs[0], (void*) svcArgs[1],  
 														 (void*) svcArgs[2], svcArgs[3], 0); 
 		                                                 break;
 		case SVC_DELAY_TASK: svcArgs[0] = task_delay(svcArgs[0]);  break;
-		/*
-		case SVC_SUSPEND_TASK: svcArgs[0] = svcArgs[0] > 0 ? task_suspend(svcArgs[0]) : 
-											EXIT_FAILURE;  break;
-		case SVC_RESUME_TASK: svcArgs[0] = svcArgs[0] > 0 ? task_resume(svcArgs[0]) : 
-											EXIT_FAILURE;  break;
-		*/
+		case SVC_SUSPEND_TASK: svcArgs[0] = task_suspend((void*) svcArgs[0]); break;
+
+		case SVC_RESUME_TASK: svcArgs[0] = task_resume((void*) svcArgs[0]); break;
 		default: break;
 	}
 	return;

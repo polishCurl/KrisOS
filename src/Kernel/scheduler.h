@@ -52,18 +52,28 @@ extern uint32_t svc_exc_return;
 /*-------------------------------------------------------------------------------
 * Scheduler
 *------------------------------------------------------------------------------*/
+// Time sliced preemption enable bit in scheduler status field. If 1, time-slice 
+// preemption should be performed at the end of the time slice.
+#define TIME_PREEMPT_Pos 0 					
+											
+// Number of queues other than ready queues for each priority
+#define NON_READY_QUEUES 2
+
+// Total number of task queues in the scheduler. Ready queues for each priority 
+// (+1 because of lowest priority idle task) and  queues for delayed, blocked etc. tasks
+#define TOTAL_QUEUES_NO (TASK_PRIO_LVL_NO + 1 + NON_READY_QUEUES)
+
+// Scheduler definition
 typedef struct {
 	Task* runPtr; 							// Task currently running
-	Task* topPrioTask; 						// Task with currently highest priorityu
-	Task* readyTasks[TASK_PRIO_LVL_NO+1]; 	// Ready queues for each priority level
-	Task* delayedTasks; 					// Blocked queue for delayed tasks
-	uint64_t nextToWake; 					// Time of the soonest task from delayedTasks 
-											// to be ready
-	Task* suspendedTasks; 					// Suspended tasks
-	int32_t lastIDUsed; 					// Last task ID assigned (used for unique 											
-} Scheduler; 								// ID generation)
+	Task* topPrioTask; 						// Task with currently highest priority
+	Task* queues[TOTAL_QUEUES_NO]; 			// Task queues
+	int32_t lastIDUsed; 					// Last task ID assigned
+	uint32_t status; 						// Scheduler status bits
+} Scheduler; 								
 
 extern Scheduler scheduler;
+
 
 
 
@@ -106,9 +116,9 @@ void scheduler_wake_tasks(void);
 *		priority - the higher the number the lower the priority
 *		isPrivileged - 1 if privileged access level (system task), 0 otherwise
 * Returns: 		
-*		unique nonzero ID number of the task created, 0 otherwise
+*		pointer to the task created
 --------------------------------------------------------------------------------*/
-int32_t task_create(void* startAddr, size_t stackSize, uint32_t priority,
+Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 					uint32_t isPrivileged);
 
 
@@ -117,22 +127,22 @@ int32_t task_create(void* startAddr, size_t stackSize, uint32_t priority,
 * Function:    	task_declare
 * Purpose:    	Register a statically allocated task at the scheduler
 * Arguments:	
-* 		tcb - pointer to the previously allocated task control block of the task to create
+* 		toDeclare - pointer to the pre-allocated task control block of the task to declare
 *		startAddr - starting address of the task to add
 *		stackBase - pointer to the private stack area to be used by the task to create 
 *		priority - task priority
 *		isPrivileged - 1 if privileged access level (system task), 0 otherwise
 * Returns: 		
-*		unique nonzero ID number of the task created, 0 otherwise
+*		exit status
 --------------------------------------------------------------------------------*/
-int32_t task_declare(void* tcb,  void* startAddr, void* stackBase, int32_t priority, 
-					 uint32_t isPrivileged);
+uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase, 
+					  int32_t priority, uint32_t isPrivileged);
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	task_delay
-* Purpose:    	Delay given task by specified amount of OS 'ticks'
+* Purpose:    	Delay the currently running task by 'delay' number of OS ticks
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
 * Returns: 
@@ -143,38 +153,62 @@ uint32_t task_delay(uint64_t delay);
 
 
 /*-------------------------------------------------------------------------------
+* Function:    	task_suspend
+* Purpose:    	Suspend the task given
+* Arguments:	
+*		toSuspend - pointer to the task to suspend. If NULL the calling task suspends itself
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_suspend(Task* toSuspend);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_resume
+* Purpose:    	Resume the task given
+* Arguments:	
+*		toSuspend - pointer to the task to resume.
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_resume(Task* toResume);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_insert_at_queue_start
+* Purpose:    	Insert the task given at the beginning of the queue specified
+* Arguments: 	
+*		queue - queue to update
+* 		toInsert - task to insert
+* Returns: 
+* 		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_insert_at_queue_start(Task** queue, Task* toInsert);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_remove_from_queue
+* Purpose:    	Remove the task given from the queue it belongs to
+* Arguments: 
+* 		toRemove - task to remove
+* Returns: 
+* 		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_remove_from_queue(Task* toRemove);
+
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	task_frame_init
 * Purpose:    	Initialise the stak frame of the task selected
 * Arguments: 	
 *		toInit - pointer to the task to have its stack frame initialised
-*		startAddr - starting address of the task to have its stack frame initialised
-*		privileged - 1 if privileged access level (system task), 0 otherwise
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void task_frame_init(Task* toInit, void* startAddr, uint32_t privileged);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	add_to_queue
-* Purpose:    	Add given task to the queue specified
-* Arguments: 	
-*		queue - queue to add the task to
-* 		toAdd - task to add
+*		startAddr - address of the first instruction of the task to initialise
+*		isPrivileged - task's priviliged access level flag
 * Returns: 
-* 		exit status
+*		exit status
 --------------------------------------------------------------------------------*/
-uint32_t add_to_queue(Task** queue, Task* toAdd);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	remove_from_queue
-* Purpose:    	Remove the task with given ID from the queue specified.
-* Arguments: 	
-*		queue - address of the pointer to the queue to remove the task from
-* 		id - ID of the task to remove
-* Returns: 
-* 		pointer to the task removed
---------------------------------------------------------------------------------*/
-Task* remove_from_queue(Task** queue, int32_t id);
+uint32_t task_frame_init(Task* toInit, void* startAddr, uint32_t isPrivileged);

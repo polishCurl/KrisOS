@@ -33,7 +33,7 @@
 #define OS_CLOCK_FREQ 1000
 
 // Time quantum size for multitasking (in OS 'ticks')
-#define TIME_SLICE 100
+#define TIME_SLICE 50
 
 
 
@@ -50,16 +50,26 @@
 *------------------------------------------------------------------------------*/
 // Number of different priority levels which are allowed for user task. The priorities
 // are from 0 to (TASK_PRIO_LVL_NO - 1)
-#define TASK_PRIO_LVL_NO 4 			
+#define TASK_PRIO_LVL_NO 4 	
+
+// Possible task states
+typedef enum {
+	RUNNING = TASK_PRIO_LVL_NO + 4,
+	READY = TASK_PRIO_LVL_NO + 3,
+	DELAYED = TASK_PRIO_LVL_NO + 1,
+	BLOCKED = TASK_PRIO_LVL_NO + 2,
+} TaskState;
 
 // Task control block
 typedef struct Task {
 	uint32_t sp; 					// Stack pointer value
-	struct Task *next; 				// Next task to run
+	struct Task* next; 				// Pointer to the next task in a queue
+	struct Task* previous; 			// Pointer to the previous task in a queue 
 	int32_t id; 					// Task unique identifier
-	int32_t priority; 				// Task priority
+	uint8_t priority; 				// Task priority
+	TaskState status; 				// Current task status
 	uint64_t waitCounter;			// Remaining time to sleep (in OS 'ticks')
-	void* stackBase; 				// Pointer to the base off process' stack
+	void* stackBase; 				// Pointer to the base of process' stack
 } Task;
 
 
@@ -150,9 +160,9 @@ void __svc(SVC_OS_START) KrisOS_start(void);
 *		stackSize - stack size (in bytes) required by the task
 *		priority - task priority
 * Returns: 		
-*		unique nonzero ID number of the task created, 0 otherwise
+*		pointer to the task declared
 --------------------------------------------------------------------------------*/
-int32_t __svc(SVC_CREATE_TASK) KrisOS_create_task(void* startAddr,size_t stackSize, 
+uint32_t __svc(SVC_CREATE_TASK) KrisOS_create_task(void* startAddr,size_t stackSize, 
 												  uint32_t priority);
 
 
@@ -161,15 +171,15 @@ int32_t __svc(SVC_CREATE_TASK) KrisOS_create_task(void* startAddr,size_t stackSi
 * Function:    	KrisOS_declare_task
 * Purpose:    	Register a statically allocated task at the scheduler
 * Arguments:	
-* 		tcb - pointer to the previously allocated task control block of the task to create
+* 		toDeclare - pointer to the pre-allocated task control block of the task to declare
 *		startAddr - starting address of the task to add
-*		stackBase - pointer to the private stack area to be used by the task to create 
+*		stackBase - pointer to the private stack area to be used by the task to declare 
 *		priority - task priority
 * Returns: 		
-*		unique nonzero ID number of the task created, 0 otherwise
+*		exit status
 --------------------------------------------------------------------------------*/
-int32_t __svc(SVC_DECLARE_TASK) KrisOS_declare_task(Task* tcb, void* startAddr, void* stackBase, 
-											        int32_t priority);
+uint32_t __svc(SVC_DECLARE_TASK) KrisOS_declare_task(Task* toDeclare, void* startAddr,
+											         void* stackBase, int32_t priority);
 
 
 
@@ -187,23 +197,23 @@ uint32_t __svc(SVC_DELAY_TASK) KrisOS_delay_task(uint32_t ms10);
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_suspend_task
-* Purpose:    	Suspend the task with specified ID
+* Purpose:    	Suspend the task given
 * Arguments:	
-*		id - ID of the task to suspend
+*		toSuspend - pointer to the task to suspend. If NULL the calling task suspends itself
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_SUSPEND_TASK) KrisOS_suspend_task(int32_t id);
+uint32_t __svc(SVC_SUSPEND_TASK) KrisOS_suspend_task(Task* toSuspend);
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_resume_task
-* Purpose:    	Resume the task with specified ID
+* Purpose:    	Resume the task given
 * Arguments:	
-*		id - ID of the task to resume
+*		toSuspend - pointer to the task to resume.
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_RESUME_TASK) KrisOS_resume_task(int32_t id);
+uint32_t __svc(SVC_RESUME_TASK) KrisOS_resume_task(Task* toResume);
 

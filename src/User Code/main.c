@@ -1,20 +1,33 @@
 #include "KrisOS.h"
-#include "common.h"
+#include "tm4c123gh6pm.h"
 
 
-int32_t task1ID, task2ID, task3ID;
 
-uint32_t seconds_elapsed;
-uint32_t s10_elapsed;
+Task *counterDecrTask; 
+void counterDecr(void);
 
-void testTask1(void);
-void testTask2(void);
-void testTask3(void);
+Task* primeNumbersTask;
+void primeNumbers(void);
 
 
-const size_t task2StackSize = 304;
-uint8_t task2Stack[task2StackSize];
-Task task2;
+void secondTimer(void);
+const size_t secondTimerStackSize = 300;
+uint8_t secondTimerStack[secondTimerStackSize];
+Task secondTimerTask;
+
+
+void counterIncr(void);
+const size_t counterIncrStackSize = 200;
+uint8_t counterIncrStack[counterIncrStackSize];
+Task counterIncrTask;
+
+uint32_t counter;
+
+
+void blinky(void);
+const size_t blinkyStackSize = 324;
+uint8_t blinkyStack[blinkyStackSize];
+Task blinkyTask;
 
 
 
@@ -22,9 +35,16 @@ int main(void) {
 	
 	KrisOS_init();
 	
-	task1ID = KrisOS_create_task(testTask1, 300, 0);
-	task2ID = KrisOS_declare_task(&task2, testTask2, &task2Stack[task2StackSize], 1);
-	task3ID = KrisOS_create_task(testTask3, 300, 2);
+	KrisOS_declare_task(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 1);
+	KrisOS_declare_task(&counterIncrTask, counterIncr, &counterIncrStack[counterIncrStackSize], 0);
+	counterDecrTask = (Task*) KrisOS_create_task(counterDecr, 300, 0);
+	primeNumbersTask = (Task*) KrisOS_create_task(primeNumbers, 500, 3);
+	KrisOS_declare_task(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 3);
+	
+	//KrisOS_suspend_task(&blinkyTask);
+	//KrisOS_resume_task(&blinkyTask);
+	//KrisOS_resume_task(primeNumbersTask);
+	
 	KrisOS_start();
 	
 	while(1);
@@ -32,29 +52,100 @@ int main(void) {
 
 
 
-void testTask1(void) {
-	seconds_elapsed = 0;
+void secondTimer(void) {
 	while(1) {
+		printf("\n");
 		KrisOS_delay_task(1000);
-		seconds_elapsed--;
 	}
 }
 
-void testTask2(void) {
-	
+void counterIncr(void) {
+	counter = 0;
 	while(1) {
-		printf("w");
-		KrisOS_delay_task(247);
-		
+		counter++;
+		KrisOS_delay_task(1);		
 	}		
 }
 
-void testTask3(void) {
-	seconds_elapsed = 0;
+void counterDecr(void) {
+	counter = 0;
 	while(1) {
-		KrisOS_delay_task(1000);
-		seconds_elapsed++;
+		counter--;
+		KrisOS_delay_task(1);	
 	}		
+}
+
+
+void primeNumbers(void) {
+	
+	int32_t low, high, i, flag;
+		
+	while(1) {
+		low = 2;
+		high = 50000;
+		printf("\nPrime numbers between %d and %d are: \n", low, high);
+
+		while (low < high)
+		{
+			flag = 0;
+			for(i = 2; i <= low/2; ++i)
+				if(low % i == 0)
+				{
+					flag = 1;
+					break;
+				}
+
+			if (flag == 0)
+				printf("%d ", low);
+
+			++low;
+		}
+
+		KrisOS_delay_task(60000);	
+	}		
+}
+
+
+void portFInit(void) {
+	SYSCTL->RCGCGPIO |= 0x00000020;
+	while ((SYSCTL->RCGCGPIO & 0x00000020) == 0);
+	GPIOF->LOCK = 0x4C4F434B;
+	GPIOF->CR = 0x1F;
+	GPIOF->DIR = 0x0E;
+	GPIOF->PUR = 0x11;
+	GPIOF->DEN = 0x1F;
+}
+
+uint32_t portFInput(void) {
+	return (GPIOF->DATA & 0x11);
+}
+
+void portFOutput(uint32_t data) {
+	GPIOF->DATA = data;
+}
+
+
+void blinky(void) {
+	portFInit();
+	
+	while(1) {
+		portFOutput(0x02);
+		KrisOS_delay_task(300);
+		portFOutput(0x04);
+		KrisOS_delay_task(300);
+		portFOutput(0x08);
+		KrisOS_delay_task(300);
+		portFOutput(0x00);
+		KrisOS_delay_task(715);
+		portFOutput(0x07);
+		KrisOS_delay_task(715);
+		portFOutput(0x00);
+		KrisOS_delay_task(715);
+	}
+	
+	
+	
+	
 }
 
 

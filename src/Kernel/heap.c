@@ -143,33 +143,34 @@ void* malloc(size_t bytesToAlloc) {
 	if (bytesToAlloc > 0 && bytesToAlloc < ALIGNED_HEAP_SIZE) {
 		
 		__start_critical();
-		
-		// Go through all the existing free blocks until a large enough is found
-		// or we reached the endBlock 
-		previousBlock = &heap.startBlock;
-		iterator = heap.startBlock.next;
-		
-		while ((iterator->blockSize < bytesToAlloc) && (iterator->next != NULL)) {
-			previousBlock = iterator;
-			iterator = iterator->next;
-		}
-		
-		// If such block exists, join its neighbours and update the pointer
-		if (iterator != &heap.endBlock) {
-			allocatedMemory = (void*) (((uint8_t*) previousBlock->next) + sizeof(HeapBlock));
-			previousBlock->next = iterator->next;
+		{
+			// Go through all the existing free blocks until a large enough is found
+			// or we reached the endBlock 
+			previousBlock = &heap.startBlock;
+			iterator = heap.startBlock.next;
 			
-			// If the difference between the requested memory size and the assigned block
-			// size is too big then split the block into two and insert the unallocated
-			// part to the list of heap blocks
-			if (iterator->blockSize - bytesToAlloc > MIN_BLOCK_SIZE) {
-				subBlock = (void*) (((uint8_t*) iterator) + bytesToAlloc);
-				subBlock->blockSize = iterator->blockSize - bytesToAlloc;
-				iterator->blockSize = bytesToAlloc;
-				insert_free_block(subBlock);
+			while ((iterator->blockSize < bytesToAlloc) && (iterator->next != NULL)) {
+				previousBlock = iterator;
+				iterator = iterator->next;
 			}
 			
-			heap.bytesUsed += iterator->blockSize;
+			// If such block exists, join its neighbours and update the pointer
+			if (iterator != &heap.endBlock) {
+				allocatedMemory = (void*) (((uint8_t*) previousBlock->next) + sizeof(HeapBlock));
+				previousBlock->next = iterator->next;
+				
+				// If the difference between the requested memory size and the assigned block
+				// size is too big then split the block into two and insert the unallocated
+				// part to the list of heap blocks
+				if (iterator->blockSize - bytesToAlloc > MIN_BLOCK_SIZE) {
+					subBlock = (void*) (((uint8_t*) iterator) + bytesToAlloc);
+					subBlock->blockSize = iterator->blockSize - bytesToAlloc;
+					iterator->blockSize = bytesToAlloc;
+					insert_free_block(subBlock);
+				}
+				
+				heap.bytesUsed += iterator->blockSize;
+			}
 		}
 		__end_critical();
 	}
@@ -191,15 +192,22 @@ void free(void* toFree) {
 	uint8_t* bytesToFree;
 	HeapBlock* blockToFree;
 	
+	// Test if pointer points to heap memory
+	if (toFree < (void*) &heap.heapMem[0] || toFree >= (void*) &heap.heapMem[ALIGNED_HEAP_SIZE])
+		return;
+	
 	// If the pointer is meaninful, then cast it into heap block that shall be
 	// added back to the list of free blocks. Updates the number of bytes used
 	if (toFree != NULL) {
 		bytesToFree = (uint8_t*) toFree;
 		bytesToFree -= sizeof(HeapBlock);
 		blockToFree = (HeapBlock*) bytesToFree;
+		
 		__start_critical();
-		insert_free_block(blockToFree);
-		heap.bytesUsed -= blockToFree->blockSize;
+		{
+			insert_free_block(blockToFree);
+			heap.bytesUsed -= blockToFree->blockSize;
+		}
 		__end_critical();
 	}
 }	

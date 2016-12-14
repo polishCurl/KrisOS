@@ -387,14 +387,10 @@ typedef struct {                       // GPIOA Structure
 #define GPIOB_Base 0x40005000
 #define GPIOC_Base 0x40006000
 #define GPIOD_Base 0x40007000
-#define GPIOE_Base 0x40024000
-#define GPIOF_Base 0x40025000
 #define GPIOA ((GPIO_Type*) GPIOA_Base)
 #define GPIOB ((GPIO_Type*) GPIOB_Base)
 #define GPIOC ((GPIO_Type*) GPIOC_Base)
 #define GPIOD ((GPIO_Type*) GPIOD_Base)
-#define GPIOE ((GPIO_Type*) GPIOE_Base)
-#define GPIOF ((GPIO_Type*) GPIOF_Base)
 
 // GPIOPCTL register bit numbers
 #define PCTL_PMC0_Pos 0
