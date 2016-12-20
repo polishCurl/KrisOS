@@ -67,13 +67,13 @@ extern uint32_t svc_exc_return;
 typedef struct {
 	Task* runPtr; 							// Task currently running
 	Task* topPrioTask; 						// Task with currently highest priority
-	Task* queues[TOTAL_QUEUES_NO]; 			// Task queues
+	Task* queues[TOTAL_QUEUES_NO]; 			// All scheduler queues
+	Task* lastRunTask[TASK_PRIO_LVL_NO+1]; 	// Task last run for each ready queue (except idle)
 	int32_t lastIDUsed; 					// Last task ID assigned
 	uint32_t status; 						// Scheduler status bits
 } Scheduler; 								
 
 extern Scheduler scheduler;
-
 
 
 
@@ -136,7 +136,7 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase, 
-					  int32_t priority, uint32_t isPrivileged);
+					  uint32_t priority, uint32_t isPrivileged);
 
 
 
@@ -202,13 +202,14 @@ uint32_t task_remove_from_queue(Task* toRemove);
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_frame_init
-* Purpose:    	Initialise the stak frame of the task selected
+* Function:    	task_init
+* Purpose:    	Initialise the task control block and stack frame for the task specified
 * Arguments: 	
 *		toInit - pointer to the task to have its stack frame initialised
 *		startAddr - address of the first instruction of the task to initialise
 *		isPrivileged - task's priviliged access level flag
+*		priority - priority of the task to initialise
 * Returns: 
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_frame_init(Task* toInit, void* startAddr, uint32_t isPrivileged);
+uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_t priority);

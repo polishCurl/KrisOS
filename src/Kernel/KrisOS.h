@@ -78,7 +78,7 @@ typedef struct Task {
 * Heap Manager setup
 *------------------------------------------------------------------------------*/
 // Heap size (in bytes)
-#define HEAP_SIZE 10000		
+#define HEAP_SIZE 4000		
 
 // Minimum heap free block size that can still be divided into smaller ones
 #define MIN_BLOCK_SIZE (4 * sizeof(HeapBlock))
@@ -125,6 +125,9 @@ typedef struct Task {
 #define SVC_DELAY_TASK 4 			// Delay given task by a multiple of OS 'ticks'
 #define SVC_SUSPEND_TASK 5 			// Suspend the task with given ID
 #define SVC_RESUME_TASK 6 			// Resume the task with given ID
+#define SVC_YIELD_TASK 7 			// Yield the currently running task
+#define SVC_HEAP_ALLOC 8 			// Request dynamic memory allocation
+#define SVC_HEAP_FREE 9 			// Free the dynamically allocated memory
 
 
 
@@ -217,3 +220,35 @@ uint32_t __svc(SVC_SUSPEND_TASK) KrisOS_suspend_task(Task* toSuspend);
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_RESUME_TASK) KrisOS_resume_task(Task* toResume);
 
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_yield_task
+* Purpose:    	Request a context switch to another task (cooperative scheduling)
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void __svc(SVC_YIELD_TASK) KrisOS_yield_task(void);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_malloc
+* Purpose:    	Dynamically allocate bytesToAlloc bytes of memory
+* Arguments:	
+*		bytesToAlloc - number of bytes to allocate on heap
+* Returns: 
+* 		pointer to the memory block allocated or a NULL pointer if unsuccessful
+--------------------------------------------------------------------------------*/
+void* __svc(SVC_HEAP_ALLOC) KrisOS_malloc(size_t bytesToAlloc);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_free
+* Purpose:    	Free the allocated block of memory
+* Arguments:	
+*		toFree - block of heap memory to free
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void __svc(SVC_HEAP_FREE) KrisOS_free(void* toFree);

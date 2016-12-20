@@ -9,6 +9,8 @@ void counterDecr(void);
 Task* primeNumbersTask;
 void primeNumbers(void);
 
+Task* suspendingTask;
+void suspending(void);
 
 void secondTimer(void);
 const size_t secondTimerStackSize = 300;
@@ -35,16 +37,12 @@ int main(void) {
 	
 	KrisOS_init();
 	
-	KrisOS_declare_task(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 1);
+	KrisOS_declare_task(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 0);
 	KrisOS_declare_task(&counterIncrTask, counterIncr, &counterIncrStack[counterIncrStackSize], 0);
 	counterDecrTask = (Task*) KrisOS_create_task(counterDecr, 300, 0);
 	primeNumbersTask = (Task*) KrisOS_create_task(primeNumbers, 500, 3);
 	KrisOS_declare_task(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 3);
-	
-	//KrisOS_suspend_task(&blinkyTask);
-	//KrisOS_resume_task(&blinkyTask);
-	//KrisOS_resume_task(primeNumbersTask);
-	
+
 	KrisOS_start();
 	
 	while(1);
@@ -100,8 +98,6 @@ void primeNumbers(void) {
 
 			++low;
 		}
-
-		KrisOS_delay_task(60000);	
 	}		
 }
 
@@ -142,10 +138,7 @@ void blinky(void) {
 		portFOutput(0x00);
 		KrisOS_delay_task(715);
 	}
-	
-	
-	
-	
 }
+
 
 

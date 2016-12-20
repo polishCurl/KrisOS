@@ -58,13 +58,13 @@ HeapManager heap;
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	insert_free_block
+* Function:    	heap_insert_free_block
 * Purpose:    	Insert a new block into the list of free blocks
 * Arguments:	
 *		toInsert - pointer to the block to insert
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-void insert_free_block(HeapBlock* toInsert) {
+void heap_insert_free_block(HeapBlock* toInsert) {
 	
 	// Iterator through the list of free blocks and the size of block to insert
 	HeapBlock* iterator;
@@ -166,9 +166,8 @@ void* malloc(size_t bytesToAlloc) {
 					subBlock = (void*) (((uint8_t*) iterator) + bytesToAlloc);
 					subBlock->blockSize = iterator->blockSize - bytesToAlloc;
 					iterator->blockSize = bytesToAlloc;
-					insert_free_block(subBlock);
-				}
-				
+					heap_insert_free_block(subBlock);
+				}	
 				heap.bytesUsed += iterator->blockSize;
 			}
 		}
@@ -205,7 +204,7 @@ void free(void* toFree) {
 		
 		__start_critical();
 		{
-			insert_free_block(blockToFree);
+			heap_insert_free_block(blockToFree);
 			heap.bytesUsed -= blockToFree->blockSize;
 		}
 		__end_critical();

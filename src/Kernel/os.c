@@ -21,6 +21,30 @@ uint32_t OS_RUNNING = 0;
 
 
 /*-------------------------------------------------------------------------------
+* Value of exception return for SVC calls
+--------------------------------------------------------------------------------*/
+uint32_t svc_exc_return;
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:		idle_task
+* Purpose:    	Idle task. Lowest priority task for power saving.
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void idle_task(void) {
+	while(1) __wfi();
+}
+
+// Idle task definition, the preallocated task control block and private stack
+Task idleTask;
+const size_t idleTaskStackSize = 100;
+uint8_t idleTaskStack[idleTaskStackSize];
+
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	os_init
 * Purpose:    	KrisOS initialisation method
 * Arguments:	-
@@ -28,32 +52,37 @@ uint32_t OS_RUNNING = 0;
 --------------------------------------------------------------------------------*/
 void os_init(void) {
 
-	// Switch off interrupts and enable the FPU
-	__disable_irqs();								
-	__enable_fpu();
-	
-	// Set up the system clock
-	system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
-	
-	// initialise the uart serial interface
-	uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
-			  SERIAL_MONITOR_D0_PARITY_CHECK, SERIAL_MONITOR_PARITY, 
-			  SERIAL_MONITOR_STOP_BITS); 
-	
-	// Initialise the heap
-	heap_init();	
+	__disable_irqs();	
+	{
+		// Set the initial OS state and enable the Floating-Point Unit
+		OS_RUNNING = 0;
+		__enable_fpu();
+		
+		// Set up the system clock
+		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
+		
+		// Initialise the uart serial interface
+		uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
+				  SERIAL_MONITOR_D0_PARITY_CHECK, SERIAL_MONITOR_PARITY, 
+				  SERIAL_MONITOR_STOP_BITS); 
+		
+		// Initialise the heap
+		heap_init();	
 
-	// Initialse the scheduler
-	scheduler_init();
-	
-	// Set the IRQ priority of Interrupts for task scheduling 
-	// 1. SysTick (highest possible)
-	// 2. SVC and PendSV (lowest possible) IRQs
-	nvic_set_priority(SysTick_IRQn, 0);
-	nvic_set_priority(PendSV_IRQn, 7);
-	nvic_set_priority(SVCall_IRQn, 7);
-
-	// Re-enable interrupts	
+		// Initialse the scheduler
+		scheduler_init();
+		
+		// Create system tasks:
+		// 1. Idle task (priviliged, lowest possible task priority)
+		task_declare(&idleTask, idle_task, &idleTaskStack[idleTaskStackSize], TASK_PRIO_LVL_NO, 1);
+		
+		// Set the IRQ priority of Interrupts for task scheduling 
+		// 1. SysTick (highest possible)
+		// 2. SVC and PendSV (lowest possible) IRQs
+		nvic_set_priority(SysTick_IRQn, 0);
+		nvic_set_priority(PendSV_IRQn, 7);
+		nvic_set_priority(SVCall_IRQn, 7);
+	}
 	__enable_irqs();	
 }
 
@@ -61,7 +90,7 @@ void os_init(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	os_start
-* Purpose:    	Start the operating system
+* Purpose:    	Start the operating system by setting up the first task to run
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
@@ -99,7 +128,7 @@ void os_start(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	SysTick_Handler
-* Purpose:    	SysTick timer interrupt handler
+* Purpose:    	OS 'tick' timer interrupt handler
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
@@ -120,13 +149,7 @@ void SysTick_Handler(void) {
 		else
 			scheduler.status |= (1 << TIME_PREEMPT_Pos);
 	}
-	
-	// Perform context-switch only if the next task to run is different from the 
-	// current one, according to the scheduling policy
-	if (scheduler.topPrioTask != scheduler.runPtr)
-		SCB->ICSR |= (1 << PENDSV_Pos);	
 }
-
 
 
 
@@ -154,9 +177,10 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_SUSPEND_TASK: svcArgs[0] = task_suspend((void*) svcArgs[0]); break;
 
 		case SVC_RESUME_TASK: svcArgs[0] = task_resume((void*) svcArgs[0]); break;
+		case SVC_YIELD_TASK: scheduler_run(); break;
+		case SVC_HEAP_ALLOC: svcArgs[0] = (uint32_t) malloc(svcArgs[0]); break;
+		case SVC_HEAP_FREE: free((void*) svcArgs[0]); break;
 		default: break;
 	}
 	return;
 }
-
-

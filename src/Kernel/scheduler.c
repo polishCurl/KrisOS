@@ -22,29 +22,6 @@ Scheduler scheduler;
 
 
 
-/*-------------------------------------------------------------------------------
-* Value of exception return for SVC calls
---------------------------------------------------------------------------------*/
-uint32_t svc_exc_return;
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:		idle_task
-* Purpose:    	Idle task. Lowest priority task for power saving.
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void idle_task(void) {
-	while(1) __wfi();
-}
-
-// Idle task definition, the preallocated task control block and private stack
-Task idleTask;
-const size_t idleTaskStackSize = 100;
-uint8_t idleTaskStack[idleTaskStackSize];
-
-
 
 /*-------------------------------------------------------------------------------
 * Function:    	scheduler_init
@@ -55,10 +32,13 @@ uint8_t idleTaskStack[idleTaskStackSize];
 void scheduler_init(void) {
 	
 	// Initialise each of the queues in the scheduler to NULL, which means they are
-	// empty
+	// empty. Also initialise the lastRunTask pointers for each of the ready queues
 	int32_t queueIndex;
-	for (queueIndex = 0; queueIndex < TOTAL_QUEUES_NO; queueIndex++)
+	for (queueIndex = 0; queueIndex < TOTAL_QUEUES_NO; queueIndex++) {
 		scheduler.queues[queueIndex] = NULL;
+		if (queueIndex <= TASK_PRIO_LVL_NO)
+			scheduler.lastRunTask[queueIndex] = NULL;	
+	}
 	
 	// Start assigning task IDs from 1. (Actually +-1 as system tasks have negative 
 	// IDs and user tasks have positive IDs
@@ -66,10 +46,6 @@ void scheduler_init(void) {
 	
 	// Initialise the status bits
 	scheduler.status = 0;
-	
-	// Create the background idle task (priviliged, lowest possible task priority)
-	task_declare(&idleTask, idle_task, &idleTaskStack[idleTaskStackSize], TASK_PRIO_LVL_NO, 1);
-	scheduler.runPtr = scheduler.queues[TASK_PRIO_LVL_NO];
 }
 
 
@@ -82,31 +58,33 @@ void scheduler_init(void) {
 --------------------------------------------------------------------------------*/
 void scheduler_run(void) {
 	
-	// Go through the ready queues in decreasing priority orded, and as soon as there
-	// is at least one task in a given queue, then it must be the one of the highest 
-	// priority ready tasks at given time. 
-	int32_t queueIndex;
+	// Iterator through the ready queues
+	int32_t queueIndex = 0;
 	
 	__start_critical();
 	{
-		for (queueIndex = 0; queueIndex <= TASK_PRIO_LVL_NO; queueIndex++) {
-			if (scheduler.queues[queueIndex] != NULL) {
+		// Find the first non-empty ready queue
+		while (scheduler.queues[queueIndex] == NULL) 
+			queueIndex++;
 				
-				// If currently running task has the same priority as the top priority one, then
-				// run the next task the current task points to (round-robin).
-				if (scheduler.runPtr->priority == queueIndex && scheduler.runPtr->next != NULL)
-					scheduler.topPrioTask = scheduler.runPtr->next;
-				
-				// Otherwise, pick the first task in specified queue to be next to run
-				else
-					scheduler.topPrioTask = scheduler.queues[queueIndex];
-				
-				// The current top priority task will be now running
-				scheduler.topPrioTask->status = RUNNING;
-				__end_critical();
-				return;		
-			}
-		}
+		// If no task has ever been run from the given ready queue or there is only
+		// one task in the given queue then run the first task from the queue otherwise 
+		// do round-robin by picking the next task in the queue with respect to the one
+		// last run
+		if (scheduler.lastRunTask[queueIndex] != NULL && scheduler.lastRunTask[queueIndex]->next != NULL) 
+			scheduler.lastRunTask[queueIndex] = scheduler.topPrioTask = scheduler.lastRunTask[queueIndex]->next;
+		else
+			scheduler.lastRunTask[queueIndex] = scheduler.topPrioTask = scheduler.queues[queueIndex];
+		scheduler.topPrioTask->status = RUNNING;
+		
+		// The current time-slice will now be divided between more than one task so 
+		// time-sliced preemption is switched off until the next time slice is entered
+		scheduler.status &= ~(1 << TIME_PREEMPT_Pos);
+		
+		// Perform context-switch only if the next task to run is different from the 
+		// current one, according to the scheduling policy
+		if (scheduler.topPrioTask != scheduler.runPtr)
+			SCB->ICSR |= (1 << PENDSV_Pos);	
 	}
 	__end_critical();
 }
@@ -139,13 +117,8 @@ void scheduler_wake_tasks(void) {
 			// priority
 			task_insert_at_queue_start(&scheduler.queues[toWake->priority], toWake);
 		}
-		
 		// Reschedule tasks as the state of ready queues have changed
 		scheduler_run();
-		
-		// The current time-slice will now be divided between more than one task so 
-		// time-sliced preemption is switched off until the next time slice is entered
-		scheduler.status &= ~(1 << TIME_PREEMPT_Pos);
 	}
 	__end_critical();
 }
@@ -187,6 +160,7 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 	// Allocate memory for the task's private stack
 	toCreate->stackBase = malloc(stackSize);
 	TEST_NULL_POINTER(toCreate->stackBase)
+	toCreate->sp = ((uint32_t) toCreate->stackBase) + stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
 	
 	// Assign the task's priority, id, status and sleep time. System tasks have negative
 	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
@@ -196,15 +170,19 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 	toCreate->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
 	scheduler.lastIDUsed++;
 	toCreate->waitCounter = 0;
-	toCreate->sp = ((uint32_t) toCreate->stackBase) + stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
-	
-	// Initialise the stack frame and add the newly created task to the ready 
-	// queue with specified priority
-	task_frame_init(toCreate, startAddr, isPrivileged);
+
+	// Initialise the task's control block and stack frame
+	task_init(toCreate, startAddr, isPrivileged, priority);
 	
 	// Insert the task at the beginning of the ready queue of task with the same 
-	// priority as the one to insert
-	task_insert_at_queue_start(&scheduler.queues[priority], toCreate);
+	// priority as the one to insert. And reschedule task if OS is already running
+	__start_critical();
+	{
+		task_insert_at_queue_start(&scheduler.queues[priority], toCreate);
+		if (OS_RUNNING)
+			scheduler_run();
+	} 
+	__end_critical();
 	
 	// Return the pointer tu the task created
 	return toCreate;
@@ -225,7 +203,7 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase, 
-					  int32_t priority, uint32_t isPrivileged) {
+					  uint32_t priority, uint32_t isPrivileged) {
 						 
 						 
 	// Test if input arguments are valid
@@ -237,24 +215,20 @@ uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase,
 	
 	// Attach the stack to the task control block of the task to declare
 	toDeclare->stackBase = stackBase;
-	
-	// Assign the task's priority, id, status and sleep time. System tasks have negative
-	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
-	// initial stack pointer value
-	toDeclare->priority = priority;
-	toDeclare->status = READY;
-	toDeclare->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
-	scheduler.lastIDUsed++;
-	toDeclare->waitCounter = 0;
 	toDeclare->sp = ((uint32_t) toDeclare->stackBase) - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
+
+	// Initialise the task's control block and stack frame
+	task_init(toDeclare, startAddr, isPrivileged, priority);
 	
-	// Initialise the stack frame and add the newly created task to the ready 
-	// queue with specified priority
-	task_frame_init(toDeclare, startAddr, isPrivileged);
-	
-	// Insert the task at the beginning of the ready queue of tasks with the same 
-	// priority
-	task_insert_at_queue_start(&scheduler.queues[priority], toDeclare);
+	// Insert the task at the beginning of the ready queue of task with the same 
+	// priority as the one to insert. And reschedule task if OS is already running
+	__start_critical();
+	{
+		task_insert_at_queue_start(&scheduler.queues[priority], toDeclare);
+		if (OS_RUNNING)
+			scheduler_run();
+	} 
+	__end_critical();
 
 	return EXIT_SUCCESS;
 }
@@ -314,14 +288,6 @@ uint32_t task_delay(uint64_t delay) {
 			if (iterator != NULL)
 				iterator->previous = toDelay;
 		}
-		
-		// The current time-slice will now be divided between more than one task so 
-		// time-sliced preemption is switched off until the next time slice is entered
-		scheduler.status &= ~(1 << TIME_PREEMPT_Pos);
-
-		// Because the currently running task has just been delayed then context switch
-		// is necessary
-		SCB->ICSR |= (1 << PENDSV_Pos);	
 	}
 	__end_critical();
 	return EXIT_SUCCESS;
@@ -351,19 +317,12 @@ uint32_t task_suspend(Task* toSuspend) {
 		toSuspend->status = BLOCKED;
 		scheduler_run();
 		task_insert_at_queue_start(&scheduler.queues[BLOCKED], toSuspend);
-		
-		// Perform context-switch only if the next task to run is different from the 
-		// current one. Disable time-sliced preemption, otherwise the next task to run
-		// won't be given at least one full time-slice
-		if (scheduler.topPrioTask != scheduler.runPtr) {
-			scheduler.status &= ~(1 << TIME_PREEMPT_Pos);
-			SCB->ICSR |= (1 << PENDSV_Pos);	
-		}
 	}
 	__end_critical();
 	
 	return EXIT_SUCCESS;
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -384,14 +343,6 @@ uint32_t task_resume(Task* toResume) {
 		toResume->status = READY;
 		task_insert_at_queue_start(&scheduler.queues[toResume->priority], toResume);
 		scheduler_run();
-		
-		// Perform context-switch only if the next task to run is different from the 
-		// current one. Disable time-sliced preemption, otherwise the next task to run
-		// won't be given at least one full time-slice
-		if (scheduler.topPrioTask != scheduler.runPtr) {
-			scheduler.status &= ~(1 << TIME_PREEMPT_Pos);
-			SCB->ICSR |= (1 << PENDSV_Pos);	
-		}
 	}
 	__end_critical();
 	return EXIT_SUCCESS;
@@ -428,7 +379,6 @@ uint32_t task_insert_at_queue_start(Task** queue, Task* toInsert) {
 		}
 	}
 	__end_critical();
-	
 	return EXIT_SUCCESS;
 }
 
@@ -465,9 +415,6 @@ uint32_t task_remove_from_queue(Task* toRemove) {
 		// If the task to remove is at the start of the queue then update the queue head 
 		if (scheduler.queues[queueIndex] == toRemove) 
 			scheduler.queues[queueIndex] = scheduler.queues[queueIndex]->next;
-		
-		// Now the task is not a member of any queues
-		toRemove->next = toRemove->previous = NULL;
 	}
 	__end_critical();
 	
@@ -477,19 +424,29 @@ uint32_t task_remove_from_queue(Task* toRemove) {
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_frame_init
-* Purpose:    	Initialise the stak frame of the task selected
+* Function:    	task_init
+* Purpose:    	Initialise the task control block and stack frame for the task specified
 * Arguments: 	
 *		toInit - pointer to the task to have its stack frame initialised
 *		startAddr - address of the first instruction of the task to initialise
 *		isPrivileged - task's priviliged access level flag
+*		priority - priority of the task to initialise
 * Returns: 
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_frame_init(Task* toInit, void* startAddr, uint32_t isPrivileged) {
+uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_t priority) {
 	
 	// Helper pointer for specifying initial register values in the stack frame
 	uint32_t* taskFramePtr; 
+	
+	// Assign the task's priority, id, status and sleep time. System tasks have negative
+	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
+	// initial stack pointer value
+	toInit->priority = priority;
+	toInit->status = READY;
+	toInit->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
+	scheduler.lastIDUsed++;
+	toInit->waitCounter = 0;
 
 	// Set the initial PC to the starting address of task's code
 	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_PC << WORD_ACCESS_SHIFT));	
