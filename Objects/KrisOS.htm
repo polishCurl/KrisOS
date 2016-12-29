@@ -3,11 +3,11 @@
 <title>Static Call Graph - [.\Objects\KrisOS.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\KrisOS.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Tue Dec 20 14:09:57 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Thu Dec 29 22:01:21 2016
 <BR><P>
-<H3>Maximum Stack Usage =        184 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =        128 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
-SVC_Handler &rArr; SVC_Handler_C &rArr; os_init &rArr; task_declare &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+blinky &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 <P>
 <H3>
 Mutually Recursive functions
@@ -142,22 +142,22 @@ Function Pointers
  <LI><a href="#[5a]">WTIMER5A_Handler</a> from startup.o(.text) referenced from startup.o(RESET)
  <LI><a href="#[5b]">WTIMER5B_Handler</a> from startup.o(.text) referenced from startup.o(RESET)
  <LI><a href="#[7b]">_printf_input_char</a> from _printf_char_common.o(.text) referenced from _printf_char_common.o(.text)
- <LI><a href="#[80]">blinky</a> from main.o(i.blinky) referenced from main.o(i.main)
- <LI><a href="#[7e]">counterDecr</a> from main.o(i.counterDecr) referenced from main.o(i.main)
- <LI><a href="#[7d]">counterIncr</a> from main.o(i.counterIncr) referenced from main.o(i.main)
+ <LI><a href="#[80]">blinky</a> from main.o(i.blinky) referenced from main.o(i.starter)
  <LI><a href="#[7a]">fputc</a> from retarget.o(i.fputc) referenced from _printf_char_file.o(.text)
- <LI><a href="#[81]">idle_task</a> from os.o(i.idle_task) referenced from os.o(i.os_init)
+ <LI><a href="#[7d]">idle_task</a> from os.o(i.idle_task) referenced from os.o(i.os_init)
  <LI><a href="#[79]">main</a> from main.o(i.main) referenced from startup.o(.text)
- <LI><a href="#[7f]">primeNumbers</a> from main.o(i.primeNumbers) referenced from main.o(i.main)
- <LI><a href="#[7c]">secondTimer</a> from main.o(i.secondTimer) referenced from main.o(i.main)
+ <LI><a href="#[7f]">primeNumbers</a> from main.o(i.primeNumbers) referenced from main.o(i.starter)
+ <LI><a href="#[7e]">secondTimer</a> from main.o(i.secondTimer) referenced from main.o(i.starter)
+ <LI><a href="#[7c]">starter</a> from main.o(i.starter) referenced from main.o(i.main)
+ <LI><a href="#[81]">task_complete_handler</a> from scheduler.o(i.task_complete_handler) referenced from scheduler.o(i.task_init)
 </UL>
 <P>
 <H3>
 Global Symbols
 </H3>
 <P><STRONG><a name="[83]"></a>__main</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, __main.o(!!!main))
-<BR><BR>[Calls]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry
-<LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
+<BR><BR>[Calls]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
+<LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry
 </UL>
 
 <P><STRONG><a name="[85]"></a>__scatterload</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __scatter.o(!!!scatter))
@@ -168,9 +168,9 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry
 </UL>
 
-<P><STRONG><a name="[c2]"></a>__scatterload_rt2_thumb_only</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __scatter.o(!!!scatter), UNUSED)
+<P><STRONG><a name="[d0]"></a>__scatterload_rt2_thumb_only</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __scatter.o(!!!scatter), UNUSED)
 
-<P><STRONG><a name="[c3]"></a>__scatterload_null</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __scatter.o(!!!scatter), UNUSED)
+<P><STRONG><a name="[d1]"></a>__scatterload_null</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __scatter.o(!!!scatter), UNUSED)
 
 <P><STRONG><a name="[88]"></a>__scatterload_copy</STRONG> (Thumb, 26 bytes, Stack size unknown bytes, __scatter_copy.o(!!handler_copy), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload_copy
@@ -178,7 +178,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload_copy
 </UL>
 
-<P><STRONG><a name="[c4]"></a>__scatterload_zeroinit</STRONG> (Thumb, 28 bytes, Stack size unknown bytes, __scatter_zi.o(!!handler_zi), UNUSED)
+<P><STRONG><a name="[d2]"></a>__scatterload_zeroinit</STRONG> (Thumb, 28 bytes, Stack size unknown bytes, __scatter_zi.o(!!handler_zi), UNUSED)
 
 <P><STRONG><a name="[89]"></a>_printf_d</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, _printf_d.o(.ARM.Collect$$_printf_percent$$00000009))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56 + Unknown Stack Size
@@ -191,7 +191,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__printf
 </UL>
 
-<P><STRONG><a name="[c5]"></a>_printf_percent_end</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, _printf_percent_end.o(.ARM.Collect$$_printf_percent$$00000017))
+<P><STRONG><a name="[d3]"></a>_printf_percent_end</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, _printf_percent_end.o(.ARM.Collect$$_printf_percent$$00000017))
 
 <P><STRONG><a name="[90]"></a>__rt_lib_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit.o(.ARM.Collect$$libinit$$00000000))
 <BR><BR>[Called By]<UL><LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_li
@@ -201,70 +201,70 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_init
 </UL>
 
-<P><STRONG><a name="[c6]"></a>__rt_lib_init_alloca_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000002E))
+<P><STRONG><a name="[d4]"></a>__rt_lib_init_alloca_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000002E))
 
-<P><STRONG><a name="[c7]"></a>__rt_lib_init_argv_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000002C))
+<P><STRONG><a name="[d5]"></a>__rt_lib_init_argv_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000002C))
 
-<P><STRONG><a name="[c8]"></a>__rt_lib_init_atexit_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000001B))
+<P><STRONG><a name="[d6]"></a>__rt_lib_init_atexit_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000001B))
 
-<P><STRONG><a name="[c9]"></a>__rt_lib_init_clock_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000021))
+<P><STRONG><a name="[d7]"></a>__rt_lib_init_clock_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000021))
 
-<P><STRONG><a name="[ca]"></a>__rt_lib_init_cpp_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000032))
+<P><STRONG><a name="[d8]"></a>__rt_lib_init_cpp_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000032))
 
-<P><STRONG><a name="[cb]"></a>__rt_lib_init_exceptions_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000030))
+<P><STRONG><a name="[d9]"></a>__rt_lib_init_exceptions_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000030))
 
-<P><STRONG><a name="[cc]"></a>__rt_lib_init_fp_trap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000001F))
+<P><STRONG><a name="[da]"></a>__rt_lib_init_fp_trap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000001F))
 
-<P><STRONG><a name="[cd]"></a>__rt_lib_init_getenv_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000023))
+<P><STRONG><a name="[db]"></a>__rt_lib_init_getenv_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000023))
 
-<P><STRONG><a name="[ce]"></a>__rt_lib_init_heap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000000A))
+<P><STRONG><a name="[dc]"></a>__rt_lib_init_heap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000000A))
 
-<P><STRONG><a name="[cf]"></a>__rt_lib_init_lc_collate_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000011))
+<P><STRONG><a name="[dd]"></a>__rt_lib_init_lc_collate_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000011))
 
-<P><STRONG><a name="[d0]"></a>__rt_lib_init_lc_ctype_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000013))
+<P><STRONG><a name="[de]"></a>__rt_lib_init_lc_ctype_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000013))
 
-<P><STRONG><a name="[d1]"></a>__rt_lib_init_lc_monetary_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000015))
+<P><STRONG><a name="[df]"></a>__rt_lib_init_lc_monetary_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000015))
 
-<P><STRONG><a name="[d2]"></a>__rt_lib_init_lc_numeric_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000017))
+<P><STRONG><a name="[e0]"></a>__rt_lib_init_lc_numeric_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000017))
 
-<P><STRONG><a name="[d3]"></a>__rt_lib_init_lc_time_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000019))
+<P><STRONG><a name="[e1]"></a>__rt_lib_init_lc_time_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000019))
 
-<P><STRONG><a name="[d4]"></a>__rt_lib_init_preinit_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000004))
+<P><STRONG><a name="[e2]"></a>__rt_lib_init_preinit_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000004))
 
-<P><STRONG><a name="[d5]"></a>__rt_lib_init_rand_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000000E))
+<P><STRONG><a name="[e3]"></a>__rt_lib_init_rand_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000000E))
 
-<P><STRONG><a name="[d6]"></a>__rt_lib_init_return</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000033))
+<P><STRONG><a name="[e4]"></a>__rt_lib_init_return</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000033))
 
-<P><STRONG><a name="[d7]"></a>__rt_lib_init_signal_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000001D))
+<P><STRONG><a name="[e5]"></a>__rt_lib_init_signal_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000001D))
 
-<P><STRONG><a name="[d8]"></a>__rt_lib_init_stdio_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000025))
+<P><STRONG><a name="[e6]"></a>__rt_lib_init_stdio_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000025))
 
-<P><STRONG><a name="[d9]"></a>__rt_lib_init_user_alloc_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000000C))
+<P><STRONG><a name="[e7]"></a>__rt_lib_init_user_alloc_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$0000000C))
 
 <P><STRONG><a name="[94]"></a>__rt_lib_shutdown</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown.o(.ARM.Collect$$libshutdown$$00000000))
 <BR><BR>[Called By]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_exit_ls
 </UL>
 
-<P><STRONG><a name="[da]"></a>__rt_lib_shutdown_cpp_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000002))
+<P><STRONG><a name="[e8]"></a>__rt_lib_shutdown_cpp_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000002))
 
-<P><STRONG><a name="[db]"></a>__rt_lib_shutdown_fp_trap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000007))
+<P><STRONG><a name="[e9]"></a>__rt_lib_shutdown_fp_trap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000007))
 
-<P><STRONG><a name="[dc]"></a>__rt_lib_shutdown_heap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000F))
+<P><STRONG><a name="[ea]"></a>__rt_lib_shutdown_heap_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000F))
 
-<P><STRONG><a name="[dd]"></a>__rt_lib_shutdown_return</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000010))
+<P><STRONG><a name="[eb]"></a>__rt_lib_shutdown_return</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000010))
 
-<P><STRONG><a name="[de]"></a>__rt_lib_shutdown_signal_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000A))
+<P><STRONG><a name="[ec]"></a>__rt_lib_shutdown_signal_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000A))
 
-<P><STRONG><a name="[df]"></a>__rt_lib_shutdown_stdio_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000004))
+<P><STRONG><a name="[ed]"></a>__rt_lib_shutdown_stdio_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$00000004))
 
-<P><STRONG><a name="[e0]"></a>__rt_lib_shutdown_user_alloc_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000C))
+<P><STRONG><a name="[ee]"></a>__rt_lib_shutdown_user_alloc_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000C))
 
 <P><STRONG><a name="[86]"></a>__rt_entry</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry.o(.ARM.Collect$$rtentry$$00000000))
-<BR><BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__main
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload_rt2
+<BR><BR>[Called By]<UL><LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload_rt2
+<LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__main
 </UL>
 
-<P><STRONG><a name="[e1]"></a>__rt_entry_presh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000002))
+<P><STRONG><a name="[ef]"></a>__rt_entry_presh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000002))
 
 <P><STRONG><a name="[8d]"></a>__rt_entry_sh</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry4.o(.ARM.Collect$$rtentry$$00000004))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8 + Unknown Stack Size
@@ -277,17 +277,17 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_lib_init
 </UL>
 
-<P><STRONG><a name="[e2]"></a>__rt_entry_postsh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000009))
+<P><STRONG><a name="[f0]"></a>__rt_entry_postsh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000009))
 
 <P><STRONG><a name="[91]"></a>__rt_entry_main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$0000000D))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8 + Unknown Stack Size
 <LI>Call Chain = __rt_entry_main &rArr; exit
 </UL>
-<BR>[Calls]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
-<LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<BR>[Calls]<UL><LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
 </UL>
 
-<P><STRONG><a name="[e3]"></a>__rt_entry_postli_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$0000000C))
+<P><STRONG><a name="[f1]"></a>__rt_entry_postli_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$0000000C))
 
 <P><STRONG><a name="[9e]"></a>__rt_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, rtexit.o(.ARM.Collect$$rtexit$$00000000))
 <BR><BR>[Called By]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
@@ -297,72 +297,84 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_lib_shutdown
 </UL>
 
-<P><STRONG><a name="[e4]"></a>__rt_exit_prels_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, rtexit2.o(.ARM.Collect$$rtexit$$00000002))
+<P><STRONG><a name="[f2]"></a>__rt_exit_prels_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, rtexit2.o(.ARM.Collect$$rtexit$$00000002))
 
 <P><STRONG><a name="[95]"></a>__rt_exit_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, rtexit2.o(.ARM.Collect$$rtexit$$00000004))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
-<LI>Call Chain = __rt_exit_exit &rArr; _sys_exit &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<LI>Call Chain = __rt_exit_exit &rArr; _sys_exit &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sys_exit
 </UL>
 
-<P><STRONG><a name="[b5]"></a>__disable_irqs</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, special_reg_access.o(.text))
+<P><STRONG><a name="[c6]"></a>__disable_irqs</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, special_reg_access.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[bc]"></a>__enable_irqs</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, special_reg_access.o(.text))
+<P><STRONG><a name="[cc]"></a>__enable_irqs</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, special_reg_access.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[e5]"></a>__set_base_prio</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
+<P><STRONG><a name="[f3]"></a>__set_base_prio</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
 
-<P><STRONG><a name="[e6]"></a>__get_base_prio</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
+<P><STRONG><a name="[f4]"></a>__get_base_prio</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
 
-<P><STRONG><a name="[bd]"></a>__set_psp</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text))
+<P><STRONG><a name="[cd]"></a>__set_psp</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 </UL>
 
-<P><STRONG><a name="[e7]"></a>__get_psp</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
+<P><STRONG><a name="[f5]"></a>__get_psp</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
 
-<P><STRONG><a name="[b6]"></a>__enable_fpu</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, special_reg_access.o(.text))
+<P><STRONG><a name="[c7]"></a>__enable_fpu</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, special_reg_access.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[e8]"></a>__disable_fpu</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
+<P><STRONG><a name="[f6]"></a>__disable_fpu</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
 
 <P><STRONG><a name="[97]"></a>__set_control</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, special_reg_access.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Reset_Handler
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 </UL>
 
-<P><STRONG><a name="[e9]"></a>__get_control</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
+<P><STRONG><a name="[f7]"></a>__get_control</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
 
-<P><STRONG><a name="[b1]"></a>__start_critical</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, special_reg_access.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove_from_queue
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_suspend
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_resume
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delay
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
+<P><STRONG><a name="[f8]"></a>__get_ipsr</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, special_reg_access.o(.text), UNUSED)
+
+<P><STRONG><a name="[be]"></a>__start_critical</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, special_reg_access.o(.text))
+<BR><BR>[Called By]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_release_all
+<LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_prio_add
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_sleep
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+<LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_try_lock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
+<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_delete
+<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 
-<P><STRONG><a name="[b3]"></a>__end_critical</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, special_reg_access.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove_from_queue
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_suspend
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_resume
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delay
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
+<P><STRONG><a name="[c0]"></a>__end_critical</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, special_reg_access.o(.text))
+<BR><BR>[Called By]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_release_all
+<LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_prio_add
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_sleep
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+<LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_try_lock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
+<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_delete
+<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 
 <P><STRONG><a name="[82]"></a>Reset_Handler</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, startup.o(.text))
@@ -746,29 +758,28 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__user_setup_stackheap
 </UL>
 
-<P><STRONG><a name="[ea]"></a>__I$use$semihosting</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, use_no_semi.o(.text), UNUSED)
+<P><STRONG><a name="[f9]"></a>__I$use$semihosting</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, use_no_semi.o(.text), UNUSED)
 
-<P><STRONG><a name="[eb]"></a>__use_no_semihosting_swi</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, use_no_semi.o(.text), UNUSED)
+<P><STRONG><a name="[fa]"></a>__use_no_semihosting_swi</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, use_no_semi.o(.text), UNUSED)
 
-<P><STRONG><a name="[ad]"></a>__aeabi_uldivmod</STRONG> (Thumb, 0 bytes, Stack size 48 bytes, lludivv7m.o(.text))
+<P><STRONG><a name="[ba]"></a>__aeabi_uldivmod</STRONG> (Thumb, 0 bytes, Stack size 48 bytes, lludivv7m.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = __aeabi_uldivmod
 </UL>
 <BR>[Called By]<UL><LI><a href="#[c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
 </UL>
 
-<P><STRONG><a name="[ec]"></a>_ll_udiv</STRONG> (Thumb, 238 bytes, Stack size 48 bytes, lludivv7m.o(.text), UNUSED)
+<P><STRONG><a name="[fb]"></a>_ll_udiv</STRONG> (Thumb, 238 bytes, Stack size 48 bytes, lludivv7m.o(.text), UNUSED)
 
-<P><STRONG><a name="[99]"></a>__2printf</STRONG> (Thumb, 20 bytes, Stack size 24 bytes, noretval__2printf.o(.text))
+<P><STRONG><a name="[99]"></a>__2fprintf</STRONG> (Thumb, 20 bytes, Stack size 24 bytes, noretval__2fprintf.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
-<LI>Call Chain = __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<LI>Call Chain = __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_file
 </UL>
 <BR>[Called By]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sys_exit
-<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;secondTimer
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;secondTimer
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;primeNumbers
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;blinky
 </UL>
 
 <P><STRONG><a name="[9b]"></a>__printf</STRONG> (Thumb, 104 bytes, Stack size 24 bytes, __printf.o(.text))
@@ -794,16 +805,23 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_exit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_main
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
+<BR>[Called By]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_release_all
+<LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_try_lock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
+<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_init
+<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_delete
+<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_create
+<LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_main
 </UL>
 
-<P><STRONG><a name="[ed]"></a>__use_two_region_memory</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, heapauxi.o(.text), UNUSED)
+<P><STRONG><a name="[fc]"></a>__use_two_region_memory</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, heapauxi.o(.text), UNUSED)
 
-<P><STRONG><a name="[ee]"></a>__rt_heap_escrow$2region</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, heapauxi.o(.text), UNUSED)
+<P><STRONG><a name="[fd]"></a>__rt_heap_escrow$2region</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, heapauxi.o(.text), UNUSED)
 
-<P><STRONG><a name="[ef]"></a>__rt_heap_expand$2region</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, heapauxi.o(.text), UNUSED)
+<P><STRONG><a name="[fe]"></a>__rt_heap_expand$2region</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, heapauxi.o(.text), UNUSED)
 
 <P><STRONG><a name="[9d]"></a>_printf_int_common</STRONG> (Thumb, 178 bytes, Stack size 32 bytes, _printf_intcommon.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = _printf_int_common
@@ -815,10 +833,10 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 104 + Unknown Stack Size
 <LI>Call Chain = _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_common
-<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ferror
+<BR>[Calls]<UL><LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ferror
+<LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_common
 </UL>
-<BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
+<BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2fprintf
 </UL>
 
 <P><STRONG><a name="[9f]"></a>_printf_char_common</STRONG> (Thumb, 32 bytes, Stack size 64 bytes, _printf_char_common.o(.text))
@@ -839,28 +857,41 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_sh
 </UL>
 
-<P><STRONG><a name="[f0]"></a>__user_libspace</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, libspace.o(.text), UNUSED)
+<P><STRONG><a name="[ff]"></a>__user_libspace</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, libspace.o(.text), UNUSED)
 
 <P><STRONG><a name="[a1]"></a>__user_perproc_libspace</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, libspace.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__user_setup_stackheap
 </UL>
 
-<P><STRONG><a name="[f1]"></a>__user_perthread_libspace</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, libspace.o(.text), UNUSED)
+<P><STRONG><a name="[100]"></a>__user_perthread_libspace</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, libspace.o(.text), UNUSED)
 
-<P><STRONG><a name="[98]"></a>SVC_Handler_C</STRONG> (Thumb, 134 bytes, Stack size 24 bytes, os.o(i.SVC_Handler_C))
-<BR><BR>[Stack]<UL><LI>Max Depth = 184 + Unknown Stack Size
-<LI>Call Chain = SVC_Handler_C &rArr; os_init &rArr; task_declare &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<P><STRONG><a name="[98]"></a>SVC_Handler_C</STRONG> (Thumb, 302 bytes, Stack size 24 bytes, os.o(i.SVC_Handler_C))
+<BR><BR>[Stack]<UL><LI>Max Depth = 80 + Unknown Stack Size
+<LI>Call Chain = SVC_Handler_C &rArr; task_sleep &rArr; mutex_release_all &rArr; mutex_unlock &rArr; task_remove
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_suspend
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_resume
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delay
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<BR>[Calls]<UL><LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_sleep
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+<LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_set_priority
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_set_pending
+<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_read_active
+<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_irq_prio_check
+<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_get_priority
+<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_enable_irq
+<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_disable_irq
+<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_clear_pending
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_try_lock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
+<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_init
+<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_delete
+<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_create
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
+<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler
 </UL>
@@ -868,106 +899,223 @@ Global Symbols
 <P><STRONG><a name="[c]"></a>SysTick_Handler</STRONG> (Thumb, 104 bytes, Stack size 8 bytes, os.o(i.SysTick_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = SysTick_Handler &rArr; __aeabi_uldivmod
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup.o(RESET)
 </UL>
-<P><STRONG><a name="[96]"></a>_sys_exit</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, retarget.o(i._sys_exit))
+<P><STRONG><a name="[96]"></a>_sys_exit</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, retarget.o(i._sys_exit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
-<LI>Call Chain = _sys_exit &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<LI>Call Chain = _sys_exit &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
+<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2fprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_exit_exit
 </UL>
 
-<P><STRONG><a name="[b4]"></a>align_byte_number</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, heap.o(i.align_byte_number))
-<BR><BR>[Called By]<UL><LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<P><STRONG><a name="[c1]"></a>align_byte_number</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, heap.o(i.align_byte_number))
+<BR><BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 </UL>
 
-<P><STRONG><a name="[80]"></a>blinky</STRONG> (Thumb, 80 bytes, Stack size 0 bytes, main.o(i.blinky))
-<BR><BR>[Calls]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;portFOutput
-<LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;portFInit
+<P><STRONG><a name="[80]"></a>blinky</STRONG> (Thumb, 98 bytes, Stack size 0 bytes, main.o(i.blinky))
+<BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
+<LI>Call Chain = blinky &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)
+<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2fprintf
+<LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;portFOutput
+<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;portFInit
 </UL>
-<P><STRONG><a name="[7e]"></a>counterDecr</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, main.o(i.counterDecr))
-<BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)
-</UL>
-<P><STRONG><a name="[7d]"></a>counterIncr</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, main.o(i.counterIncr))
-<BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)
+<BR>[Address Reference Count : 1]<UL><LI> main.o(i.starter)
 </UL>
 <P><STRONG><a name="[a0]"></a>ferror</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, retarget.o(i.ferror))
 <BR><BR>[Called By]<UL><LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_file
 </UL>
 
-<P><STRONG><a name="[7a]"></a>fputc</STRONG> (Thumb, 16 bytes, Stack size 16 bytes, retarget.o(i.fputc))
+<P><STRONG><a name="[7a]"></a>fputc</STRONG> (Thumb, 22 bytes, Stack size 16 bytes, retarget.o(i.fputc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = fputc
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uart_send_char
+<BR>[Calls]<UL><LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uart_send_char
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> _printf_char_file.o(.text)
 </UL>
-<P><STRONG><a name="[ab]"></a>free</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, heap.o(i.free))
+<P><STRONG><a name="[b2]"></a>free</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, heap.o(i.free))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = free
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
-<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;heap_insert_free_block
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;heap_insert_free_block
 </UL>
-<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+<BR>[Called By]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_delete
+<LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[b9]"></a>heap_init</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, heap.o(i.heap_init))
+<P><STRONG><a name="[ca]"></a>heap_init</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, heap.o(i.heap_init))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[b2]"></a>heap_insert_free_block</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, heap.o(i.heap_insert_free_block))
-<BR><BR>[Called By]<UL><LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
+<P><STRONG><a name="[bf]"></a>heap_insert_free_block</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, heap.o(i.heap_insert_free_block))
+<BR><BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 
-<P><STRONG><a name="[81]"></a>idle_task</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, os.o(i.idle_task))
+<P><STRONG><a name="[7d]"></a>idle_task</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, os.o(i.idle_task))
 <BR>[Address Reference Count : 1]<UL><LI> os.o(i.os_init)
 </UL>
-<P><STRONG><a name="[79]"></a>main</STRONG> (Thumb, 66 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[79]"></a>main</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Called By]<UL><LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_main
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup.o(.text)
 </UL>
-<P><STRONG><a name="[aa]"></a>malloc</STRONG> (Thumb, 122 bytes, Stack size 24 bytes, heap.o(i.malloc))
+<P><STRONG><a name="[b1]"></a>malloc</STRONG> (Thumb, 122 bytes, Stack size 24 bytes, heap.o(i.malloc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = malloc
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
-<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;heap_insert_free_block
-<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;align_byte_number
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;heap_insert_free_block
+<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;align_byte_number
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
+<BR>[Called By]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_create
 <LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[bb]"></a>nvic_set_priority</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, nvic.o(i.nvic_set_priority))
+<P><STRONG><a name="[b4]"></a>mutex_create</STRONG> (Thumb, 28 bytes, Stack size 8 bytes, mutex.o(i.mutex_create))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32 + Unknown Stack Size
+<LI>Call Chain = mutex_create &rArr; malloc
+</UL>
+<BR>[Calls]<UL><LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_init
+<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[b8]"></a>mutex_delete</STRONG> (Thumb, 54 bytes, Stack size 8 bytes, mutex.o(i.mutex_delete))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24 + Unknown Stack Size
+<LI>Call Chain = mutex_delete &rArr; free
+</UL>
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[b3]"></a>mutex_init</STRONG> (Thumb, 22 bytes, Stack size 8 bytes, mutex.o(i.mutex_init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 16 + Unknown Stack Size
+<LI>Call Chain = mutex_init &rArr; exit
+</UL>
+<BR>[Calls]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_create
+<LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[b6]"></a>mutex_lock</STRONG> (Thumb, 212 bytes, Stack size 16 bytes, mutex.o(i.mutex_lock))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40 + Unknown Stack Size
+<LI>Call Chain = mutex_lock &rArr; task_prio_add
+</UL>
+<BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_prio_add
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[c5]"></a>mutex_release_all</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, mutex.o(i.mutex_release_all))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32 + Unknown Stack Size
+<LI>Call Chain = mutex_release_all &rArr; mutex_unlock &rArr; task_remove
+</UL>
+<BR>[Calls]<UL><LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_sleep
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+</UL>
+
+<P><STRONG><a name="[b5]"></a>mutex_try_lock</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, mutex.o(i.mutex_try_lock))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24 + Unknown Stack Size
+<LI>Call Chain = mutex_try_lock &rArr; exit
+</UL>
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[b7]"></a>mutex_unlock</STRONG> (Thumb, 178 bytes, Stack size 8 bytes, mutex.o(i.mutex_unlock))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24 + Unknown Stack Size
+<LI>Call Chain = mutex_unlock &rArr; task_remove
+</UL>
+<BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
+</UL>
+<BR>[Called By]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_release_all
+<LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[a7]"></a>nvic_clear_pending</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, nvic.o(i.nvic_clear_pending))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[a5]"></a>nvic_disable_irq</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, nvic.o(i.nvic_disable_irq))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[a4]"></a>nvic_enable_irq</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, nvic.o(i.nvic_enable_irq))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[ab]"></a>nvic_get_priority</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, nvic.o(i.nvic_get_priority))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[a9]"></a>nvic_irq_prio_check</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, nvic.o(i.nvic_irq_prio_check))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[a8]"></a>nvic_read_active</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, nvic.o(i.nvic_read_active))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[a6]"></a>nvic_set_pending</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, nvic.o(i.nvic_set_pending))
+<BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
+</UL>
+
+<P><STRONG><a name="[aa]"></a>nvic_set_priority</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, nvic.o(i.nvic_set_priority))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = nvic_set_priority
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
+<LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
 <P><STRONG><a name="[a2]"></a>os_init</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, os.o(i.os_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 160 + Unknown Stack Size
-<LI>Call Chain = os_init &rArr; task_declare &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<BR><BR>[Stack]<UL><LI>Max Depth = 48 + Unknown Stack Size
+<LI>Call Chain = os_init &rArr; task_create_static &rArr; task_init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uart_init
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;system_clock_config
-<LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_init
-<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_set_priority
-<LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__enable_irqs
-<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__enable_fpu
-<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__disable_irqs
-<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;heap_init
+<BR>[Calls]<UL><LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uart_init
+<LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;system_clock_config
+<LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_init
+<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;nvic_set_priority
+<LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__enable_irqs
+<LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__enable_fpu
+<LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__disable_irqs
+<LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;heap_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
@@ -975,185 +1123,192 @@ Global Symbols
 <P><STRONG><a name="[a3]"></a>os_start</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, os.o(i.os_start))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = os_start &rArr; scheduler_run
 </UL>
-<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;systick_config
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__set_psp
+<BR>[Calls]<UL><LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;systick_config
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__set_psp
 <LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__set_control
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[ae]"></a>portFInit</STRONG> (Thumb, 62 bytes, Stack size 0 bytes, main.o(i.portFInit))
+<P><STRONG><a name="[bb]"></a>portFInit</STRONG> (Thumb, 62 bytes, Stack size 0 bytes, main.o(i.portFInit))
 <BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;blinky
 </UL>
 
-<P><STRONG><a name="[af]"></a>portFOutput</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, main.o(i.portFOutput))
+<P><STRONG><a name="[bc]"></a>portFOutput</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, main.o(i.portFOutput))
 <BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;blinky
 </UL>
 
-<P><STRONG><a name="[7f]"></a>primeNumbers</STRONG> (Thumb, 72 bytes, Stack size 0 bytes, main.o(i.primeNumbers))
+<P><STRONG><a name="[7f]"></a>primeNumbers</STRONG> (Thumb, 96 bytes, Stack size 0 bytes, main.o(i.primeNumbers))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
-<LI>Call Chain = primeNumbers &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<LI>Call Chain = primeNumbers &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
+<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2fprintf
 </UL>
-<BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)
+<BR>[Address Reference Count : 1]<UL><LI> main.o(i.starter)
 </UL>
-<P><STRONG><a name="[ba]"></a>scheduler_init</STRONG> (Thumb, 42 bytes, Stack size 0 bytes, scheduler.o(i.scheduler_init))
+<P><STRONG><a name="[cb]"></a>scheduler_init</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, scheduler.o(i.scheduler_init))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[a9]"></a>scheduler_run</STRONG> (Thumb, 138 bytes, Stack size 8 bytes, scheduler.o(i.scheduler_run))
+<P><STRONG><a name="[af]"></a>scheduler_run</STRONG> (Thumb, 168 bytes, Stack size 8 bytes, scheduler.o(i.scheduler_run))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = scheduler_run
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_suspend
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_resume
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delay
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<BR>[Called By]<UL><LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_sleep
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+<LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 <LI><a href="#[c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
 <LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[ac]"></a>scheduler_wake_tasks</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, scheduler.o(i.scheduler_wake_tasks))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = scheduler_wake_tasks &rArr; task_remove_from_queue
+<P><STRONG><a name="[b9]"></a>scheduler_wake_tasks</STRONG> (Thumb, 82 bytes, Stack size 8 bytes, scheduler.o(i.scheduler_wake_tasks))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = scheduler_wake_tasks &rArr; task_remove
 </UL>
-<BR>[Calls]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove_from_queue
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 </UL>
 <BR>[Called By]<UL><LI><a href="#[c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
 </UL>
 
-<P><STRONG><a name="[7c]"></a>secondTimer</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, main.o(i.secondTimer))
+<P><STRONG><a name="[7e]"></a>secondTimer</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, main.o(i.secondTimer))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
-<LI>Call Chain = secondTimer &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<LI>Call Chain = secondTimer &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
+<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2fprintf
 </UL>
+<BR>[Address Reference Count : 1]<UL><LI> main.o(i.starter)
+</UL>
+<P><STRONG><a name="[7c]"></a>starter</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, main.o(i.starter))
 <BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)
 </UL>
-<P><STRONG><a name="[b7]"></a>system_clock_config</STRONG> (Thumb, 184 bytes, Stack size 0 bytes, time.o(i.system_clock_config))
+<P><STRONG><a name="[c8]"></a>system_clock_config</STRONG> (Thumb, 184 bytes, Stack size 0 bytes, time.o(i.system_clock_config))
 <BR><BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[be]"></a>systick_config</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, time.o(i.systick_config))
+<P><STRONG><a name="[ce]"></a>systick_config</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, time.o(i.systick_config))
 <BR><BR>[Called By]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_start
 </UL>
 
-<P><STRONG><a name="[a4]"></a>task_create</STRONG> (Thumb, 196 bytes, Stack size 24 bytes, scheduler.o(i.task_create))
-<BR><BR>[Stack]<UL><LI>Max Depth = 152 + Unknown Stack Size
-<LI>Call Chain = task_create &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<P><STRONG><a name="[c3]"></a>task_add</STRONG> (Thumb, 44 bytes, Stack size 16 bytes, scheduler.o(i.task_add))
+<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = task_add
 </UL>
-<BR>[Calls]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
-<LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_init
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+</UL>
+<BR>[Called By]<UL><LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
+</UL>
+
+<P><STRONG><a name="[81]"></a>task_complete_handler</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, scheduler.o(i.task_complete_handler))
+<BR>[Address Reference Count : 1]<UL><LI> scheduler.o(i.task_init)
+</UL>
+<P><STRONG><a name="[ac]"></a>task_create_dynamic</STRONG> (Thumb, 134 bytes, Stack size 24 bytes, scheduler.o(i.task_create_dynamic))
+<BR><BR>[Stack]<UL><LI>Max Depth = 48 + Unknown Stack Size
+<LI>Call Chain = task_create_dynamic &rArr; malloc
+</UL>
+<BR>[Calls]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_init
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[a5]"></a>task_declare</STRONG> (Thumb, 122 bytes, Stack size 24 bytes, scheduler.o(i.task_declare))
-<BR><BR>[Stack]<UL><LI>Max Depth = 152 + Unknown Stack Size
-<LI>Call Chain = task_declare &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<P><STRONG><a name="[ad]"></a>task_create_static</STRONG> (Thumb, 104 bytes, Stack size 24 bytes, scheduler.o(i.task_create_static))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40 + Unknown Stack Size
+<LI>Call Chain = task_create_static &rArr; task_init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
-<LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_init
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_init
+<LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_add
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 <LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[a6]"></a>task_delay</STRONG> (Thumb, 146 bytes, Stack size 24 bytes, scheduler.o(i.task_delay))
-<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = task_delay &rArr; task_remove_from_queue
+<P><STRONG><a name="[b0]"></a>task_delete</STRONG> (Thumb, 58 bytes, Stack size 8 bytes, scheduler.o(i.task_delete))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40 + Unknown Stack Size
+<LI>Call Chain = task_delete &rArr; mutex_release_all &rArr; mutex_unlock &rArr; task_remove
 </UL>
-<BR>[Calls]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove_from_queue
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_release_all
+<LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[c1]"></a>task_init</STRONG> (Thumb, 88 bytes, Stack size 16 bytes, scheduler.o(i.task_init))
+<P><STRONG><a name="[cf]"></a>task_init</STRONG> (Thumb, 108 bytes, Stack size 16 bytes, scheduler.o(i.task_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = task_init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
+<BR>[Called By]<UL><LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_static
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create_dynamic
 </UL>
 
-<P><STRONG><a name="[c0]"></a>task_insert_at_queue_start</STRONG> (Thumb, 44 bytes, Stack size 16 bytes, scheduler.o(i.task_insert_at_queue_start))
-<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = task_insert_at_queue_start
+<P><STRONG><a name="[c4]"></a>task_prio_add</STRONG> (Thumb, 80 bytes, Stack size 24 bytes, scheduler.o(i.task_prio_add))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = task_prio_add
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_suspend
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_resume
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_declare
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_create
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<BR>[Called By]<UL><LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
 </UL>
 
-<P><STRONG><a name="[bf]"></a>task_remove_from_queue</STRONG> (Thumb, 78 bytes, Stack size 16 bytes, scheduler.o(i.task_remove_from_queue))
-<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = task_remove_from_queue
+<P><STRONG><a name="[c2]"></a>task_remove</STRONG> (Thumb, 56 bytes, Stack size 16 bytes, scheduler.o(i.task_remove))
+<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = task_remove
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_suspend
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_resume
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delay
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<BR>[Called By]<UL><LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_sleep
+<LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_delete
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_wake_tasks
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_unlock
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_lock
 </UL>
 
-<P><STRONG><a name="[a8]"></a>task_resume</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, scheduler.o(i.task_resume))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = task_resume &rArr; task_remove_from_queue
+<P><STRONG><a name="[ae]"></a>task_sleep</STRONG> (Thumb, 188 bytes, Stack size 24 bytes, scheduler.o(i.task_sleep))
+<BR><BR>[Stack]<UL><LI>Max Depth = 56 + Unknown Stack Size
+<LI>Call Chain = task_sleep &rArr; mutex_release_all &rArr; mutex_unlock &rArr; task_remove
 </UL>
-<BR>[Calls]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove_from_queue
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
+<BR>[Calls]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mutex_release_all
+<LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[a7]"></a>task_suspend</STRONG> (Thumb, 46 bytes, Stack size 8 bytes, scheduler.o(i.task_suspend))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = task_suspend &rArr; task_remove_from_queue
-</UL>
-<BR>[Calls]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_remove_from_queue
-<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_insert_at_queue_start
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;scheduler_run
-<LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__start_critical
-<LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__end_critical
-</UL>
-<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
-</UL>
-
-<P><STRONG><a name="[b8]"></a>uart_init</STRONG> (Thumb, 210 bytes, Stack size 20 bytes, uart.o(i.uart_init))
+<P><STRONG><a name="[c9]"></a>uart_init</STRONG> (Thumb, 216 bytes, Stack size 20 bytes, uart.o(i.uart_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = uart_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_init
 </UL>
 
-<P><STRONG><a name="[b0]"></a>uart_send_char</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, uart.o(i.uart_send_char))
+<P><STRONG><a name="[bd]"></a>uart_send_char</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, uart.o(i.uart_send_char))
 <BR><BR>[Called By]<UL><LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
 </UL>
 
@@ -1161,16 +1316,16 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_lib_init_fp_1
 </UL>
 
-<P><STRONG><a name="[f2]"></a>__fplib_config_fpu_vfp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, fpinit.o(x$fpl$fpinit), UNUSED)
+<P><STRONG><a name="[101]"></a>__fplib_config_fpu_vfp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, fpinit.o(x$fpl$fpinit), UNUSED)
 
-<P><STRONG><a name="[f3]"></a>__fplib_config_pureend_doubles</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, fpinit.o(x$fpl$fpinit), UNUSED)
+<P><STRONG><a name="[102]"></a>__fplib_config_pureend_doubles</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, fpinit.o(x$fpl$fpinit), UNUSED)
 <P>
 <H3>
 Local Symbols
 </H3>
 <P><STRONG><a name="[9]"></a>SVC_Handler</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, startup.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 184 + Unknown Stack Size
-<LI>Call Chain = SVC_Handler &rArr; SVC_Handler_C &rArr; os_init &rArr; task_declare &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+<BR><BR>[Stack]<UL><LI>Max Depth = 80 + Unknown Stack Size
+<LI>Call Chain = SVC_Handler &rArr; SVC_Handler_C &rArr; task_sleep &rArr; mutex_release_all &rArr; mutex_unlock &rArr; task_remove
 </UL>
 <BR>[Calls]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>

@@ -12,9 +12,8 @@
 * 				pointers which allows storing any type of data (pointers actually)
 * 				The fifo array is one word length greater than requested.
 *******************************************************************************/
-#include "common.h"
-#include "fifo.h"
-#include "special_reg_access.h"
+#include "system.h"
+
 
 
 /*-------------------------------------------------------------------------------

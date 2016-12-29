@@ -9,9 +9,11 @@
 * Note: 		malloc and free method headers are already declared in stdlib.h
 *******************************************************************************/
 #include "common.h"
+#include "KrisOS.h"
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	heap_init
 * Purpose:    	Heap initialisation function (no init needed in this case)
@@ -55,3 +57,5 @@ void free(void* toFree);
 *		modified byte number to
 --------------------------------------------------------------------------------*/
 size_t align_byte_number(size_t byteNumber);
+
+#endif

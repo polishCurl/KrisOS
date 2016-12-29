@@ -331,7 +331,7 @@
             <v6Lto>0</v6Lto>
             <v6WtE>0</v6WtE>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--diag_suppress 815</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
               <IncludePath>.\src\Common;.\src\HAL &amp; Drivers;.\src\Kernel;.\src\User Code</IncludePath>
@@ -391,6 +391,11 @@
               <FileName>scheduler.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Kernel\scheduler.c</FilePath>
+            </File>
+            <File>
+              <FileName>mutex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Kernel\mutex.c</FilePath>
             </File>
           </Files>
         </Group>

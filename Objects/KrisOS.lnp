@@ -2,6 +2,7 @@
 ".\objects\heap.o"
 ".\objects\os.o"
 ".\objects\scheduler.o"
+".\objects\mutex.o"
 ".\objects\main.o"
 ".\objects\fifo.o"
 ".\objects\nvic.o"

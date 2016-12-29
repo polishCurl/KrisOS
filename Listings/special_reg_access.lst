@@ -159,7 +159,7 @@ ARM Macro Assembler    Page 3
   105 00000020                 EXPORT           __enable_fpu
   106 00000020         __enable_fpu
                                PROC
-  107 00000020 4812            LDR              R0, =0xE000ED88
+  107 00000020 4813            LDR              R0, =0xE000ED88
   108 00000022 6801            LDR              R1, [R0]
   109 00000024 F441 0170       ORR              R1, R1, #(0xF << 20)
   110 00000028 6001            STR              R1, [R0]
@@ -183,7 +183,7 @@ ARM Macro Assembler    Page 3
   123 00000034                 EXPORT           __disable_fpu
   124 00000034         __disable_fpu
                                PROC
-  125 00000034 480D            LDR              R0, =0xE000ED88
+  125 00000034 480E            LDR              R0, =0xE000ED88
   126 00000036 6801            LDR              R1, [R0]
   127 00000038 F421 0170       BIC              R1, R1, #(0xF << 20)
   128 0000003C 6001            STR              R1, [R0]
@@ -237,54 +237,73 @@ ARM Macro Assembler    Page 4
   161 00000058                 ENDP
   162 00000058         
   163 00000058         
-  164 00000058         ;-------------------------------------------------------
+  164 00000058         
+  165 00000058         ;-------------------------------------------------------
                        ------------------------
-  165 00000058         ; Function:     __start_critical
-  166 00000058         ; Purpose:     Enter critical section by disabling inter
-                       rupts and saving the 
-  167 00000058         ;     prevous interrupt control value in PRIMASK registe
-                       r
+  166 00000058         ; Function:     __get_ipsr
+  167 00000058         ; Purpose:     Get the value from the IPSR register
   168 00000058         ; Arguments:  - 
-  169 00000058         ; Returns:   -
-  170 00000058         ;-------------------------------------------------------
+  169 00000058         ; Returns:   
+  170 00000058         ;  R0 - value from IPSR register
+  171 00000058         ;-------------------------------------------------------
                        ------------------------
-  171 00000058                 EXPORT           __start_critical
-  173 00000058         __start_critical
+  172 00000058                 EXPORT           __get_ipsr
+  173 00000058         __get_ipsr
                                PROC
-  174 00000058 F3EF 8010       MRS              R0, PRIMASK
-  175 0000005C B401            PUSH             {R0}
-  176 0000005E B672            CPSID            I
-  177 00000060 4770            BX               LR
-  178 00000062                 ENDP
-  179 00000062         
-  180 00000062         
+  174 00000058 F3EF 8005       MRS              R0, IPSR
+  175 0000005C 4770            BX               LR
+  176 0000005E                 ENDP
+  177 0000005E         
+  178 0000005E         
+  179 0000005E         
+  180 0000005E         ;-------------------------------------------------------
+                       ------------------------
 
 
 
 ARM Macro Assembler    Page 5 
 
 
-  181 00000062         ;-------------------------------------------------------
+  181 0000005E         ; Function:     __start_critical
+  182 0000005E         ; Purpose:     Enter critical section by disabling inter
+                       rupts and saving the 
+  183 0000005E         ;     prevous interrupt control value in PRIMASK registe
+                       r
+  184 0000005E         ; Arguments:  - 
+  185 0000005E         ; Returns:   -
+  186 0000005E         ;-------------------------------------------------------
                        ------------------------
-  182 00000062         ; Function:     __end_critical
-  183 00000062         ; Purpose:     End critical section by restoring the pre
-                       vious value of PRIMASK
-  184 00000062         ; Arguments:  - 
-  185 00000062         ; Returns:   -
-  186 00000062         ;-------------------------------------------------------
-                       ------------------------
-  187 00000062                 EXPORT           __end_critical
-  188 00000062         __end_critical
+  187 0000005E                 EXPORT           __start_critical
+  189 0000005E         __start_critical
                                PROC
-  189 00000062 BC01            POP              {R0}
-  190 00000064 F380 8810       MSR              PRIMASK, R0
-  191 00000068 4770            BX               LR
-  192 0000006A                 ENDP
-  193 0000006A         
-  194 0000006A         
-  195 0000006A         
-  196 0000006A 00 00           ALIGN
-  197 0000006C                 END
+  190 0000005E F3EF 8010       MRS              R0, PRIMASK
+  191 00000062 B401            PUSH             {R0}
+  192 00000064 B672            CPSID            I
+  193 00000066 4770            BX               LR
+  194 00000068                 ENDP
+  195 00000068         
+  196 00000068         
+  197 00000068         ;-------------------------------------------------------
+                       ------------------------
+  198 00000068         ; Function:     __end_critical
+  199 00000068         ; Purpose:     End critical section by restoring the pre
+                       vious value of PRIMASK
+  200 00000068         ; Arguments:  - 
+  201 00000068         ; Returns:   -
+  202 00000068         ;-------------------------------------------------------
+                       ------------------------
+  203 00000068                 EXPORT           __end_critical
+  204 00000068         __end_critical
+                               PROC
+  205 00000068 BC01            POP              {R0}
+  206 0000006A F380 8810       MSR              PRIMASK, R0
+  207 0000006E 4770            BX               LR
+  208 00000070                 ENDP
+  209 00000070         
+  210 00000070         
+  211 00000070         
+  212 00000070                 ALIGN
+  213 00000070                 END
               E000ED88 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\special_reg_access.d -o.\objects\special_reg_access.o
@@ -339,13 +358,13 @@ Symbol: __enable_irqs
    Uses
       At line 36 in file src\HAL
 Comment: __enable_irqs used once
-__end_critical 00000062
+__end_critical 00000068
 
 Symbol: __end_critical
    Definitions
-      At line 188 in file src\HAL
+      At line 204 in file src\HAL
    Uses
-      At line 187 in file src\HAL
+      At line 203 in file src\HAL
 Comment: __end_critical used once
 __get_base_prio 0000000E
 
@@ -369,6 +388,14 @@ Relocatable symbols
    Uses
       At line 157 in file src\HAL
 Comment: __get_control used once
+__get_ipsr 00000058
+
+Symbol: __get_ipsr
+   Definitions
+      At line 173 in file src\HAL
+   Uses
+      At line 172 in file src\HAL
+Comment: __get_ipsr used once
 __get_psp 0000001A
 
 Symbol: __get_psp
@@ -401,13 +428,13 @@ Symbol: __set_psp
    Uses
       At line 78 in file src\HAL
 Comment: __set_psp used once
-__start_critical 00000058
+__start_critical 0000005E
 
 Symbol: __start_critical
    Definitions
-      At line 173 in file src\HAL
+      At line 189 in file src\HAL
    Uses
-      At line 171 in file src\HAL
+      At line 187 in file src\HAL
 Comment: __start_critical used once
-13 symbols
-349 symbols in table
+14 symbols
+350 symbols in table

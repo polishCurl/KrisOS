@@ -8,10 +8,11 @@
 *
 * Note: 		
 *******************************************************************************/
+#include "KrisOS.h"
+#include "system.h"
 #include <stdio.h>
 #include <rt_misc.h>
-#include "special_reg_access.h"
-#include "uart.h"
+
 
 
 /*-------------------------------------------------------------------------------
@@ -24,13 +25,11 @@
 
 
 /*-------------------------------------------------------------------------------
-* File representation
+* Standard output and input streams
 --------------------------------------------------------------------------------*/
-struct __FILE { 
-	int handle;
-};
 FILE __stdout;
 FILE __stdin;
+
 
 
 /*-------------------------------------------------------------------------------
@@ -43,9 +42,13 @@ FILE __stdin;
 *		0 upon sucessful completion
 --------------------------------------------------------------------------------*/
 int fputc(int character, FILE *file) {
-	uart_send_char(character); 		
+#ifdef USE_UART
+	if (file == &UART_FILE)
+		uart_send_char(character); 
+#endif	
 	return 0;
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -56,9 +59,14 @@ int fputc(int character, FILE *file) {
 * Returns: 		
 *		character read
 --------------------------------------------------------------------------------*/
-int fgetc(FILE *f) {
-	return uart_get_char();	
+int fgetc(FILE *file) {
+#ifdef USE_UART
+	if (file == &UART_FILE)
+		return uart_get_char();
+#endif
+	return 0;
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -67,9 +75,10 @@ int fgetc(FILE *f) {
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
-int ferror(FILE *f) {
+int ferror(FILE *file) {
 	return EOF;
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -80,8 +89,11 @@ int ferror(FILE *f) {
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void _ttywrch(int character) {
+#ifdef USE_UART
 	uart_send_char(character);
+#endif
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -92,6 +104,8 @@ void _ttywrch(int character) {
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void _sys_exit(int return_code) {
-	printf("Exiting...");
+#ifdef USE_UART
+	fprintf(uart, "Terminating KrisOS...");
+#endif
 	while(1);
 }

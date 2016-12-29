@@ -8,7 +8,6 @@
 *
 * Note: 		
 *******************************************************************************/
-#include "common.h"
 #include "KrisOS.h"
 
 
@@ -55,20 +54,17 @@ extern uint32_t svc_exc_return;
 // Time sliced preemption enable bit in scheduler status field. If 1, time-slice 
 // preemption should be performed at the end of the time slice.
 #define TIME_PREEMPT_Pos 0 					
-											
-// Number of queues other than ready queues for each priority
-#define NON_READY_QUEUES 2
 
-// Total number of task queues in the scheduler. Ready queues for each priority 
-// (+1 because of lowest priority idle task) and  queues for delayed, blocked etc. tasks
-#define TOTAL_QUEUES_NO (TASK_PRIO_LVL_NO + 1 + NON_READY_QUEUES)
+// Total number of ready queues
+#define READY_QUEUES_NO (TASK_PRIO_LVL_NO + 1)
 
 // Scheduler definition
 typedef struct {
 	Task* runPtr; 							// Task currently running
-	Task* topPrioTask; 						// Task with currently highest priority
-	Task* queues[TOTAL_QUEUES_NO]; 			// All scheduler queues
-	Task* lastRunTask[TASK_PRIO_LVL_NO+1]; 	// Task last run for each ready queue (except idle)
+	Task* topPrioTask; 						// Current top priority task
+	Task* ready[READY_QUEUES_NO]; 			// Ready queue for each priority level
+	Task* lastRunTask[READY_QUEUES_NO]; 	// Task last run for each ready queue
+	Task* blocked; 							// Blocked tasks queue
 	int32_t lastIDUsed; 					// Last task ID assigned
 	uint32_t status; 						// Scheduler status bits
 } Scheduler; 								
@@ -108,8 +104,8 @@ void scheduler_wake_tasks(void);
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_create
-* Purpose:    	Create a task and add it to the ready queue
+* Function:    	task_create_dynamic
+* Purpose:    	Create a task using heap and add it to the ready queue
 * Arguments:	
 *		startAddr - starting address of the task to add
 *		stackSize - stack size (in bytes) required by the task
@@ -118,66 +114,55 @@ void scheduler_wake_tasks(void);
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
-					uint32_t isPrivileged);
+#ifdef USE_HEAP
+Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
+						  uint32_t isPrivileged);
+#endif
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_declare
-* Purpose:    	Register a statically allocated task at the scheduler
+* Function:    	task_create_static
+* Purpose:    	Create a task using statically allocated memory
 * Arguments:	
 * 		toDeclare - pointer to the pre-allocated task control block of the task to declare
 *		startAddr - starting address of the task to add
-*		stackBase - pointer to the private stack area to be used by the task to create 
+*		stackBase - pointer to the private static stack area to be used by the task
 *		priority - task priority
 *		isPrivileged - 1 if privileged access level (system task), 0 otherwise
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase, 
-					  uint32_t priority, uint32_t isPrivileged);
+uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase, 
+					        uint32_t priority, uint32_t isPrivileged);
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_delay
-* Purpose:    	Delay the currently running task by 'delay' number of OS ticks
+* Function:    	task_sleep
+* Purpose:    	Suspend the execution of the running task for specified amount of
+* 				OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_delay(uint64_t delay);
+uint32_t task_sleep(uint64_t delay);
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_suspend
-* Purpose:    	Suspend the task given
-* Arguments:	
-*		toSuspend - pointer to the task to suspend. If NULL the calling task suspends itself
-* Returns: 		
-*		exit status
+* Function:    	task_delete
+* Purpose:    	Permanently remove the calling task.
+* Arguments: 	-
+* Returns: 		-
 --------------------------------------------------------------------------------*/
-uint32_t task_suspend(Task* toSuspend);
+void task_delete(void);
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_resume
-* Purpose:    	Resume the task given
-* Arguments:	
-*		toSuspend - pointer to the task to resume.
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t task_resume(Task* toResume);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	task_insert_at_queue_start
+* Function:    	task_add
 * Purpose:    	Insert the task given at the beginning of the queue specified
 * Arguments: 	
 *		queue - queue to update
@@ -185,19 +170,34 @@ uint32_t task_resume(Task* toResume);
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_insert_at_queue_start(Task** queue, Task* toInsert);
+uint32_t task_add(Task** queue, Task* toInsert);
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_remove_from_queue
-* Purpose:    	Remove the task given from the queue it belongs to
+* Function:    	task_prio_add
+* Purpose:    	Add the task given to the queue specified in descending priority
+* 				order.
+* Arguments: 	
+*		queue - queue to update
+* 		toInsert - task to insert
+* Returns: 
+* 		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_prio_add(Task** queue, Task* toInsert);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_remove
+* Purpose:    	Remove the task given from the queue specified
 * Arguments: 
+*		queue - queue to update
 * 		toRemove - task to remove
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_remove_from_queue(Task* toRemove);
+uint32_t task_remove(Task** queue, Task* toRemove);
 
 
 
@@ -213,3 +213,13 @@ uint32_t task_remove_from_queue(Task* toRemove);
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_t priority);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_complete_handler
+* Purpose:    	Code to be executed when the running task returns. 
+* Arguments: 	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void task_complete_handler(void);

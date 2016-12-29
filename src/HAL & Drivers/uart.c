@@ -8,9 +8,18 @@
 *
 * Note: 		
 *******************************************************************************/
-#include "common.h"
-#include "time.h"
-#include "tm4c123gh6pm.h"
+#include "KrisOS.h"
+#include "system.h"
+#ifdef USE_UART
+
+
+
+/*-------------------------------------------------------------------------------
+* Uart I/O stream 'as file' declarations 
+--------------------------------------------------------------------------------*/
+__FILE UART_FILE;
+__FILE *uart;
+
 
 
 /*-------------------------------------------------------------------------------
@@ -25,7 +34,7 @@
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed, 
-			    uint32_t oddEven, uint32_t stopBits) {
+			   uint32_t oddEven, uint32_t stopBits) {
 					
 	// Integer and fractional part of the system clock divider for generating
 	// the desired baudRate
@@ -56,9 +65,13 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 				   (parityUsed << LCHR_PEN_Pos);  
 				   
 	// Enable the receive, transmitter and the whole UART module
-	UART0->CTL |= (1 << CTL_RXE_Pos) | (1 << CTL_TXE_Pos) | (1 << CTL_UARTEN_Pos);			
+	UART0->CTL |= (1 << CTL_RXE_Pos) | (1 << CTL_TXE_Pos) | (1 << CTL_UARTEN_Pos);	
+
+	// Create a file pointer for redirecting I/O stream
+	uart = &UART_FILE;
 }
 				
+
 
 /*-------------------------------------------------------------------------------
 * Function:    	sendChar
@@ -75,6 +88,7 @@ void uart_send_char(uint8_t character) {
 }
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	getChar
 * Purpose:    	Get character from UART
@@ -88,3 +102,6 @@ uint8_t uart_get_char(void) {
 	while (UART0->FR & (1 << RXFE_Pos)); 	
 	return (uint8_t) UART0->DR & 0xFF;
 }
+
+
+#endif

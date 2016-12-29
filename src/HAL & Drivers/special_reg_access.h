@@ -11,6 +11,7 @@
 #include "common.h"
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	__disable_irqs
 * Purpose:    	Disable interrupts by setting the I bit in PRIMASK register
@@ -19,7 +20,8 @@
 *------------------------------------------------------------------------------*/
 void __disable_irqs(void);
 
-				
+	
+	
 /*-------------------------------------------------------------------------------
 * Function:    	__enable_irqs
 * Purpose:    	Enable interrupts by clearing the I bit in PRIMASK register
@@ -27,7 +29,8 @@ void __disable_irqs(void);
 * Returns: 		-
 *------------------------------------------------------------------------------*/
 void __enable_irqs(void);
-				
+	
+	
 		
 /*-------------------------------------------------------------------------------
 * Function:    	__set_base_prio
@@ -40,6 +43,7 @@ void __enable_irqs(void);
 void __set_base_prio(uint32_t basePrio);
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	__get_base_prio
 * Purpose:    	Read the masking priority level
@@ -48,6 +52,7 @@ void __set_base_prio(uint32_t basePrio);
 *		R0 - masking priority level
 *------------------------------------------------------------------------------*/
 uint32_t __get_base_prio(void);
+
 
 
 /*-------------------------------------------------------------------------------
@@ -60,6 +65,7 @@ uint32_t __get_base_prio(void);
 void __set_psp(uint32_t address);
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	__get_psp
 * Purpose:    	Get the value of the Process Stack Pointer
@@ -68,6 +74,7 @@ void __set_psp(uint32_t address);
 *		value of PSP
 *------------------------------------------------------------------------------*/	
 uint32_t __get_psp(void);
+
 
 
 /*-------------------------------------------------------------------------------
@@ -79,6 +86,7 @@ uint32_t __get_psp(void);
 void __enable_fpu(void);
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	__disable_fpu
 * Purpose:    	Disable the floating-point unit co-processor
@@ -86,6 +94,7 @@ void __enable_fpu(void);
 * Returns: 		-	
 *------------------------------------------------------------------------------*/
 void __disable_fpu(void);
+
 
 
 /*------------------------------------------------------------------------------
@@ -98,6 +107,7 @@ void __disable_fpu(void);
 void __set_control(uint32_t value);
 
 
+
 /*------------------------------------------------------------------------------
 * Function:    	__get_control
 * Purpose:    	Get the value from the CONTROL register
@@ -108,6 +118,18 @@ void __set_control(uint32_t value);
 uint32_t __get_control(void);
 
 
+
+/*------------------------------------------------------------------------------
+* Function:    	__get_ipsr
+* Purpose:    	Get the value from the IPSR register
+* Arguments: 	-
+* Returns: 		
+*		value from IPSR register
+*-----------------------------------------------------------------------------*/
+uint32_t __get_ipsr(void);
+
+
+
 /*------------------------------------------------------------------------------
 * Function:    	__start_critical
 * Purpose:    	Enter critical section by disabling interrupts and saving the 
@@ -116,6 +138,7 @@ uint32_t __get_control(void);
 * Returns: 		-
 *-----------------------------------------------------------------------------*/
 void __start_critical(void);
+
 
 
 /*------------------------------------------------------------------------------

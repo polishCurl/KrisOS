@@ -159,7 +159,23 @@ __get_control	PROC
 				MRS		R0, CONTROL
 				BX 		LR
 				ENDP
-		
+					
+					
+
+;-------------------------------------------------------------------------------
+; Function:    	__get_ipsr
+; Purpose:    	Get the value from the IPSR register
+; Arguments: 	-	
+; Returns: 		
+;		R0 - value from IPSR register
+;-------------------------------------------------------------------------------
+				EXPORT	__get_ipsr
+__get_ipsr		PROC
+				MRS		R0, IPSR
+				BX 		LR
+				ENDP
+	
+	
 
 ;-------------------------------------------------------------------------------
 ; Function:    	__start_critical

@@ -8,15 +8,11 @@
 *
 * Note: 		
 *******************************************************************************/
-
-
-/*-------------------------------------------------------------------------------
-* Included headers
-*------------------------------------------------------------------------------*/
-#include "common.h"
-#include "heap.h"
-#include "special_reg_access.h"
 #include "KrisOS.h"
+#include "kernel.h"
+#include "system.h"
+#ifdef USE_HEAP
+
 
 
 /*-------------------------------------------------------------------------------
@@ -233,3 +229,4 @@ size_t align_byte_number(size_t byteNumber) {
 	return byteNumber;
 }
 
+#endif

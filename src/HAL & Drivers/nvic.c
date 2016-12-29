@@ -8,8 +8,16 @@
 *
 * Note: 		
 *******************************************************************************/
-#include "nvic.h"
-#include "tm4c123gh6pm.h"
+#include "system.h"
+
+
+
+/*-------------------------------------------------------------------------------
+* Interrupt controller setup
+*------------------------------------------------------------------------------*/
+#define MAX_IRQ_PRIO 1
+#define MIN_IRQ_PRIO 6
+
 
 
 /*-------------------------------------------------------------------------------
@@ -124,4 +132,20 @@ uint32_t nvic_get_priority(IRQn_Type irq) {
 }
 
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	nvic_irq_prio_check
+* Purpose:    	Test if user-specified priority is a valid one
+* Arguments: 	
+*		priority - ptiority to check
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t nvic_irq_prio_check(uint32_t priority) {
+	
+	if (priority < MAX_IRQ_PRIO || priority > MIN_IRQ_PRIO)
+		return EXIT_FAILURE;
+	
+	return EXIT_SUCCESS;
+}
 

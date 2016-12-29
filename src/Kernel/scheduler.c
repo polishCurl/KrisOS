@@ -8,10 +8,9 @@
 *
 * Note: 		
 *******************************************************************************/
-#include "common.h"
-#include "scheduler.h"
+#include "KrisOS.h"
+#include "kernel.h"
 #include "system.h"
-#include "os.h"
 
 
 
@@ -19,7 +18,6 @@
 * Scheduler declaration
 --------------------------------------------------------------------------------*/
 Scheduler scheduler;
-
 
 
 
@@ -34,11 +32,11 @@ void scheduler_init(void) {
 	// Initialise each of the queues in the scheduler to NULL, which means they are
 	// empty. Also initialise the lastRunTask pointers for each of the ready queues
 	int32_t queueIndex;
-	for (queueIndex = 0; queueIndex < TOTAL_QUEUES_NO; queueIndex++) {
-		scheduler.queues[queueIndex] = NULL;
-		if (queueIndex <= TASK_PRIO_LVL_NO)
-			scheduler.lastRunTask[queueIndex] = NULL;	
+	for (queueIndex = 0; queueIndex < READY_QUEUES_NO; queueIndex++) {
+		scheduler.ready[queueIndex] = NULL;
+		scheduler.lastRunTask[queueIndex] = NULL;	
 	}
+	scheduler.blocked = NULL;
 	
 	// Start assigning task IDs from 1. (Actually +-1 as system tasks have negative 
 	// IDs and user tasks have positive IDs
@@ -46,6 +44,9 @@ void scheduler_init(void) {
 	
 	// Initialise the status bits
 	scheduler.status = 0;
+	
+	// Set the runPtr to the idle task
+	scheduler.runPtr = &idleTask;
 }
 
 
@@ -64,7 +65,7 @@ void scheduler_run(void) {
 	__start_critical();
 	{
 		// Find the first non-empty ready queue
-		while (scheduler.queues[queueIndex] == NULL) 
+		while (scheduler.ready[queueIndex] == NULL) 
 			queueIndex++;
 				
 		// If no task has ever been run from the given ready queue or there is only
@@ -74,8 +75,11 @@ void scheduler_run(void) {
 		if (scheduler.lastRunTask[queueIndex] != NULL && scheduler.lastRunTask[queueIndex]->next != NULL) 
 			scheduler.lastRunTask[queueIndex] = scheduler.topPrioTask = scheduler.lastRunTask[queueIndex]->next;
 		else
-			scheduler.lastRunTask[queueIndex] = scheduler.topPrioTask = scheduler.queues[queueIndex];
-		scheduler.topPrioTask->status = RUNNING;
+			scheduler.lastRunTask[queueIndex] = scheduler.topPrioTask = scheduler.ready[queueIndex];
+		
+		if (scheduler.runPtr->status == RUNNING)
+			scheduler.runPtr->status = READY;
+		scheduler.topPrioTask->status = RUNNING; 
 		
 		// The current time-slice will now be divided between more than one task so 
 		// time-sliced preemption is switched off until the next time slice is entered
@@ -83,8 +87,12 @@ void scheduler_run(void) {
 		
 		// Perform context-switch only if the next task to run is different from the 
 		// current one, according to the scheduling policy
-		if (scheduler.topPrioTask != scheduler.runPtr)
+		if (scheduler.topPrioTask != scheduler.runPtr) {
 			SCB->ICSR |= (1 << PENDSV_Pos);	
+#ifdef SHOW_DIAGNOSTIC_DATA
+			KrisOS.contextSwitchNo++;
+#endif
+		}
 	}
 	__end_critical();
 }
@@ -106,16 +114,17 @@ void scheduler_wake_tasks(void) {
 	{
 		// Go through the delayed queue until a 'not ready' task is encountered (task are 
 		// sorted in ascending delay time)
-		while (scheduler.queues[DELAYED] != NULL && scheduler.queues[DELAYED]->waitCounter <= OS_TICKS) {
+		while (scheduler.blocked != NULL && scheduler.blocked->waitCounter <= OS_TICKS) {
 			
 			// Remove the ready task from delayed queue and reset its wait counter
-			toWake = scheduler.queues[DELAYED];
-			task_remove_from_queue(toWake);
+			toWake = scheduler.blocked;
+			task_remove(&scheduler.blocked, toWake);
 			toWake->waitCounter = 0;
+			toWake->status = READY;
 			
 			// Insert the task at the beginning of the ready queue of tasks with same
 			// priority
-			task_insert_at_queue_start(&scheduler.queues[toWake->priority], toWake);
+			task_add(&scheduler.ready[toWake->priority], toWake);
 		}
 		// Reschedule tasks as the state of ready queues have changed
 		scheduler_run();
@@ -126,8 +135,8 @@ void scheduler_wake_tasks(void) {
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_create
-* Purpose:    	Create a task and add it to the ready queue
+* Function:    	task_create_dynamic
+* Purpose:    	Create a task using heap and add it to the ready queue
 * Arguments:	
 *		startAddr - starting address of the task to add
 *		stackSize - stack size (in bytes) required by the task
@@ -136,17 +145,17 @@ void scheduler_wake_tasks(void) {
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
-					uint32_t isPrivileged) {
+#ifdef USE_HEAP
+Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
+						  uint32_t isPrivileged) {
 	
 	// Pointer to the task to create
 	Task* toCreate;				 
 						 
-	// Test if priority is matching one of the allowed priority levels
+	// Test if priority is matching one of the allowed priority levels and the starting 
+	// address of the task code is valid
 	if (priority > TASK_PRIO_LVL_NO)
 		return NULL;
-	
-	// Check if the starting address of the task code is valid
 	TEST_NULL_POINTER(startAddr)
 	
 	// Adjust the stack size to comply with the stack alignment
@@ -161,15 +170,6 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 	toCreate->stackBase = malloc(stackSize);
 	TEST_NULL_POINTER(toCreate->stackBase)
 	toCreate->sp = ((uint32_t) toCreate->stackBase) + stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
-	
-	// Assign the task's priority, id, status and sleep time. System tasks have negative
-	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
-	// initial stack pointer value
-	toCreate->priority = priority;
-	toCreate->status = READY;
-	toCreate->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
-	scheduler.lastIDUsed++;
-	toCreate->waitCounter = 0;
 
 	// Initialise the task's control block and stack frame
 	task_init(toCreate, startAddr, isPrivileged, priority);
@@ -178,8 +178,8 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 	// priority as the one to insert. And reschedule task if OS is already running
 	__start_critical();
 	{
-		task_insert_at_queue_start(&scheduler.queues[priority], toCreate);
-		if (OS_RUNNING)
+		task_add(&scheduler.ready[priority], toCreate);
+		if (KrisOS.isRunning)
 			scheduler_run();
 	} 
 	__end_critical();
@@ -187,23 +187,24 @@ Task* task_create(void* startAddr, size_t stackSize, uint32_t priority,
 	// Return the pointer tu the task created
 	return toCreate;
 }
-					 
+#endif
+
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_declare
-* Purpose:    	Register a statically allocated task at the scheduler
+* Function:    	task_create_static
+* Purpose:    	Create a task using statically allocated memory
 * Arguments:	
 * 		toDeclare - pointer to the pre-allocated task control block of the task to declare
 *		startAddr - starting address of the task to add
-*		stackBase - pointer to the private stack area to be used by the task to create 
+*		stackBase - pointer to the private static stack area to be used by the task
 *		priority - task priority
 *		isPrivileged - 1 if privileged access level (system task), 0 otherwise
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase, 
-					  uint32_t priority, uint32_t isPrivileged) {
+uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase, 
+					        uint32_t priority, uint32_t isPrivileged) {
 						 
 						 
 	// Test if input arguments are valid
@@ -224,8 +225,8 @@ uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase,
 	// priority as the one to insert. And reschedule task if OS is already running
 	__start_critical();
 	{
-		task_insert_at_queue_start(&scheduler.queues[priority], toDeclare);
-		if (OS_RUNNING)
+		task_add(&scheduler.ready[priority], toDeclare);
+		if (KrisOS.isRunning)
 			scheduler_run();
 	} 
 	__end_critical();
@@ -236,28 +237,33 @@ uint32_t task_declare(Task* toDeclare,  void* startAddr, void* stackBase,
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_delay
-* Purpose:    	Delay the currently running task by 'delay' number of OS ticks
+* Function:    	task_sleep
+* Purpose:    	Suspend the execution of the running task for specified amount of
+* 				OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_delay(uint64_t delay) {
+uint32_t task_sleep(uint64_t delay) {
 	
 	// Iterators trough the delayed queue and a pointer to the task to delay
 	Task *iterator, *previous, *toDelay;
 	
 	__start_critical();
-	{
+	{	
+#ifdef USE_MUTEX 	
+		// Release any locks the calling tasks has		
+		mutex_release_all(scheduler.runPtr);
+#endif		
 		// Only the calling task (currently executing) can delay itself. Remove the
 		// running task from the queue it belongs to
 		toDelay = scheduler.runPtr;
-		task_remove_from_queue(toDelay);
+		task_remove(&scheduler.ready[toDelay->priority], toDelay);
 		
 		// Update the wait counter and reschedule tasks
-		toDelay->waitCounter = OS_TICKS + delay;
-		toDelay->status = DELAYED;
+		toDelay->waitCounter = delay == TIME_INFINITY ? UINT64_MAX : OS_TICKS + delay;
+		toDelay->status = SLEEPING;
 		scheduler_run();
 		
 		// Insert the task to the queue with delayed tasks. Insertion sort it 
@@ -265,19 +271,19 @@ uint32_t task_delay(uint64_t delay) {
 		toDelay->next = toDelay->previous = NULL;
 		
 		// The queue is empty
-		if (scheduler.queues[DELAYED] == NULL) {
-			scheduler.queues[DELAYED] = toDelay;
+		if (scheduler.blocked == NULL) {
+			scheduler.blocked = toDelay;
 		}
 		// The task to insert to the delayed queue will be the soonest to wake
-		else if (toDelay->waitCounter <= scheduler.queues[DELAYED]->waitCounter) {
-			toDelay->next = scheduler.queues[DELAYED];
-			scheduler.queues[DELAYED]->previous = toDelay;
-			scheduler.queues[DELAYED] = toDelay;
+		else if (toDelay->waitCounter <= scheduler.blocked->waitCounter) {
+			toDelay->next = scheduler.blocked;
+			scheduler.blocked->previous = toDelay;
+			scheduler.blocked = toDelay;
 		}
 		// Iterate through the queue until the right spot is found (ascending delay
 		// value order)
 		else {
-			iterator = scheduler.queues[DELAYED];
+			iterator = scheduler.blocked;
 			while (iterator != NULL && toDelay->waitCounter >= iterator->waitCounter) {
 				previous = iterator;
 				iterator = iterator->next;
@@ -296,62 +302,40 @@ uint32_t task_delay(uint64_t delay) {
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_suspend
-* Purpose:    	Suspend the task given
-* Arguments:	
-*		toSuspend - pointer to the task to suspend. If NULL the calling task suspends itself
-* Returns: 		
-*		exit status
+* Function:    	task_delete
+* Purpose:    	Permanently remove the calling task.
+* Arguments: 	-
+* Returns: 		-
 --------------------------------------------------------------------------------*/
-uint32_t task_suspend(Task* toSuspend) {
+void task_delete(void) {
 	
+	Task* toDelete;
 	__start_critical();
-	{
-		// Check if the caller wants to suspend itself
-		if (toSuspend == NULL)
-			toSuspend = scheduler.runPtr;
+	{	
+		toDelete = scheduler.runPtr;
 		
-		// Move the task from the queue it is in to the blocked one and reschedule
-		// tasks
-		task_remove_from_queue(toSuspend);
-		toSuspend->status = BLOCKED;
+#ifdef USE_MUTEX 	
+		// Release any locks the calling tasks has		
+		mutex_release_all(toDelete);
+#endif		
+		// Update the task's status 
+		task_remove(&scheduler.ready[toDelete->priority], toDelete);
+		toDelete->status = REMOVED;
+		
+#ifdef USE_HEAP
+		// Free the heap memory the task occupies (if any)
+		free(toDelete->stackBase);
+		free(toDelete);
+#endif
 		scheduler_run();
-		task_insert_at_queue_start(&scheduler.queues[BLOCKED], toSuspend);
 	}
-	__end_critical();
-	
-	return EXIT_SUCCESS;
+	__end_critical();	
 }
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_resume
-* Purpose:    	Resume the task given
-* Arguments:	
-*		toSuspend - pointer to the task to resume.
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t task_resume(Task* toResume) {
-	
-	// Move the task from the queue it belongs to to the ready queue of tasks with
-	// same priority
-	__start_critical();
-	{
-		task_remove_from_queue(toResume);
-		toResume->status = READY;
-		task_insert_at_queue_start(&scheduler.queues[toResume->priority], toResume);
-		scheduler_run();
-	}
-	__end_critical();
-	return EXIT_SUCCESS;
-}
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	task_insert_at_queue_start
+* Function:    	task_add
 * Purpose:    	Insert the task given at the beginning of the queue specified
 * Arguments: 	
 *		queue - queue to update
@@ -359,7 +343,7 @@ uint32_t task_resume(Task* toResume) {
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_insert_at_queue_start(Task** queue, Task* toInsert) {
+uint32_t task_add(Task** queue, Task* toInsert) {
 	
 	// The task is inserted at the beginning of the queue
 	toInsert->previous = NULL;
@@ -385,36 +369,78 @@ uint32_t task_insert_at_queue_start(Task** queue, Task* toInsert) {
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	task_remove_from_queue
-* Purpose:    	Remove the task given from the queue it belongs to
+* Function:    	task_prio_add
+* Purpose:    	Add the task given to the queue specified in descending priority
+* 				order.
+* Arguments: 	
+*		queue - queue to update
+* 		toInsert - task to insert
+* Returns: 
+* 		exit status
+--------------------------------------------------------------------------------*/
+uint32_t task_prio_add(Task** queue, Task* toInsert) {
+	
+	// Iterators through the queue to update
+	Task* iterator;
+	Task* previous;
+	
+	__start_critical();
+	{
+		// The queue is empty
+		if (*queue == NULL) {
+			*queue = toInsert;
+		}
+		// The task to insert has the hightest priority (is inserted at the beginnig)
+		else if (toInsert->priority <= (*queue)->priority) {
+			toInsert->next = *queue;
+			(*queue)->previous = toInsert;
+			*queue = toInsert;
+		}
+		// Iterate through the queue until a lower priority task is encountered
+		else {
+			iterator = *queue;
+			while (iterator != NULL && toInsert->priority >= iterator->priority) {
+				previous = iterator;
+				iterator = iterator->next;
+			}
+			toInsert->previous = previous;
+			toInsert->next = iterator;
+			previous->next = toInsert;
+			if (iterator != NULL)
+				iterator->previous = toInsert;
+		}
+	}
+	__end_critical();
+	
+	return EXIT_SUCCESS;
+}
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_remove
+* Purpose:    	Remove the task given from the queue specified
 * Arguments: 
+*		queue - queue to update
 * 		toRemove - task to remove
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_remove_from_queue(Task* toRemove) {
-	
-	// Index of the queue the task belongs to
-	uint8_t queueIndex;
-	
-	// Determine which queue the task belongs to
-	if (toRemove->status == RUNNING || toRemove->status == READY)
-		queueIndex = toRemove->priority;
-	else
-		queueIndex = toRemove->status;
-	
+uint32_t task_remove(Task** queue, Task* toRemove) {
+
 	__start_critical();
 	{
 		// Join the next and previous tasks together
 		if (toRemove->previous != NULL)
 			toRemove->previous->next = toRemove->next;
-		
 		if (toRemove->next != NULL)
 			toRemove->next->previous = toRemove->previous;
 		
 		// If the task to remove is at the start of the queue then update the queue head 
-		if (scheduler.queues[queueIndex] == toRemove) 
-			scheduler.queues[queueIndex] = scheduler.queues[queueIndex]->next;
+		if (*queue == toRemove) 
+			*queue = (*queue)->next;
+		
+		toRemove->next = toRemove->previous = NULL;
 	}
 	__end_critical();
 	
@@ -447,10 +473,17 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 	toInit->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
 	scheduler.lastIDUsed++;
 	toInit->waitCounter = 0;
+#ifdef USE_MUTEX
+	toInit->basePrio = priority;
+	toInit->mutexHeld = toInit->mutexWaiting = NULL;
+#endif
 
 	// Set the initial PC to the starting address of task's code
 	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_PC << WORD_ACCESS_SHIFT));	
 	*taskFramePtr = (uint32_t) startAddr;
+	
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_LR << WORD_ACCESS_SHIFT));				   
+	*taskFramePtr = (uint32_t) task_complete_handler;
 	
 	// Set the initial value of xPSR
 	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_xPSR << WORD_ACCESS_SHIFT));				   
@@ -467,5 +500,17 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 	*taskFramePtr = isPrivileged ? 0x2 : 0x3;
 	
 	return EXIT_SUCCESS;
+}
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	task_complete_handler
+* Purpose:    	Code to be executed when the running task returns. 
+* Arguments: 	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void task_complete_handler(void) {
+	KrisOS_task_delete();
 }
 

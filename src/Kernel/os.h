@@ -14,9 +14,24 @@
 
 
 /*-------------------------------------------------------------------------------
-* Flag indicating whether the operating system is running
+* Kernel status struct
 --------------------------------------------------------------------------------*/
-extern uint32_t OS_RUNNING;
+typedef struct {
+	uint8_t isRunning;
+#ifdef SHOW_DIAGNOSTIC_DATA
+	uint32_t cpuUsage;
+	uint32_t contextSwitchNo;
+#endif
+} Kernel; 
+
+extern Kernel KrisOS;
+
+
+
+/*-------------------------------------------------------------------------------
+* Idle task
+--------------------------------------------------------------------------------*/
+extern Task idleTask;
 
 
 
