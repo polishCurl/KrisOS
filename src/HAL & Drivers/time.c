@@ -9,8 +9,9 @@
 * Note: 		Methods for controlling the system clock speed, periodic 
 *				interrupts using SysTick timer, as well as other timing utilities
 *******************************************************************************/
-#include "time.h"
-#include "tm4c123gh6pm.h"
+#include "system.h"
+#include "kernel.h"
+
 
 
 /*-------------------------------------------------------------------------------
@@ -47,13 +48,7 @@ typedef enum {
 * System clock speed, two variables, one for system, the other for user
 *------------------------------------------------------------------------------*/
 uint32_t SYSTEM_CLOCK_FREQ;
-uint32_t OS_CLOCK_FREQ;
 
-
-/*-------------------------------------------------------------------------------
-* Clock ticks
-*------------------------------------------------------------------------------*/
-uint64_t OS_TICKS;
 
 
 /*-------------------------------------------------------------------------------
@@ -110,7 +105,7 @@ void systick_config(uint32_t cycles) {
 	
 	// Main clock as source, SysTick enabled with IRQs
 	SYSTICK->CTRL |= (1 << CLK_SRC_Pos) | (1 << INTEN_Pos) | (1 << ENABLE_Pos);			
-	OS_TICKS = 0;
+	KrisOS.ticks = 0;
 }
 
 

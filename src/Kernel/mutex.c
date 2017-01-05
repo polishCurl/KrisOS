@@ -28,6 +28,11 @@ uint32_t mutex_init(Mutex* toInit) {
 	TEST_NULL_POINTER(toInit)
 	toInit->owner = toInit->waitingQueue = NULL;
 	toInit->next = NULL;
+	
+#ifdef SHOW_DIAGNOSTIC_DATA
+	// Update the total number of mutexes declared
+	KrisOS.totalMutexNo++;
+#endif	
 	return EXIT_SUCCESS;
 }
 
@@ -45,7 +50,7 @@ Mutex* mutex_create(void) {
 	// Allocate memory for a new mutex and initialise it
 	Mutex* toCreate = malloc(sizeof(Mutex));
 	TEST_NULL_POINTER(toCreate);
-	mutex_init(toCreate);
+	mutex_init(toCreate);	
 	return toCreate;
 }
 
@@ -74,6 +79,11 @@ uint32_t mutex_try_lock(Mutex* toLock) {
 			toLock->next = scheduler.runPtr->mutexHeld;
 			scheduler.runPtr->mutexHeld = toLock;
 			exitStatus = EXIT_SUCCESS;
+			
+			// Record the time the mutex has been taken
+			#ifdef SHOW_DIAGNOSTIC_DATA
+				toLock->timeTaken = KrisOS.ticks;
+			#endif
 		}
 		else {
 			exitStatus = toLock->owner == scheduler.runPtr ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -102,20 +112,9 @@ uint32_t mutex_lock(Mutex* toLock) {
 	
 	__start_critical();
 	{
-		// The lock specified is ready to be taken. The calling tasks becomes the owner
-		// immediately so both the lock is attached to the task and vice-versa
-		if (toLock->owner == NULL) {
-			toLock->owner = scheduler.runPtr;
-			toLock->next = scheduler.runPtr->mutexHeld;
-			scheduler.runPtr->mutexHeld = toLock;
-			exitStatus = EXIT_SUCCESS;
-		}
-		// The calling task already owns the mutex specified
-		else if (toLock->owner == scheduler.runPtr) {
-			exitStatus = EXIT_SUCCESS;
-		}
-		// Priority inheritance algorithm
-		else {
+		// If the lock can't be obtained immediately. The enqueue it while applying the priority
+		// inheritance algorithm
+		if (mutex_try_lock(toLock) == EXIT_FAILURE) {
 			// Iterate until the last task in the chain of locks is found, which needs
 			// to have its priority temporarily boosted in order to avoid priority inversion.
 			iterator = toLock->owner;
@@ -125,21 +124,21 @@ uint32_t mutex_lock(Mutex* toLock) {
 				// The task owning mutex given is waiting for its turn in the 
 				// ready queue so re-insert it into ready queue with priority increased
 				if (iterator->status == READY) {
-					task_remove(&scheduler.ready[iterator->basePrio], iterator);
-					task_add(&scheduler.ready[iterator->priority], iterator);
+					task_remove(&scheduler.ready, iterator);
+					task_add(&scheduler.ready, iterator);
 				}
 				// The task owning mutex is waiting for another mutex
 				else if (iterator->status == MTX_WAIT) {
 					task_remove(&iterator->mutexWaiting->waitingQueue, iterator);
-					task_prio_add(&iterator->mutexWaiting->waitingQueue, iterator);
+					task_add(&iterator->mutexWaiting->waitingQueue, iterator);
 					iterator = iterator->mutexWaiting->owner;
 				}
 			}
 			// Insert the task into the waiting list for the mutex in descending priority
 			// order
-			task_remove(&scheduler.ready[scheduler.runPtr->priority], scheduler.runPtr);
+			task_remove(&scheduler.ready, scheduler.runPtr);
 			scheduler_run();
-			task_prio_add(&toLock->waitingQueue, scheduler.runPtr);
+			task_add(&toLock->waitingQueue, scheduler.runPtr);
 			scheduler.runPtr->mutexWaiting = toLock;
 			scheduler.runPtr->status = MTX_WAIT;
 			exitStatus = EXIT_SUCCESS;	
@@ -173,12 +172,19 @@ uint32_t mutex_unlock(Mutex* toUnlock) {
 		// Remove the lock from the list of owned locks
 		scheduler.runPtr->mutexHeld = scheduler.runPtr->mutexHeld->next;
 		
+		// Check if the time elapsed from the moment the mutex was taken until it
+		// was given has exceeded the current maximum critical section length
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			if (KrisOS.ticks - toUnlock->timeTaken > KrisOS.maxMtxCriticalSection)
+				KrisOS.maxMtxCriticalSection = KrisOS.ticks - toUnlock->timeTaken;
+		#endif		
+		
 		// If the running task had it's priority boosted (priority inheritance) then 
 		// re-insert it into the ready queue with its original priority
 		if (scheduler.runPtr->priority != scheduler.runPtr->basePrio) {
-			task_remove(&scheduler.ready[scheduler.runPtr->priority], scheduler.runPtr);
+			task_remove(&scheduler.ready, scheduler.runPtr);
 			scheduler.runPtr->priority = scheduler.runPtr->basePrio;
-			task_add(&scheduler.ready[scheduler.runPtr->priority], scheduler.runPtr);
+			task_add(&scheduler.ready, scheduler.runPtr);
 			scheduler_run();
 		}
 		
@@ -189,7 +195,12 @@ uint32_t mutex_unlock(Mutex* toUnlock) {
 			toUnlock->waitingQueue = toUnlock->waitingQueue->next;
 			toUnlock->owner->status = READY;
 			toUnlock->owner->mutexHeld = toUnlock;
-			task_add(&scheduler.ready[toUnlock->owner->priority], toUnlock->owner);
+			task_add(&scheduler.ready, toUnlock->owner);
+			
+			// Record the time the mutex has been taken
+			#ifdef SHOW_DIAGNOSTIC_DATA
+				toUnlock->timeTaken = KrisOS.ticks;
+			#endif			
 			scheduler_run();
 		}
 		else {
@@ -216,6 +227,11 @@ uint32_t mutex_delete(Mutex* toDelete) {
 	
 	__start_critical();
 	{	
+#ifdef SHOW_DIAGNOSTIC_DATA
+		// Update the total number of mutexes declared
+		KrisOS.totalMutexNo--;
+#endif				
+		
 		// Only remove mutexes that are not used and don't have tasks waiting on them
 		if (toDelete->owner != NULL || toDelete->waitingQueue != NULL) {
 			__end_critical();

@@ -55,15 +55,11 @@ extern uint32_t svc_exc_return;
 // preemption should be performed at the end of the time slice.
 #define TIME_PREEMPT_Pos 0 					
 
-// Total number of ready queues
-#define READY_QUEUES_NO (TASK_PRIO_LVL_NO + 1)
-
 // Scheduler definition
 typedef struct {
 	Task* runPtr; 							// Task currently running
 	Task* topPrioTask; 						// Current top priority task
-	Task* ready[READY_QUEUES_NO]; 			// Ready queue for each priority level
-	Task* lastRunTask[READY_QUEUES_NO]; 	// Task last run for each ready queue
+	Task* ready; 							// Ready queue 
 	Task* blocked; 							// Blocked tasks queue
 	int32_t lastIDUsed; 					// Last task ID assigned
 	uint32_t status; 						// Scheduler status bits
@@ -103,6 +99,7 @@ void scheduler_wake_tasks(void);
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	task_create_dynamic
 * Purpose:    	Create a task using heap and add it to the ready queue
@@ -114,7 +111,6 @@ void scheduler_wake_tasks(void);
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-#ifdef USE_HEAP
 Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
 						  uint32_t isPrivileged);
 #endif
@@ -163,19 +159,6 @@ void task_delete(void);
 
 /*-------------------------------------------------------------------------------
 * Function:    	task_add
-* Purpose:    	Insert the task given at the beginning of the queue specified
-* Arguments: 	
-*		queue - queue to update
-* 		toInsert - task to insert
-* Returns: 
-* 		exit status
---------------------------------------------------------------------------------*/
-uint32_t task_add(Task** queue, Task* toInsert);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	task_prio_add
 * Purpose:    	Add the task given to the queue specified in descending priority
 * 				order.
 * Arguments: 	
@@ -184,7 +167,7 @@ uint32_t task_add(Task** queue, Task* toInsert);
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_prio_add(Task** queue, Task* toInsert);
+uint32_t task_add(Task** queue, Task* toInsert);
 
 
 

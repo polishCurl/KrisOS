@@ -20,9 +20,19 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 
 
 /*-------------------------------------------------------------------------------
-* Clock ticks
+* Clock source: 
+* 0 - 16MHz external crystal oscilator 
+* 1 - 16MHz internal oscilator
+* 2 - 4MHz internal oscilator (can't drive the Phase-Lock Loop)
+* 3 - 30kHz internal oscilator (can't drive the PLL)
 *------------------------------------------------------------------------------*/
-extern uint64_t OS_TICKS;
+#define CLOCK_SOURCE 0
+
+// System clock divider (Derived frequency = (200MHz / SYSCLOCK_DIVIDER)
+#define SYSCLOCK_DIVIDER 5 	
+
+// OS clock frequency (in Hz)
+#define OS_CLOCK_FREQ 1000
 
 
 

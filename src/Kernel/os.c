@@ -29,18 +29,83 @@ uint32_t svc_exc_return;
 
 /*-------------------------------------------------------------------------------
 * Function:		idle_task
-* Purpose:    	Idle task. Lowest priority task for power saving.
+* Purpose:    	Idle task. Lowest priority task used for power saving.
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void idle_task(void) {
-	while(1) __wfi();
+	while(1) { 
+		__wfi();
+		
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			// Update the idle time counter
+			KrisOS.idleTime++;
+		#endif
+	}
 }
 
-// Idle task definition, the preallocated task control block and private stack
 Task idleTask;
 const size_t idleTaskStackSize = 100;
 uint8_t idleTaskStack[idleTaskStackSize];
+
+
+
+#ifdef SHOW_DIAGNOSTIC_DATA
+/*-------------------------------------------------------------------------------
+* Function:		stats_task
+* Purpose:    	KrisOS performance statistics task. Displays diagnostic data. 
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void stats_task(void) {
+	
+	// Current CPU usage (in %)
+	uint32_t cpuUsage;
+	
+	// The last time the task was run
+	uint64_t lastRun;
+	
+	while(1) {
+		
+		// Reset the usage data
+		KrisOS.idleTime = KrisOS.maxMtxCriticalSection = KrisOS.contextSwitchNo = 0;
+		
+		// Take note of the time the task iteration is taking place
+		lastRun = KrisOS.ticks;
+		
+		// Suspend the task in order to gather usage data
+		task_sleep(DIAG_DATA_RATE);
+		
+		// Compute the CPU usage based on the idle time counter, which gets updated whenever 
+		// the idle task is run. 
+		cpuUsage = 100 - (KrisOS.idleTime * 100 / (KrisOS.ticks - lastRun));
+		
+		#ifdef USE_MUTEX
+			mutex_lock(&uartMtx);
+		#endif
+		
+		fprintf(uart, "\n------------------------------\n");
+		fprintf(uart, "CPU usage:\t\t%d%%\n", cpuUsage);
+		fprintf(uart, "Context switches:\t%d\n", KrisOS.contextSwitchNo);
+		fprintf(uart, "Total task number:\t%d\n", KrisOS.totalTaskNo);
+		
+		#ifdef USE_MUTEX
+			fprintf(uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
+			fprintf(uart, "Max mutex lock time:\t%dms\n", KrisOS.maxMtxCriticalSection);
+		#endif
+		
+		fprintf(uart, "------------------------------\n");
+		
+		#ifdef USE_MUTEX
+				mutex_unlock(&uartMtx);
+		#endif
+	}
+}
+
+Task statsTask;
+const size_t statsTaskStackSize = 300;
+uint8_t statsTaskStack[statsTaskStackSize];
+#endif
 
 
 
@@ -60,25 +125,37 @@ void os_init(void) {
 		
 		// Set up the system clock
 		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
-	
-#ifdef USE_UART		
-		// Initialise the uart serial interface
-		uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
-				  SERIAL_MONITOR_D0_PARITY_CHECK, SERIAL_MONITOR_PARITY, 
-				  SERIAL_MONITOR_STOP_BITS); 
-#endif
 
-#ifdef USE_HEAP
 		// Initialise the heap
-		heap_init();
-#endif		
-
+		#ifdef USE_HEAP
+			heap_init();
+		#endif		
+		
 		// Initialse the scheduler
 		scheduler_init();
 		
 		// Create system tasks:
 		// 1. Idle task (priviliged, lowest possible task priority)
-		task_create_static(&idleTask, idle_task, &idleTaskStack[idleTaskStackSize], TASK_PRIO_LVL_NO, 1);
+		task_create_static(&idleTask, idle_task, &idleTaskStack[idleTaskStackSize], 
+						   UINT8_MAX, 1);
+		
+		// 2. OS performance statistics task. Displays usage data periodically.
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			task_create_static(&statsTask, stats_task, &statsTaskStack[statsTaskStackSize], 
+							   UINT8_MAX-1, 1);
+							   
+			// Reset the mutex counter
+			#ifdef USE_MUTEX
+				KrisOS.totalMutexNo = 0;
+			#endif
+		#endif
+			
+		// Initialise the uart serial interface
+		#ifdef USE_UART		
+			uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
+					  SERIAL_MONITOR_D0_PARITY_CHECK, SERIAL_MONITOR_PARITY, 
+					  SERIAL_MONITOR_STOP_BITS); 
+		#endif
 		
 		// Set the IRQ priority of Interrupts for task scheduling 
 		// 1. SysTick (highest possible)
@@ -139,15 +216,15 @@ void os_start(void) {
 void SysTick_Handler(void) {
 	
 	// Increment the OS ticks counter
-	OS_TICKS++;
+	KrisOS.ticks++;
 	
 	// If the soonest delayed task has become ready then wake all the currently ready tasks up
-	if (scheduler.blocked != NULL && scheduler.blocked->waitCounter <= OS_TICKS)
+	if (scheduler.blocked != NULL && scheduler.blocked->waitCounter <= KrisOS.ticks)
 		scheduler_wake_tasks();
-	
+		
 	// If the currently running task has used up its entire time slice, then
 	// it should be preempted.
-	if (OS_TICKS % TIME_SLICE == 0) {
+	if (KrisOS.ticks % TIME_SLICE == 0) {
 		if (scheduler.status & (1 << TIME_PREEMPT_Pos))
 			scheduler_run();
 		else

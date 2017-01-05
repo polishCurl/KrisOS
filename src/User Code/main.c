@@ -18,7 +18,7 @@ const size_t blinkyStackSize = 324;
 uint8_t blinkyStack[blinkyStackSize];
 Task blinkyTask;
 
-Mutex serialMonitorMux;
+
 
 
 
@@ -33,19 +33,18 @@ int main(void) {
 
 
 void starter(void) {
-	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 1);
-	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 500, 3);
-	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 3);
-	KrisOS_mutex_init(&serialMonitorMux);
+	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 4);
+	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 500, 4);
+	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 4);
 }
 
 
 
 void secondTimer(void) {
 	while(1) {
-		KrisOS_mutex_lock(&serialMonitorMux);
+		//KrisOS_mutex_lock(&uartMtx);
 		fprintf(uart, "\nKurwy cwele i menele\n");
-		KrisOS_mutex_unlock(&serialMonitorMux);
+		//KrisOS_mutex_unlock(&uartMtx);
 		KrisOS_task_sleep(1000);
 	}
 }
@@ -58,10 +57,10 @@ void primeNumbers(void) {
 		
 	while(1) {
 		low = 2;
-		high = 50000;
-		KrisOS_mutex_lock(&serialMonitorMux);
+		high = 30000;
+		//KrisOS_mutex_lock(&uartMtx);
 		fprintf(uart, "\nPrime numbers between %d and %d are: \n", low, high);
-		KrisOS_mutex_unlock(&serialMonitorMux);
+		//KrisOS_mutex_unlock(&uartMtx);
 
 		while (low < high)
 		{
@@ -74,12 +73,13 @@ void primeNumbers(void) {
 				}
 
 			if (flag == 0) {
-				KrisOS_mutex_lock(&serialMonitorMux);
+				//KrisOS_mutex_lock(&uartMtx);
 				fprintf(uart, "%d ", low);
-				KrisOS_mutex_unlock(&serialMonitorMux);
+				//KrisOS_mutex_unlock(&uartMtx);
 			}
 			++low;
 		}
+		KrisOS_task_sleep(30000);
 	}		
 }
 
@@ -119,8 +119,5 @@ void blinky(void) {
 		KrisOS_task_sleep(715);
 		portFOutput(0x00);
 		KrisOS_task_sleep(715);
-		KrisOS_mutex_lock(&serialMonitorMux);
-		fprintf(uart, " WWWWWWWWWWWWWWWWWWWWWWWWWW ");
-		KrisOS_mutex_unlock(&serialMonitorMux);
 	}
 }

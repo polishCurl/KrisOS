@@ -26,3 +26,22 @@
 .\objects\uart.o: src\HAL & Drivers\fifo.h
 .\objects\uart.o: src\HAL & Drivers\special_reg_access.h
 .\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\kernel.h
+.\objects\uart.o: .\src\Kernel\heap.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\KrisOS.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\scheduler.h
+.\objects\uart.o: .\src\Kernel\KrisOS.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\mutex.h
+.\objects\uart.o: .\src\Kernel\KrisOS.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\os.h
+.\objects\uart.o: .\src\Common\common.h

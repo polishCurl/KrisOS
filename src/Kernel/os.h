@@ -17,10 +17,14 @@
 * Kernel status struct
 --------------------------------------------------------------------------------*/
 typedef struct {
-	uint8_t isRunning;
+	uint8_t isRunning; 					// Flag indicating if the OS is running
+	uint64_t ticks; 					// OS ticks, incremented on every timer interrupt
 #ifdef SHOW_DIAGNOSTIC_DATA
-	uint32_t cpuUsage;
-	uint32_t contextSwitchNo;
+	uint32_t idleTime; 					// Idle time counter (ms)
+	uint32_t contextSwitchNo; 			// Context switch counter
+	uint32_t maxMtxCriticalSection; 	// Longest critical section implemented using mutexes
+	uint32_t totalTaskNo; 				// Total number of tasks declared
+	uint32_t totalMutexNo; 				// Total number of mutexes in use
 #endif
 } Kernel; 
 

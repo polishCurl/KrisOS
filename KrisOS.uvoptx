@@ -154,14 +154,14 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>serialMonitorMux</ItemText>
+          <ItemText>scheduler</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>scheduler</ItemText>
+          <ItemText>\\KrisOS\src/HAL &amp; Drivers/uart.c\uartMtx</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

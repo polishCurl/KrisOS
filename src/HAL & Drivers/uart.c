@@ -10,6 +10,7 @@
 *******************************************************************************/
 #include "KrisOS.h"
 #include "system.h"
+#include "kernel.h"
 #ifdef USE_UART
 
 
@@ -19,6 +20,15 @@
 --------------------------------------------------------------------------------*/
 __FILE UART_FILE;
 __FILE *uart;
+
+
+
+/*-------------------------------------------------------------------------------
+* Mutex on UART
+--------------------------------------------------------------------------------*/
+#ifdef USE_MUTEX
+	Mutex uartMtx;
+#endif
 
 
 
@@ -69,6 +79,11 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 
 	// Create a file pointer for redirecting I/O stream
 	uart = &UART_FILE;
+	
+	// Initialise the UART mutex
+	#ifdef USE_MUTEX	
+		mutex_init(&uartMtx);
+	#endif
 }
 				
 

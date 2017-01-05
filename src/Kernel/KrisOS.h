@@ -36,24 +36,15 @@ typedef struct Mutex Mutex; 		// Mutex
 /*******************************************************************************
 * System timing setup
 *******************************************************************************/
-/* Clock source: 
-	0 - 16MHz external crystal oscilator 
-	1 - 16MHz internal oscilator
-	2 - 4MHz internal oscilator (can't drive the Phase-Lock Loop)
-	3 - 30kHz internal oscilator (can't drive the PLL)	*/
-#define CLOCK_SOURCE 0
-
-// System clock divider (Derived frequency = (200MHz / SYSCLOCK_DIVIDER)
-#define SYSCLOCK_DIVIDER 5 	
-
-// OS clock frequency (in Hz)
-#define OS_CLOCK_FREQ 1000
-
-// Time quantum size for multitasking (in OS 'ticks')
+// Time quantum size for multitasking (in ms)
 #define TIME_SLICE 50
 
 // Definition of infinity (for pernamently suspending tasks)
 #define TIME_INFINITY 0
+
+// Diagnostic data refresh rate (in ms). How frequently the KrisOS stats task is run
+// This is just a rough estimate due to the low priority of the task.
+#define DIAG_DATA_RATE 5000
 
 
 
@@ -61,12 +52,15 @@ typedef struct Mutex Mutex; 		// Mutex
 * Mutexes setup
 *******************************************************************************/
 #ifdef USE_MUTEX
-// Mutex definition
 typedef struct Mutex {
 	Task* owner; 					// Task owning the mutex
 	Task* waitingQueue; 			// Queue of tasks waiting for the mutex
 	Mutex* next; 					// Pointer to the next mutex in the list
+#ifdef SHOW_DIAGNOSTIC_DATA 		// Last time mutex was taken (for critical
+	uint64_t timeTaken; 			// section length calculation)
+#endif
 } Mutex;
+
 #endif
 
 
@@ -74,10 +68,6 @@ typedef struct Mutex {
 /*******************************************************************************
 * Task scheduler setup
 *******************************************************************************/
-// Number of different priority levels which are allowed for user task. The priorities
-// are from 0 to (TASK_PRIO_LVL_NO - 1)
-#define TASK_PRIO_LVL_NO 5 	
-
 // Possible task states
 typedef enum {
 	RUNNING = 0,
@@ -121,7 +111,7 @@ typedef struct Task {
 * Serial Monitor setup (UART0 used)
 *******************************************************************************/
 // UART0 baud rate
-#define SERIAL_MONITOR_BAUD_RATE 9600
+#define SERIAL_MONITOR_BAUD_RATE 115200
 
 /* UART0 word length
 	0 - 5bits
@@ -145,27 +135,21 @@ typedef struct Task {
  	1 - two stop bits	*/
 #define SERIAL_MONITOR_STOP_BITS 0	
 
-
-
-/*******************************************************************************
-* File I/O setup
-*******************************************************************************/
-// File representation
+// UART as file
+#ifdef USE_UART
 typedef struct __FILE { 
 	int handle;
 } __FILE;
 
-#ifdef USE_UART
 extern __FILE *uart;
 #endif
 
-
-
-/*******************************************************************************
-* Performance statistics monitor setup
-*******************************************************************************/
-// Data refresh rate (in OS 'ticks')
-#define DIAG_DATA_RATE 1500
+// Mutex lock on UART for avoiding mixing output from different tasks
+#ifdef USE_UART 
+#ifdef USE_MUTEX
+extern Mutex uartMtx;
+#endif
+#endif
 
 
 
@@ -344,11 +328,11 @@ uint32_t __svc(SVC_TASK_NEW_S) KrisOS_task_create_static(Task* toCreate, void* s
 * Purpose:    	Suspend the execution of the running task for specified amount of
 * 				OS ticks.
 * Arguments: 	
-*		delay - number of OS 'ticks' do suspend execution of the task by
+*		ticks - number of OS 'ticks' do suspend execution of the task by
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_TASK_SLEEP) KrisOS_task_sleep(uint32_t ms10);
+uint32_t __svc(SVC_TASK_SLEEP) KrisOS_task_sleep(uint32_t ticks);
 
 
 
