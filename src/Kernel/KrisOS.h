@@ -44,7 +44,7 @@ typedef struct Mutex Mutex; 		// Mutex
 
 // Diagnostic data refresh rate (in ms). How frequently the KrisOS stats task is run
 // This is just a rough estimate due to the low priority of the task.
-#define DIAG_DATA_RATE 5000
+#define DIAG_DATA_RATE 4999
 
 
 
@@ -77,6 +77,14 @@ typedef enum {
 	REMOVED = 4,
 } TaskState;
 
+// Memory allocation type
+typedef enum {
+	STATIC = 0,
+	DYNAMIC = 1,
+} MemoryAllocation;
+
+
+
 // Task control block
 typedef struct Task {
 	uint32_t sp; 					// Stack pointer value
@@ -86,13 +94,21 @@ typedef struct Task {
 	uint8_t priority; 				// Task priority
 	TaskState status; 				// Current task status
 	uint64_t waitCounter;			// Remaining time to sleep (in OS 'ticks')
-	void* stackBase; 				// Pointer to the base of process' stack
+	uint32_t* stackBase; 			// Pointer to the base of process' stack
 #ifdef USE_MUTEX
 	uint8_t basePrio; 				// Base priority of the task given
 	Mutex* mutexHeld; 				// List of mutexes held
 	Mutex* mutexWaiting;			// Lock for which the task is waiting
 #endif
+#ifdef SHOW_DIAGNOSTIC_DATA
+	MemoryAllocation memoryType; 	// Task memory allocation (static or dynamic)
+	uint32_t cpuUsage; 				// CPU usage counter
+	uint32_t stackSize; 			// Stack memory size
+#endif
 } Task;
+
+// Size of the task registry for keeping track of all the tasks (without linked-list)
+#define TASK_REGISTRY_SIZE 20
 
 
 
@@ -110,30 +126,38 @@ typedef struct Task {
 /*******************************************************************************
 * Serial Monitor setup (UART0 used)
 *******************************************************************************/
+/* UART0 interface type
+	0 - polling-based
+	1 - Interrupt based with software FIFOs */
+#define UART_INTERFACE_TYPE 0
+
 // UART0 baud rate
-#define SERIAL_MONITOR_BAUD_RATE 115200
+#define UART_BAUD_RATE 115200
 
 /* UART0 word length
 	0 - 5bits
 	1 - 6bits
 	2 - 7bits
 	3 - 8bits	*/
-#define SERIAL_MONITOR_WORD_LEN 3	
+#define UART_WORD_LEN 3	
 
 /* UART0 parity checking
  	0 - no parity checking
  	1 - parity bit added (even or odd) 	*/
-#define SERIAL_MONITOR_D0_PARITY_CHECK 0	
+#define UART_D0_PARITY_CHECK 0	
 
 /* UART0 parity
  	0 - odd
  	1 - even	*/
-#define SERIAL_MONITOR_PARITY 0	
+#define UART_PARITY 0	
 
 /* UART0 number of stop bits
  	0 - one stop bit
  	1 - two stop bits	*/
-#define SERIAL_MONITOR_STOP_BITS 0	
+#define UART_STOP_BITS 0	
+
+// UART receiver and trasmitter software FIFO size (in bytes/characters)
+#define UART_FIFO_SIZE 250
 
 // UART as file
 #ifdef USE_UART
@@ -453,3 +477,41 @@ uint32_t __svc(SVC_MTX_DELETE) KrisOS_mutex_delete(Mutex* toDelete);
 
 #endif
 #endif
+
+
+
+#ifdef SHOW_DIAGNOSTIC_DATA
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_stack_usage
+* Purpose:    	Reset the stack memory given in order to extract stack usage data later
+* Arguments:	
+*		toPrepare - top of the stack memory to reset
+* 		size - size of stack memory
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size);
+#endif
+
+
+
+/*-------------------------------------------------------------------------------
+* Macro:    	task_define
+* Purpose:    	MACRO speeding up static task declaration by automatically declaring 
+*				necessary variables,
+* Arguments:	
+*		NAME - unique name of the task and prefix to the task description variable names.
+*			   1. task code starting address - void <NAME>(void)
+*			   2. task struct name prefix - Task <NAME>Task
+*			   3. task stack size - <NAME>StackSize = SIZE
+*			   4. task private stack memory - <NAME>Stack['task stack size']
+*			   
+* Returns: 
+*		Creates the aforementioned variables at compile-time
+--------------------------------------------------------------------------------*/
+#define task_define(NAME, STACK_SIZE) 								        \
+	void NAME ## (void);													\
+	Task NAME ## Task;											  			\
+	const size_t NAME ## StackSize = STACK_SIZE;							\
+	uint8_t NAME ## Stack[NAME ## StackSize];								\
+

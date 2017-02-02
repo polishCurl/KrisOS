@@ -35,6 +35,7 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 			    uint32_t oddEven, uint32_t stopBits);
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	sendChar
 * Purpose:    	Send character over UART
@@ -45,6 +46,7 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 void uart_send_char(uint8_t character);
 
 
+
 /*-------------------------------------------------------------------------------
 * Function:    	getChar
 * Purpose:    	Get character from UART
@@ -53,6 +55,26 @@ void uart_send_char(uint8_t character);
 *		character received
 --------------------------------------------------------------------------------*/
 uint8_t uart_get_char(void);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	uart_hardware_to_software_fifo
+* Purpose:    	Copy data from UART receiver hardware FIFO to the software one
+* Arguments: 	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void uart_hardware_to_software_fifo(void);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	uart_software_to_hardware_fifo
+* Purpose:    	Copy data from transmitter software FIFO to the UART hardware one
+* Arguments: 	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void uart_software_to_hardware_fifo(void);
 
 
 #endif

@@ -4,7 +4,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	28/09/2016
-* Last mod: 	28/09/2016
+* Last mod: 	06/01/2017
 *
 * Note: 		FIFO definition, both static (multiline MACRO) and dynamic (using
 * 				struct) to be used by the OS (Handler mode). FIFOs are implemented
@@ -13,6 +13,7 @@
 * 				sections
 *******************************************************************************/
 #include "special_reg_access.h"
+
 
 
 /*-------------------------------------------------------------------------------
@@ -29,44 +30,70 @@
 *		SIZE - maximum numer of elements the fifo can store
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-#define add_fifo(NAME, TYPE, SIZE) 								\
-																\
-	/* Fifo elements */											\
-	TYPE NAME ## Fifo[SIZE + 1];								\
-																\
-	/* Indexes of last and first elements in FIFO */			\
-	uint32_t NAME ## Head;										\
-	uint32_t NAME ## Tail;										\
-																\
-	/* Fifo initialisation function */							\
-	void NAME ## _fifo_init(void) {								\
-		NAME ## Head = NAME ## Tail = 0;						\
-	}															\
-																\
-	/* Put element into fifo */									\
-	int32_t NAME ## _fifo_put(TYPE item) {						\
-		if ((NAME ## Head + 1) % (SIZE + 1) == NAME ## Tail)	\
-			return EXIT_FAILURE;											\
-		else {													\
-			__start_critical();									\
-			NAME ## Fifo[NAME ## Head] = item;					\
-			NAME ## Head = (NAME ## Head + 1) % (SIZE + 1);		\
-			__end_critical();									\
-			return EXIT_SUCCESS;											\
-		}														\
-	}															\
-																\
-	/* Get element from fifo */									\
-	int32_t NAME ## _fifo_get(TYPE* item) {						\
-	if (NAME ## Tail == NAME ## Head )							\
-		return EXIT_FAILURE;												\
-	else {														\
-		__start_critical();										\
-		*item = NAME ## Fifo[NAME ## Tail];						\
-		NAME ## Tail = (NAME ## Tail + 1) % (SIZE + 1);				\
-		__end_critical();										\
-		return EXIT_SUCCESS;												\
-	}															\
+#define add_fifo(NAME, TYPE, SIZE) 								          \
+																          \
+	/* Fifo elements */											          \
+	TYPE NAME ## Fifo[SIZE + 1];								          \
+																          \
+	/* Indexes of last and first elements in FIFO */			          \
+	uint32_t NAME ## Head;										          \
+	uint32_t NAME ## Tail;										          \
+																          \
+	/* Fifo initialisation function */							          \
+	void NAME ## _fifo_init(void) {								          \
+		NAME ## Head = NAME ## Tail = 0;						          \
+	}															          \
+																          \
+	/* Put element into fifo */									          \
+	uint32_t NAME ## _fifo_put(TYPE item) {						          \
+																          \
+		uint32_t exitStatus;									          \
+		__start_critical();										          \
+		{														          \
+			if ((NAME ## Head + 1) % (SIZE + 1) == NAME ## Tail)           \
+				exitStatus = EXIT_FAILURE;						          \
+			else {												          \
+				NAME ## Fifo[NAME ## Head] = item;				          \
+				NAME ## Head = (NAME ## Head + 1) % (SIZE + 1);	          \
+				exitStatus = EXIT_SUCCESS;						          \
+			}													          \
+		}														          \
+		__end_critical();										          \
+		return exitStatus;										          \
+	}															          \
+																          \
+	/* Get element from fifo */									          \
+	uint32_t NAME ## _fifo_get(TYPE* item) {					          \
+																          \
+		uint32_t exitStatus;									          \
+		__start_critical();										          \
+		{														          \
+			if (NAME ## Tail == NAME ## Head )					          \
+				exitStatus = EXIT_FAILURE;						          \
+			else {												          \
+				*item = NAME ## Fifo[NAME ## Tail];				          \
+				NAME ## Tail = (NAME ## Tail + 1) % (SIZE + 1);	          \
+				exitStatus = EXIT_SUCCESS;						          \
+			}													          \
+		}														          \
+		__end_critical();										          \
+		return exitStatus;										          \
+	}															          \
+																          \
+	/* Test if fifo is empty */									          \
+	uint32_t NAME ## _fifo_is_empty(void) {						          \
+	if (NAME ## Tail == NAME ## Head )							          \
+		return EXIT_FAILURE;									          \
+	else 														          \
+		return EXIT_SUCCESS;									          \
+	}															          \
+																          \
+	/* Test if fifo is full */									          \
+	uint32_t NAME ## _fifo_is_full(void) {						          \
+	if ((NAME ## Head + 1) % (SIZE + 1) == NAME ## Tail)		          \
+		return EXIT_FAILURE;									          \
+	else 														          \
+		return EXIT_SUCCESS;									          \
 }										
 	
 

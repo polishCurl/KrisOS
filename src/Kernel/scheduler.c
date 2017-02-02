@@ -44,7 +44,7 @@ void scheduler_init(void) {
 	
 	// Reset the task counter
 	#ifdef SHOW_DIAGNOSTIC_DATA
-		KrisOS.totalTaskNo = 0;
+		scheduler.totalTaskNo = 0;
 	#endif	
 }
 
@@ -84,7 +84,7 @@ void scheduler_run(void) {
 			
 			// Update the context switch counter
 			#ifdef SHOW_DIAGNOSTIC_DATA
-				KrisOS.contextSwitchNo++;
+				scheduler.contextSwitchNo++;
 			#endif
 		}
 	}
@@ -139,7 +139,7 @@ void scheduler_wake_tasks(void) {
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
+Task* task_create_dynamic(void* startAddr, uint32_t stackSize, uint32_t priority,
 						  uint32_t isPrivileged) {
 	
 	// Pointer to the task to create
@@ -160,19 +160,18 @@ Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
 	toCreate->stackBase = malloc(stackSize);
 	TEST_NULL_POINTER(toCreate->stackBase)
 	toCreate->sp = ((uint32_t) toCreate->stackBase) + stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
-
+	
+	#ifdef SHOW_DIAGNOSTIC_DATA
+		// Indicate that the task is placed on heap and store the stack size
+		toCreate->memoryType = DYNAMIC;
+		toCreate->stackSize = stackSize;
+	
+		// Preprocess the stack memory for debugging purpose (estimating stack usage)
+		KrisOS_stack_usage(toCreate->stackBase, stackSize);
+	#endif
+	
 	// Initialise the task's control block and stack frame
 	task_init(toCreate, startAddr, isPrivileged, priority);
-	
-	// Insert the task to the ready queue in descending priority order and reschedule
-	// task if OS is already running
-	__start_critical();
-	{
-		task_add(&scheduler.ready, toCreate);
-		if (KrisOS.isRunning)
-			scheduler_run();
-	} 
-	__end_critical();
 	
 	// Return the pointer tu the task created
 	return toCreate;
@@ -201,23 +200,17 @@ uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase,
 	TEST_NULL_POINTER(stackBase)
 	TEST_NULL_POINTER(startAddr)
 	
-	// Attach the stack to the task control block of the task to declare
+	// Attach the stack to the task control block of the task to declare and set the SP value
 	toDeclare->stackBase = stackBase;
 	toDeclare->sp = ((uint32_t) toDeclare->stackBase) - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
+								
+	// Indicate that the task is statically allocated
+	#ifdef SHOW_DIAGNOSTIC_DATA
+		toDeclare->memoryType = STATIC;
+	#endif
 
 	// Initialise the task's control block and stack frame
 	task_init(toDeclare, startAddr, isPrivileged, priority);
-	
-	// Insert the task to the ready queue in descending priority order and reschedule
-	// task if OS is already running
-	__start_critical();
-	{
-		task_add(&scheduler.ready, toDeclare);
-		if (KrisOS.isRunning)
-			scheduler_run();
-	} 
-	__end_critical();
-
 	return EXIT_SUCCESS;
 }
 
@@ -300,22 +293,29 @@ void task_delete(void) {
 	Task* toDelete;
 	__start_critical();
 	{	
-		// Update the total number of tasks registered at the scheduler
-		#ifdef SHOW_DIAGNOSTIC_DATA
-			KrisOS.totalTaskNo--;
-		#endif	
+		// Task registry iterator
+		#ifdef SHOW_DIAGNOSTIC_DATA	
+			uint32_t index = 0;
+		#endif
 		
-		// Only the calling task can remove itself
+		// Remove the calling task from the list of ready tasks and update its state
 		toDelete = scheduler.runPtr;
+		task_remove(&scheduler.ready, toDelete);
+		toDelete->status = REMOVED;
+		
+		// Update the total number of tasks in the scheduler and remove the task to delete
+		// from the task registry
+		#ifdef SHOW_DIAGNOSTIC_DATA	
+			while (index < scheduler.totalTaskNo && scheduler.taskRegistry[index] != toDelete)
+				index++;
+			
+			scheduler.taskRegistry[index] = scheduler.taskRegistry[--scheduler.totalTaskNo];
+		#endif
 		
 		// Release any locks the calling tasks has		
 		#ifdef USE_MUTEX 	
 			mutex_release_all(toDelete);
 		#endif	
-		
-		// Update the task's status 
-		task_remove(&scheduler.ready, toDelete);
-		toDelete->status = REMOVED;
 		
 		// Free the heap memory the task occupies (if any)
 		#ifdef USE_HEAP
@@ -393,7 +393,7 @@ uint32_t task_add(Task** queue, Task* toInsert) {
 uint32_t task_remove(Task** queue, Task* toRemove) {
 
 	__start_critical();
-	{
+	{	
 		// Join the next and previous tasks together
 		if (toRemove->previous != NULL)
 			toRemove->previous->next = toRemove->next;
@@ -464,10 +464,23 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));				   
 	*taskFramePtr = isPrivileged ? 0x2 : 0x3;
 	
-	// Update the total number of tasks registered at the scheduler
-	#ifdef SHOW_DIAGNOSTIC_DATA	
-		KrisOS.totalTaskNo++;
-	#endif
+	__start_critical();
+	{
+		// Update the total number of tasks registered at the scheduler and reset the CPU usage counter
+		#ifdef SHOW_DIAGNOSTIC_DATA	
+			scheduler.taskRegistry[scheduler.totalTaskNo++] = toInit;
+			toInit->cpuUsage = 0;
+		#endif
+		
+		// Insert the task to the ready queue in descending priority order and reschedule
+		// task if OS is already running
+		task_add(&scheduler.ready, toInit);
+		if (KrisOS.isRunning)
+			scheduler_run();
+	} 
+	__end_critical();
+	
+	
 	
 	return EXIT_SUCCESS;
 }
@@ -483,4 +496,32 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 void task_complete_handler(void) {
 	KrisOS_task_delete();
 }
+
+
+
+#ifdef SHOW_DIAGNOSTIC_DATA
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_stack_usage
+* Purpose:    	Reset the stack memory given in order to extract stack usage data later
+* Arguments:	
+*		toPrepare - top of the stack memory to reset
+* 		size - size of stack memory
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size) {
+	
+	uint32_t* iterator;
+	uint32_t* endAddress;
+	
+	// Iterate through each word in the given memory area and initialise it to some 
+	// known value. This is later useful for stack usage computation
+	iterator = toPrepare;
+	endAddress = toPrepare + size / 4;
+	while (iterator < endAddress)
+		*iterator++ = 0xDEADBEEF;
+	
+	return EXIT_SUCCESS;
+}
+#endif
 

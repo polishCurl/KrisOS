@@ -43,13 +43,19 @@ typedef struct HeapBlock {
 * Heap manager definition
 --------------------------------------------------------------------------------*/
 typedef struct HeapManager {
-	size_t bytesUsed;				// Number of bytes already allocated
-	HeapBlock startBlock; 			// Beginning and the end of list of free blocks
+	HeapBlock startBlock; 				// Beginning and the end of list of free blocks
 	HeapBlock endBlock;
 	uint8_t heapMem[ALIGNED_HEAP_SIZE];	// Heap memory
 } HeapManager;
 
 HeapManager heap;
+
+
+
+/*-------------------------------------------------------------------------------
+* Number of bytes already allocated on heap
+--------------------------------------------------------------------------------*/
+uint32_t heapBytesUsed;				
 
 
 
@@ -91,7 +97,7 @@ void heap_init(void){
 	HeapBlock* firstBlock;
 	
 	// Reset the counter
-	heap.bytesUsed = 0;					
+	heapBytesUsed = 0;					
 	
 	// Initialise the two blocks used for management, the starting and ending ones
 	heap.startBlock.blockSize = 0;
@@ -164,7 +170,7 @@ void* malloc(size_t bytesToAlloc) {
 					iterator->blockSize = bytesToAlloc;
 					heap_insert_free_block(subBlock);
 				}	
-				heap.bytesUsed += iterator->blockSize;
+				heapBytesUsed += iterator->blockSize;
 			}
 		}
 		__end_critical();
@@ -201,7 +207,7 @@ void free(void* toFree) {
 		__start_critical();
 		{
 			heap_insert_free_block(blockToFree);
-			heap.bytesUsed -= blockToFree->blockSize;
+			heapBytesUsed -= blockToFree->blockSize;
 		}
 		__end_critical();
 	}

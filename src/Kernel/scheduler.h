@@ -63,6 +63,12 @@ typedef struct {
 	Task* blocked; 							// Blocked tasks queue
 	int32_t lastIDUsed; 					// Last task ID assigned
 	uint32_t status; 						// Scheduler status bits
+#ifdef SHOW_DIAGNOSTIC_DATA
+	uint32_t idleTime; 						// Idle time counter (ms)
+	uint32_t contextSwitchNo; 				// Context switch counter
+	uint32_t totalTaskNo; 					// Total number of tasks declared
+	Task* taskRegistry[TASK_REGISTRY_SIZE]; // Size of the task registry 
+#endif
 } Scheduler; 								
 
 extern Scheduler scheduler;

@@ -1,50 +1,36 @@
 #include "KrisOS.h"
 
+task_define(secondTimer, 200)
+task_define(blinky, 200)
 
 Task* primeNumbersTask;
 void primeNumbers(void);
-
-Task* startTask;
-void starter(void);
-
-
-void secondTimer(void);
-const size_t secondTimerStackSize = 300;
-uint8_t secondTimerStack[secondTimerStackSize];
-Task secondTimerTask;
-
-void blinky(void);
-const size_t blinkyStackSize = 324;
-uint8_t blinkyStack[blinkyStackSize];
-Task blinkyTask;
-
-
 
 
 
 int main(void) {	
 	
 	KrisOS_init();
-	startTask = (Task*) KrisOS_task_create(starter, 200, 0);
+	
+	KrisOS_stack_usage((uint32_t*) &secondTimerStack[0], secondTimerStackSize);
+	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 4);
+	
+	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 326, 4);
+	
+	KrisOS_stack_usage((uint32_t*) &blinkyStack[0], blinkyStackSize);
+	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 4);
+	
 	KrisOS_start();
 	while(1);
 }
 
 
 
-void starter(void) {
-	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 4);
-	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 500, 4);
-	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 4);
-}
-
-
-
 void secondTimer(void) {
 	while(1) {
-		//KrisOS_mutex_lock(&uartMtx);
+		KrisOS_mutex_lock(&uartMtx);
 		fprintf(uart, "\nKurwy cwele i menele\n");
-		//KrisOS_mutex_unlock(&uartMtx);
+		KrisOS_mutex_unlock(&uartMtx);
 		KrisOS_task_sleep(1000);
 	}
 }
@@ -54,13 +40,16 @@ void secondTimer(void) {
 void primeNumbers(void) {
 	
 	int32_t low, high, i, flag;
-		
+	int array[24];
+	for (i = 0; i < 24; i++)
+		array[i] = 0x77777777;
+	
 	while(1) {
 		low = 2;
-		high = 30000;
-		//KrisOS_mutex_lock(&uartMtx);
+		high = 20000;
+		KrisOS_mutex_lock(&uartMtx);
 		fprintf(uart, "\nPrime numbers between %d and %d are: \n", low, high);
-		//KrisOS_mutex_unlock(&uartMtx);
+		KrisOS_mutex_unlock(&uartMtx);
 
 		while (low < high)
 		{
@@ -73,13 +62,13 @@ void primeNumbers(void) {
 				}
 
 			if (flag == 0) {
-				//KrisOS_mutex_lock(&uartMtx);
+				KrisOS_mutex_lock(&uartMtx);
 				fprintf(uart, "%d ", low);
-				//KrisOS_mutex_unlock(&uartMtx);
+				KrisOS_mutex_unlock(&uartMtx);
 			}
 			++low;
 		}
-		KrisOS_task_sleep(30000);
+		KrisOS_task_sleep(40000);
 	}		
 }
 

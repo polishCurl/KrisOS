@@ -573,11 +573,49 @@ typedef struct {                     	// UART0 Structure
 #define LCHR_BRK_Pos 0
 
 // FR register bit numbers
-#define TXFE_Pos 7 				// Transmit FIFO empty
-#define RXFF_Pos 6				// Receive FIFO full
-#define TXFF_Pos 5 				// Transmit FIFO full
-#define RXFE_Pos 4 				// Receive FIFO empty
-#define BUSY_Pos 3 				// UART busy
-#define CTS_Pos 0 				// Clear to send
+#define FR_TXFE_Pos 7 				// Transmit FIFO empty
+#define FR_RXFF_Pos 6				// Receive FIFO full
+#define FR_TXFF_Pos 5 				// Transmit FIFO full
+#define FR_RXFE_Pos 4 				// Receive FIFO empty
+#define FR_BUSY_Pos 3 				// UART busy
+#define FR_CTS_Pos 0 				// Clear to send
+
+// IFLS register bit numbers
+#define RXIFSEL_Pos 3 				// UART Receive Interrupt FIFO Level Select
+#define TXIFSEL_Pos 0 				// UART Transmit Interrupt FIFO Level Select
+
+// IM register bit numbers
+#define BITIM9_Pos 12 				// UART 9-Bit Mode Interrupt Mask
+#define OEIM_Pos 10 				// UART Overrun Error Interrupt Mask
+#define BEIM_Pos 9 					// UART Break Error Interrupt Mask
+#define PEIM_Pos 8 					// UART Parity Error Interrupt Mask
+#define FEIM_Pos 7 					// UART Framing Error Interrupt Mask
+#define RTIM_Pos 6 					// UART Receive Time-Out Interrupt Mask
+#define TXIM_Pos 5 					// UART Transmit Interrupt Mask
+#define RXIM_Pos 4 					// UART Receive Interrupt Mask
+#define CTIM_Pos 1 					// UART Clear to Send Interrupt Mask
+
+// RIS register bit numbers
+#define BITRIS9_Pos 12 				// UART 9-Bit Mode Raw Interrupt Status
+#define OERIS_Pos 10 				// UART Overrun Error Raw Interrupt Status
+#define BERIS_Pos 9 				// UART Break Error Raw Interrupt Status
+#define PERIS_Pos 8 				// UART Parity Error Raw Interrupt Status
+#define FERIS_Pos 7 				// UART Framing Error Raw Interrupt Status
+#define RTRIS_Pos 6 				// UART Receive Time-Out Raw Interrupt Status
+#define TXRIS_Pos 5 				// UART Transmit Raw Interrupt Status
+#define RXRIS_Pos 4 				// UART Receive Raw Interrupt Status
+#define CTRIS_Pos 1 				// UART Clear to Send Raw Interrupt Status
+
+// ICR register bit numbers
+#define BITIC9_Pos 12 				// UART 9-Bit Mode Interrupt Clear
+#define OEIC_Pos 10 				// UART Overrun Error Interrupt Clear
+#define BEIC_Pos 9 					// UART Break Error Interrupt Clear
+#define PEIC_Pos 8 					// UART Parity Error Interrupt Clear
+#define FEIC_Pos 7 					// UART Framing Error Interrupt Clear
+#define RTIC_Pos 6 					// UART Receive TICe-Out Interrupt Clear
+#define TXIC_Pos 5 					// UART Transmit Interrupt Clear
+#define RXIC_Pos 4 					// UART Receive Interrupt Clear
+#define CTIC_Pos 1 					// UART Clear to Send Interrupt Clear
+
 
 #endif

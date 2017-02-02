@@ -34,19 +34,10 @@ uint32_t svc_exc_return;
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void idle_task(void) {
-	while(1) { 
-		__wfi();
-		
-		#ifdef SHOW_DIAGNOSTIC_DATA
-			// Update the idle time counter
-			KrisOS.idleTime++;
-		#endif
-	}
+	while(1) __wfi();
 }
 
-Task idleTask;
-const size_t idleTaskStackSize = 100;
-uint8_t idleTaskStack[idleTaskStackSize];
+task_define(idle, 100)
 
 
 
@@ -59,52 +50,94 @@ uint8_t idleTaskStack[idleTaskStackSize];
 --------------------------------------------------------------------------------*/
 void stats_task(void) {
 	
-	// Current CPU usage (in %)
+	// Per-task CPU usage and the last time the statistics task was run
 	uint32_t cpuUsage;
-	
-	// The last time the task was run
 	uint64_t lastRun;
+	
+	// Task registry iterator
+	int32_t index;
+	Task* iterator;
+	
+	// Stack usage helper iterator and stack usage value
+	uint32_t* stackUsageHelper;
+	uint32_t stackUsage;
 	
 	while(1) {
 		
 		// Reset the usage data
-		KrisOS.idleTime = KrisOS.maxMtxCriticalSection = KrisOS.contextSwitchNo = 0;
+		scheduler.idleTime = scheduler.contextSwitchNo = 0;
+		#ifdef USE_MUTEX
+			KrisOS.maxMtxCriticalSection = 0;
+		#endif
 		
 		// Take note of the time the task iteration is taking place
 		lastRun = KrisOS.ticks;
 		
-		// Suspend the task in order to gather usage data
+		// Suspend the task in order to take time to gather usage data
 		task_sleep(DIAG_DATA_RATE);
-		
-		// Compute the CPU usage based on the idle time counter, which gets updated whenever 
-		// the idle task is run. 
-		cpuUsage = 100 - (KrisOS.idleTime * 100 / (KrisOS.ticks - lastRun));
 		
 		#ifdef USE_MUTEX
 			mutex_lock(&uartMtx);
 		#endif
-		
-		fprintf(uart, "\n------------------------------\n");
-		fprintf(uart, "CPU usage:\t\t%d%%\n", cpuUsage);
-		fprintf(uart, "Context switches:\t%d\n", KrisOS.contextSwitchNo);
-		fprintf(uart, "Total task number:\t%d\n", KrisOS.totalTaskNo);
-		
+		{
+			// Display OS usage data
+			fprintf(uart, "\n-----------------------------------------------------\n");
+			fprintf(uart, "Context switches:\t%d\n", scheduler.contextSwitchNo);
+			fprintf(uart, "Total task number:\t%d\n", scheduler.totalTaskNo);
+			
+			#ifdef USE_MUTEX
+				fprintf(uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
+				fprintf(uart, "Max mutex lock time:\t%dms\n", KrisOS.maxMtxCriticalSection);
+			#endif
+			
+			#ifdef USE_HEAP
+				fprintf(uart, "Heap usage:\t\t%dB/%dB = %d%%\n", heapBytesUsed, HEAP_SIZE, heapBytesUsed * 100 / HEAP_SIZE);
+			#endif
+			
+			// Display the task manager (per-task statistics)
+			fprintf(uart, "\nTID\tCPU usage\tStack usage\tPriority\tStatus\t\tMemory\n");
+			for (index = 0; index < scheduler.totalTaskNo; index++) {
+				iterator = scheduler.taskRegistry[index];
+				
+				// Compute the CPU usage as the proportion of the OS ticks spend executing the task
+				// to the total number of OS ticks since the last time the statistics task was run
+				cpuUsage = iterator->cpuUsage * 100 / (KrisOS.ticks - lastRun);
+				
+				// Calculate the stack usage by calculating the offset from the stack base to the first
+				// memory location that hasn't been modified
+				stackUsageHelper = (uint32_t*) iterator->sp;
+				while (*stackUsageHelper-- != 0xDEADBEEF);
+				if (iterator->memoryType == DYNAMIC) 
+					stackUsage = iterator->stackSize - ((stackUsageHelper - iterator->stackBase) << 2);
+				else 
+					stackUsage = (iterator->stackBase - stackUsageHelper) << 2;
+					
+				fprintf(uart, "%d\t%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsage, stackUsage, iterator->priority);
+				
+				// Display the current task status 
+				switch(iterator->status) {
+					case RUNNING: fprintf(uart, "RUNNING\t\t"); break;
+					case READY: fprintf(uart, "READY\t\t"); break;
+					case SLEEPING: fprintf(uart, "SLEEPING\t"); break;
+					case MTX_WAIT: fprintf(uart, "WAITING ON MUTEX\t"); break;
+					default: break;
+				}
+
+				// Display the type of memory allocation used for the task and its stack (static/dynamic)
+				switch(iterator->memoryType) {
+					case STATIC: fprintf(uart, "Static\n"); break;
+					case DYNAMIC: fprintf(uart, "Dynamic\n"); break;
+				}
+			}
+			fprintf(uart, "\n-----------------------------------------------------\n");
+		}
 		#ifdef USE_MUTEX
-			fprintf(uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
-			fprintf(uart, "Max mutex lock time:\t%dms\n", KrisOS.maxMtxCriticalSection);
-		#endif
-		
-		fprintf(uart, "------------------------------\n");
-		
-		#ifdef USE_MUTEX
-				mutex_unlock(&uartMtx);
+			mutex_unlock(&uartMtx);
 		#endif
 	}
 }
 
-Task statsTask;
-const size_t statsTaskStackSize = 300;
-uint8_t statsTaskStack[statsTaskStackSize];
+task_define(stats, 256)
 #endif
 
 
@@ -136,14 +169,16 @@ void os_init(void) {
 		
 		// Create system tasks:
 		// 1. Idle task (priviliged, lowest possible task priority)
-		task_create_static(&idleTask, idle_task, &idleTaskStack[idleTaskStackSize], 
-						   UINT8_MAX, 1);
-		
-		// 2. OS performance statistics task. Displays usage data periodically.
 		#ifdef SHOW_DIAGNOSTIC_DATA
-			task_create_static(&statsTask, stats_task, &statsTaskStack[statsTaskStackSize], 
-							   UINT8_MAX-1, 1);
-							   
+			KrisOS_stack_usage((uint32_t*) &idleStack[0], idleStackSize);
+		#endif
+		task_create_static(&idleTask, idle_task, &idleStack[idleStackSize], UINT8_MAX, 1);
+		
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			// 2. OS performance statistics task. Displays usage data periodically.
+			KrisOS_stack_usage((uint32_t*) &statsStack[0], statsStackSize);
+			task_create_static(&statsTask, stats_task, &statsStack[statsStackSize], 0, 1);	
+
 			// Reset the mutex counter
 			#ifdef USE_MUTEX
 				KrisOS.totalMutexNo = 0;
@@ -152,9 +187,7 @@ void os_init(void) {
 			
 		// Initialise the uart serial interface
 		#ifdef USE_UART		
-			uart_init(SERIAL_MONITOR_BAUD_RATE, SERIAL_MONITOR_WORD_LEN,  
-					  SERIAL_MONITOR_D0_PARITY_CHECK, SERIAL_MONITOR_PARITY, 
-					  SERIAL_MONITOR_STOP_BITS); 
+			uart_init(UART_BAUD_RATE, UART_WORD_LEN, UART_D0_PARITY_CHECK, UART_PARITY, UART_STOP_BITS); 
 		#endif
 		
 		// Set the IRQ priority of Interrupts for task scheduling 
@@ -217,6 +250,11 @@ void SysTick_Handler(void) {
 	
 	// Increment the OS ticks counter
 	KrisOS.ticks++;
+	
+	// Update the cpu usage data of currently running task
+	#ifdef SHOW_DIAGNOSTIC_DATA
+		scheduler.runPtr->cpuUsage++;
+	#endif
 	
 	// If the soonest delayed task has become ready then wake all the currently ready tasks up
 	if (scheduler.blocked != NULL && scheduler.blocked->waitCounter <= KrisOS.ticks)

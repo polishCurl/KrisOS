@@ -15,6 +15,13 @@
 
 #ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
+* Number of bytes already allocated on heap
+--------------------------------------------------------------------------------*/
+extern uint32_t heapBytesUsed;
+
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	heap_init
 * Purpose:    	Heap initialisation function (no init needed in this case)
 * Arguments:	- 	
