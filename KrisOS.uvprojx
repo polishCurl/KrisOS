@@ -397,6 +397,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\Kernel\mutex.c</FilePath>
             </File>
+            <File>
+              <FileName>semaphore.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Kernel\semaphore.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -8,7 +8,6 @@
 *
 * Note: 		
 *******************************************************************************/
-#include "common.h"
 #include "uart.h"
 #include "time.h"
 #include "special_reg_access.h"

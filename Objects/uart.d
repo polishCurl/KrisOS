@@ -7,7 +7,6 @@
 .\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\uart.o: .\src\Common\common.h
 .\objects\uart.o: src\HAL & Drivers\system.h
-.\objects\uart.o: .\src\Common\common.h
 .\objects\uart.o: src\HAL & Drivers\uart.h
 .\objects\uart.o: .\src\Kernel\KrisOS.h
 .\objects\uart.o: .\src\Common\common.h
@@ -44,4 +43,9 @@
 .\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\uart.o: .\src\Common\common.h
 .\objects\uart.o: .\src\Kernel\os.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\semaphore.h
+.\objects\uart.o: .\src\Kernel\KrisOS.h
+.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\uart.o: .\src\Common\common.h

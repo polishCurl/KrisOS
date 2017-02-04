@@ -146,10 +146,11 @@ uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase,
 * 				OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
+*		waitState - task state for the time it is temporarily suspended
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_sleep(uint64_t delay);
+uint32_t task_sleep(uint64_t delay, TaskState state);
 
 
 

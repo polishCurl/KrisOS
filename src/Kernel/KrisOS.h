@@ -19,6 +19,7 @@
 * OS features enable/disable (comment out to disable features)
 *******************************************************************************/
 #define USE_MUTEX 					// Use mutexes
+#define USE_SEMAPHORE 				// Use semaphores
 #define USE_HEAP 					// Use dynamic memory
 #define USE_UART 					// Enable UART driver
 #define SHOW_DIAGNOSTIC_DATA		// Show OS usage statistics etc.
@@ -30,6 +31,7 @@
 *******************************************************************************/
 typedef struct Task Task;			// Task Control Block
 typedef struct Mutex Mutex; 		// Mutex
+typedef struct Semaphore Semaphore; // Semaphore
 
 
 
@@ -44,12 +46,12 @@ typedef struct Mutex Mutex; 		// Mutex
 
 // Diagnostic data refresh rate (in ms). How frequently the KrisOS stats task is run
 // This is just a rough estimate due to the low priority of the task.
-#define DIAG_DATA_RATE 4999
+#define DIAG_DATA_RATE 10000
 
 
 
 /*******************************************************************************
-* Mutexes setup
+* Mutex definiton
 *******************************************************************************/
 #ifdef USE_MUTEX
 typedef struct Mutex {
@@ -66,7 +68,19 @@ typedef struct Mutex {
 
 
 /*******************************************************************************
-* Task scheduler setup
+* Semaphore definiton
+*******************************************************************************/
+#ifdef USE_SEMAPHORE
+typedef struct Semaphore {
+	uint32_t counter; 				// Semaphore counter value
+	Task* waitingQueue; 			// Queue of tasks waiting for the semaphore
+} Semaphore;
+#endif
+
+
+
+/*******************************************************************************
+* Task definition
 *******************************************************************************/
 // Possible task states
 typedef enum {
@@ -74,7 +88,8 @@ typedef enum {
 	READY = 1,
 	SLEEPING = 2,
 	MTX_WAIT = 3,
-	REMOVED = 4,
+	SEM_WAIT = 4,
+	REMOVED = 5,
 } TaskState;
 
 // Memory allocation type
@@ -82,8 +97,6 @@ typedef enum {
 	STATIC = 0,
 	DYNAMIC = 1,
 } MemoryAllocation;
-
-
 
 // Task control block
 typedef struct Task {
@@ -95,10 +108,10 @@ typedef struct Task {
 	TaskState status; 				// Current task status
 	uint64_t waitCounter;			// Remaining time to sleep (in OS 'ticks')
 	uint32_t* stackBase; 			// Pointer to the base of process' stack
+	void* waitingObj;				// Synchronisation object the task is waiting for
 #ifdef USE_MUTEX
 	uint8_t basePrio; 				// Base priority of the task given
 	Mutex* mutexHeld; 				// List of mutexes held
-	Mutex* mutexWaiting;			// Lock for which the task is waiting
 #endif
 #ifdef SHOW_DIAGNOSTIC_DATA
 	MemoryAllocation memoryType; 	// Task memory allocation (static or dynamic)
@@ -202,6 +215,13 @@ extern Mutex uartMtx;
 #define SVC_MTX_LOCK 19				// Take a mutex, if unsuccessful, wait
 #define SVC_MTX_UNLOCK 20 			// Release a mutex
 #define SVC_MTX_DELETE 21 			// Pernamently remove a mutex
+#define SVC_SEM_INIT 22				// Initialise a semaphore
+#define SVC_SEM_CREATE 23 			// Create a semaphore
+#define SVC_SEM_DELETE 24 			// Delete a semaphore
+#define SVC_SEM_TRY_ACQUIRE 25 		// Take a semaphore (don't wait if not available)
+#define SVC_SEM_ACQUIRE 26 			// Acquire a semaphore
+#define SVC_SEM_ACQUIRE_TIME 27		// Acquire a semaphore (with timout)
+#define SVC_SEM_RELEASE 28 			// Release a semaphore
 
 
 
@@ -474,8 +494,94 @@ uint32_t __svc(SVC_MTX_UNLOCK) KrisOS_mutex_unlock(Mutex* toUnlock);
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_MTX_DELETE) KrisOS_mutex_delete(Mutex* toDelete);
-
 #endif
+
+
+
+#ifdef USE_SEMAPHORE
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_init
+* Purpose:    	Initialise the semaphore given
+* Arguments:	
+* 		toInit - semaphore to initialise
+* 		startVal - semaphore counter start value
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_SEM_INIT) KrisOS_sem_init(Semaphore* toInit, uint32_t startVal);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_create
+* Purpose:    	Create a semaphore using heap and initialise it
+* Arguments:	
+* 		startVal - semaphore counter start value
+* Returns: 		
+*		pointer to the semaphore created
+--------------------------------------------------------------------------------*/
+Semaphore*__svc(SVC_SEM_CREATE) KrisOS_sem_create(uint32_t startVal);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_delete
+* Purpose:    	Remove the semaphore given
+* Arguments:	
+* 		toDelete - semaphore to delete
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_SEM_DELETE) KrisOS_sem_delete(Semaphore* toDelete);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_try_acquire
+* Purpose:    	Attempt to decrement the semaphore without waiting if unsucessful
+* Arguments:	
+* 		toAcquire - semaphore to acquire
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_SEM_TRY_ACQUIRE) KrisOS_sem_try_acquire(Semaphore* toAcquire);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_acquire
+* Purpose:    	Attempt to decrement the semaphore. Wait if unsuccessful.
+* Arguments:	
+* 		toAcquire - semaphore to acquire
+* Returns: -
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_SEM_ACQUIRE) KrisOS_sem_acquire(Semaphore* toAcquire);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_acquire_timeout
+* Purpose:    	Attempt to decrement the semaphore. Wait if unsuccessful for maximum
+* 				of 'timout' milliseconds
+* Arguments:	
+* 		toAcquire - semaphore to acquire
+* 		timout - semaphore timeout
+* Returns: -
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_SEM_ACQUIRE_TIME) KrisOS_sem_acquire_timeout(Semaphore* toAcquire,
+																uint32_t timout);
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_release
+* Purpose:    	Release the semaphore specified
+* Arguments:	
+*		toRelease - mutex to unlock
+* Returns: 		
+*		exit status (if lock already acquired - EXIT_FAILURE)
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
+
 #endif
 
 
@@ -496,7 +602,7 @@ uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size);
 
 
 /*-------------------------------------------------------------------------------
-* Macro:    	task_define
+* Macro:    	KrisOS_task_define
 * Purpose:    	MACRO speeding up static task declaration by automatically declaring 
 *				necessary variables,
 * Arguments:	
@@ -509,9 +615,10 @@ uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size);
 * Returns: 
 *		Creates the aforementioned variables at compile-time
 --------------------------------------------------------------------------------*/
-#define task_define(NAME, STACK_SIZE) 								        \
+#define KrisOS_task_define(NAME, STACK_SIZE) 								\
 	void NAME ## (void);													\
 	Task NAME ## Task;											  			\
 	const size_t NAME ## StackSize = STACK_SIZE;							\
 	uint8_t NAME ## Stack[NAME ## StackSize];								\
 
+#endif

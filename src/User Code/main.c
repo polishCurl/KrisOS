@@ -1,24 +1,26 @@
 #include "KrisOS.h"
 
-task_define(secondTimer, 200)
-task_define(blinky, 200)
+KrisOS_task_define(secondTimer, 200)
+KrisOS_task_define(blinky, 200)
 
 Task* primeNumbersTask;
 void primeNumbers(void);
 
-
+Semaphore testSem;
 
 int main(void) {	
 	
 	KrisOS_init();
 	
 	KrisOS_stack_usage((uint32_t*) &secondTimerStack[0], secondTimerStackSize);
-	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 4);
+	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 1);
 	
-	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 326, 4);
+	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 400, 4);
 	
 	KrisOS_stack_usage((uint32_t*) &blinkyStack[0], blinkyStackSize);
-	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 4);
+	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 3);
+	
+	KrisOS_sem_init(&testSem, 2);
 	
 	KrisOS_start();
 	while(1);
@@ -27,6 +29,15 @@ int main(void) {
 
 
 void secondTimer(void) {
+	
+	KrisOS_sem_try_acquire(&testSem);
+	KrisOS_sem_release(&testSem);
+	KrisOS_sem_acquire(&testSem);
+	KrisOS_sem_acquire(&testSem);
+	
+	KrisOS_task_sleep(5000);
+	KrisOS_sem_release(&testSem);
+	
 	while(1) {
 		KrisOS_mutex_lock(&uartMtx);
 		fprintf(uart, "\nKurwy cwele i menele\n");
@@ -38,15 +49,14 @@ void secondTimer(void) {
 
 
 void primeNumbers(void) {
-	
+		
 	int32_t low, high, i, flag;
-	int array[24];
-	for (i = 0; i < 24; i++)
-		array[i] = 0x77777777;
+	
+	KrisOS_sem_acquire(&testSem);
 	
 	while(1) {
 		low = 2;
-		high = 20000;
+		high = 30000;
 		KrisOS_mutex_lock(&uartMtx);
 		fprintf(uart, "\nPrime numbers between %d and %d are: \n", low, high);
 		KrisOS_mutex_unlock(&uartMtx);

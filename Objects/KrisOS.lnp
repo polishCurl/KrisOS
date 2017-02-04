@@ -3,6 +3,7 @@
 ".\objects\os.o"
 ".\objects\scheduler.o"
 ".\objects\mutex.o"
+".\objects\semaphore.o"
 ".\objects\main.o"
 ".\objects\fifo.o"
 ".\objects\nvic.o"

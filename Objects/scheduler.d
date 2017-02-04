@@ -25,8 +25,12 @@
 .\objects\scheduler.o: .\src\Common\common.h
 .\objects\scheduler.o: src\Kernel\os.h
 .\objects\scheduler.o: .\src\Common\common.h
-.\objects\scheduler.o: .\src\HAL & Drivers\system.h
+.\objects\scheduler.o: src\Kernel\semaphore.h
+.\objects\scheduler.o: src\Kernel\KrisOS.h
 .\objects\scheduler.o: .\src\Common\common.h
+.\objects\scheduler.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\scheduler.o: .\src\Common\common.h
+.\objects\scheduler.o: .\src\HAL & Drivers\system.h
 .\objects\scheduler.o: .\src\HAL & Drivers\uart.h
 .\objects\scheduler.o: .\src\Kernel\KrisOS.h
 .\objects\scheduler.o: .\src\Common\common.h

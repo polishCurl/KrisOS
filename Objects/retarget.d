@@ -7,7 +7,6 @@
 .\objects\retarget.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\retarget.o: .\src\Common\common.h
 .\objects\retarget.o: src\HAL & Drivers\system.h
-.\objects\retarget.o: .\src\Common\common.h
 .\objects\retarget.o: src\HAL & Drivers\uart.h
 .\objects\retarget.o: .\src\Kernel\KrisOS.h
 .\objects\retarget.o: .\src\Common\common.h

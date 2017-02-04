@@ -12,3 +12,4 @@
 #include "scheduler.h"
 #include "mutex.h"
 #include "os.h"
+#include "semaphore.h"

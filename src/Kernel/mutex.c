@@ -10,6 +10,7 @@
 *******************************************************************************/
 #include "kernel.h"
 #include "system.h"
+
 #ifdef USE_MUTEX
 
 
@@ -29,10 +30,10 @@ uint32_t mutex_init(Mutex* toInit) {
 	toInit->owner = toInit->waitingQueue = NULL;
 	toInit->next = NULL;
 	
-#ifdef SHOW_DIAGNOSTIC_DATA
 	// Update the total number of mutexes declared
-	KrisOS.totalMutexNo++;
-#endif	
+	#ifdef SHOW_DIAGNOSTIC_DATA
+		KrisOS.totalMutexNo++;
+	#endif	
 	return EXIT_SUCCESS;
 }
 
@@ -49,7 +50,6 @@ Mutex* mutex_create(void) {
 	
 	// Allocate memory for a new mutex and initialise it
 	Mutex* toCreate = malloc(sizeof(Mutex));
-	TEST_NULL_POINTER(toCreate);
 	mutex_init(toCreate);	
 	return toCreate;
 }
@@ -106,8 +106,15 @@ uint32_t mutex_try_lock(Mutex* toLock) {
 --------------------------------------------------------------------------------*/
 uint32_t mutex_lock(Mutex* toLock) {
 	
+	// Exit code on return from the function
 	uint32_t exitStatus;
+	
+	// Iterator through the chain of locks (tasks waiting on locks owned by other tasks,
+	// which in turn, wait for other locks
 	Task* iterator;
+	
+	// Mutex for which the current task is waiting
+	Mutex* mutexWaiting;
 	TEST_NULL_POINTER(toLock)
 	
 	__start_critical();
@@ -115,23 +122,37 @@ uint32_t mutex_lock(Mutex* toLock) {
 		// If the lock can't be obtained immediately. The enqueue it while applying the priority
 		// inheritance algorithm
 		if (mutex_try_lock(toLock) == EXIT_FAILURE) {
+			
 			// Iterate until the last task in the chain of locks is found, which needs
 			// to have its priority temporarily boosted in order to avoid priority inversion.
 			iterator = toLock->owner;
 			while (iterator->priority > scheduler.runPtr->priority) {
 				iterator->priority = scheduler.runPtr->priority;
 				
-				// The task owning mutex given is waiting for its turn in the 
-				// ready queue so re-insert it into ready queue with priority increased
-				if (iterator->status == READY) {
-					task_remove(&scheduler.ready, iterator);
-					task_add(&scheduler.ready, iterator);
-				}
-				// The task owning mutex is waiting for another mutex
-				else if (iterator->status == MTX_WAIT) {
-					task_remove(&iterator->mutexWaiting->waitingQueue, iterator);
-					task_add(&iterator->mutexWaiting->waitingQueue, iterator);
-					iterator = iterator->mutexWaiting->owner;
+				switch(iterator->status) {
+					
+					// The task owning mutex given is waiting for its turn in the 
+					// ready queue so re-insert it into ready queue with priority increased
+					case READY: 	
+						task_remove(&scheduler.ready, iterator);
+						task_add(&scheduler.ready, iterator);
+						break;
+					
+					// The task owning mutex is waiting for another mutex
+					case MTX_WAIT:
+						mutexWaiting = iterator->waitingObj;
+						task_remove(&mutexWaiting->waitingQueue, iterator);
+						task_add(&mutexWaiting->waitingQueue, iterator);
+						iterator = mutexWaiting->owner;
+						break;
+					
+					// The task owning mutex is waiting for another mutex
+					case SEM_WAIT:
+						mutexWaiting = iterator->waitingObj;
+						task_remove(&mutexWaiting->waitingQueue, iterator);
+						task_add(&mutexWaiting->waitingQueue, iterator);
+						break;
+					default: break;
 				}
 			}
 			// Insert the task into the waiting list for the mutex in descending priority
@@ -139,7 +160,7 @@ uint32_t mutex_lock(Mutex* toLock) {
 			task_remove(&scheduler.ready, scheduler.runPtr);
 			scheduler_run();
 			task_add(&toLock->waitingQueue, scheduler.runPtr);
-			scheduler.runPtr->mutexWaiting = toLock;
+			scheduler.runPtr->waitingObj = toLock;
 			scheduler.runPtr->status = MTX_WAIT;
 			exitStatus = EXIT_SUCCESS;	
 		}
@@ -227,10 +248,10 @@ uint32_t mutex_delete(Mutex* toDelete) {
 	
 	__start_critical();
 	{	
-#ifdef SHOW_DIAGNOSTIC_DATA
-		// Update the total number of mutexes declared
-		KrisOS.totalMutexNo--;
-#endif				
+		// Update the total number of mutexes declared		
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			KrisOS.totalMutexNo--;	
+		#endif				
 		
 		// Only remove mutexes that are not used and don't have tasks waiting on them
 		if (toDelete->owner != NULL || toDelete->waitingQueue != NULL) {

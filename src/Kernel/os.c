@@ -37,7 +37,7 @@ void idle_task(void) {
 	while(1) __wfi();
 }
 
-task_define(idle, 100)
+KrisOS_task_define(idle, 100)
 
 
 
@@ -50,9 +50,11 @@ task_define(idle, 100)
 --------------------------------------------------------------------------------*/
 void stats_task(void) {
 	
-	// Per-task CPU usage and the last time the statistics task was run
+	// Per-task CPU usage, the last time the statistics task was run and the current 
+	// value of OS timer
 	uint32_t cpuUsage;
 	uint64_t lastRun;
+	uint64_t currentTime;
 	
 	// Task registry iterator
 	int32_t index;
@@ -74,20 +76,32 @@ void stats_task(void) {
 		lastRun = KrisOS.ticks;
 		
 		// Suspend the task in order to take time to gather usage data
-		task_sleep(DIAG_DATA_RATE);
+		task_sleep(DIAG_DATA_RATE, SLEEPING);
+		
+		currentTime = KrisOS.ticks;
 		
 		#ifdef USE_MUTEX
 			mutex_lock(&uartMtx);
 		#endif
 		{
 			// Display OS usage data
-			fprintf(uart, "\n-----------------------------------------------------\n");
+			fprintf(uart, "\n------------------------------------------------------------------------------\n");
+			fprintf(uart, "Time running:\t\t%d days, %d hours, %d minutes, %d seconds\n", 
+				    (uint32_t) (currentTime / 86400000UL),
+				   (uint32_t) ((currentTime % 86400000UL)) / 3600000, 
+				   (uint32_t) ((currentTime % 3600000)) / 60000, 
+				   (uint32_t) ((currentTime % 60000)) / 1000);
+			fprintf(uart, "Measurement period:\t%d ms\n", (uint32_t) (currentTime - lastRun));
 			fprintf(uart, "Context switches:\t%d\n", scheduler.contextSwitchNo);
 			fprintf(uart, "Total task number:\t%d\n", scheduler.totalTaskNo);
 			
 			#ifdef USE_MUTEX
 				fprintf(uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
-				fprintf(uart, "Max mutex lock time:\t%dms\n", KrisOS.maxMtxCriticalSection);
+				fprintf(uart, "Max mutex lock time:\t%d ms\n", KrisOS.maxMtxCriticalSection);
+			#endif
+			
+			#ifdef USE_SEMAPHORE
+				fprintf(uart, "Total semaphore number:\t%d\n", KrisOS.totalSemNo);
 			#endif
 			
 			#ifdef USE_HEAP
@@ -101,7 +115,7 @@ void stats_task(void) {
 				
 				// Compute the CPU usage as the proportion of the OS ticks spend executing the task
 				// to the total number of OS ticks since the last time the statistics task was run
-				cpuUsage = iterator->cpuUsage * 100 / (KrisOS.ticks - lastRun);
+				cpuUsage = iterator->cpuUsage * 100 / (currentTime - lastRun);
 				
 				// Calculate the stack usage by calculating the offset from the stack base to the first
 				// memory location that hasn't been modified
@@ -113,13 +127,15 @@ void stats_task(void) {
 					stackUsage = (iterator->stackBase - stackUsageHelper) << 2;
 					
 				fprintf(uart, "%d\t%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsage, stackUsage, iterator->priority);
+				iterator->cpuUsage = 0;
 				
 				// Display the current task status 
 				switch(iterator->status) {
 					case RUNNING: fprintf(uart, "RUNNING\t\t"); break;
 					case READY: fprintf(uart, "READY\t\t"); break;
 					case SLEEPING: fprintf(uart, "SLEEPING\t"); break;
-					case MTX_WAIT: fprintf(uart, "WAITING ON MUTEX\t"); break;
+					case MTX_WAIT: fprintf(uart, "MUTEX WAIT\t"); break;
+					case SEM_WAIT: fprintf(uart, "SEM WAIT\t"); break;
 					default: break;
 				}
 
@@ -127,9 +143,10 @@ void stats_task(void) {
 				switch(iterator->memoryType) {
 					case STATIC: fprintf(uart, "Static\n"); break;
 					case DYNAMIC: fprintf(uart, "Dynamic\n"); break;
+					default: break;
 				}
 			}
-			fprintf(uart, "\n-----------------------------------------------------\n");
+			fprintf(uart, "------------------------------------------------------------------------------\n");
 		}
 		#ifdef USE_MUTEX
 			mutex_unlock(&uartMtx);
@@ -137,7 +154,7 @@ void stats_task(void) {
 	}
 }
 
-task_define(stats, 256)
+KrisOS_task_define(stats, 400)
 #endif
 
 
@@ -177,11 +194,16 @@ void os_init(void) {
 		#ifdef SHOW_DIAGNOSTIC_DATA
 			// 2. OS performance statistics task. Displays usage data periodically.
 			KrisOS_stack_usage((uint32_t*) &statsStack[0], statsStackSize);
-			task_create_static(&statsTask, stats_task, &statsStack[statsStackSize], 0, 1);	
+			task_create_static(&statsTask, stats_task, &statsStack[statsStackSize], UINT8_MAX - 1, 1);	
 
 			// Reset the mutex counter
 			#ifdef USE_MUTEX
 				KrisOS.totalMutexNo = 0;
+			#endif
+			
+			// Reset the mutex counter
+			#ifdef USE_SEMAPHORE
+				KrisOS.totalSemNo = 0;
 			#endif
 		#endif
 			
@@ -288,6 +310,7 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 // ---- OS initialisation and launch --------------------------------------------
 		case SVC_OS_INIT: os_init(); break;
 		case SVC_OS_START: os_start(); break;	
+		
 // ---- Interrupt control SVC calls ---------------------------------------------
 		case SVC_IRQ_EN: 
 			nvic_enable_irq((IRQn_Type) svcArgs[0]);
@@ -317,59 +340,43 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 			break;		
 		case SVC_IRQ_GET_PRIO: svcArgs[0] = nvic_get_priority((IRQn_Type) svcArgs[0]);
 			break;		
+			
 // ---- Task scheduling SVC calls -----------------------------------------------
-		case SVC_TASK_NEW: 	
-			#ifdef USE_HEAP	
-				svcArgs[0] = (uint32_t) task_create_dynamic((void*) svcArgs[0], svcArgs[1], svcArgs[2], 0); 
-			#endif
-			break;
+		#ifdef USE_HEAP
+		case SVC_TASK_NEW: 	svcArgs[0] = (uint32_t) task_create_dynamic((void*) svcArgs[0], 
+																		svcArgs[1], svcArgs[2], 0); 
+							break;
+		#endif
 		case SVC_TASK_NEW_S: svcArgs[0] = task_create_static((void*) svcArgs[0], (void*) svcArgs[1],  
 														     (void*) svcArgs[2], svcArgs[3], 0); break;
-		case SVC_TASK_SLEEP: svcArgs[0] = task_sleep(svcArgs[0]);  break;
+		case SVC_TASK_SLEEP: svcArgs[0] = task_sleep(svcArgs[0], SLEEPING);  break;
 		case SVC_TASK_YIELD: scheduler_run(); break;
 		case SVC_TASK_DELETE: task_delete(); break;
-// ---- Heap management functions -----------------------------------------------
-		case SVC_HEAP_ALLOC: 
-			#ifdef USE_HEAP	
-				svcArgs[0] = (uint32_t) malloc(svcArgs[0]); 
-			#endif
-			break;
-		case SVC_HEAP_FREE: 
-			#ifdef USE_HEAP		
-				free((void*) svcArgs[0]);
-			#endif
-			break;
-// ---- Mutual exclusion lock management functions ------------------------------
-		case SVC_MTX_INIT: 
-			#ifdef USE_MUTEX			
-				svcArgs[0] = mutex_init((void*) svcArgs[0]); 
-			#endif	
-			break;
-		case SVC_MTX_CREATE: 
-			#ifdef USE_MUTEX	
-				svcArgs[0] = (uint32_t) mutex_create();
-			#endif
-			break;
-		case SVC_MTX_TRY_LOCK: 
-			#ifdef USE_MUTEX	
-				svcArgs[0] = (uint32_t) mutex_try_lock((void*) svcArgs[0]);
-			#endif
-			break;
-		case SVC_MTX_LOCK: 
-			#ifdef USE_MUTEX	
-				svcArgs[0] = (uint32_t) mutex_lock((void*) svcArgs[0]);
-			#endif
-			break;
-		case SVC_MTX_UNLOCK: 
-			#ifdef USE_MUTEX	
-				svcArgs[0] = (uint32_t) mutex_unlock((void*) svcArgs[0]);
-			#endif
-			break;
-		case SVC_MTX_DELETE: 
-			#ifdef USE_MUTEX
-				svcArgs[0] = (uint32_t) mutex_delete((void*) svcArgs[0]);
-			#endif
-			break;
+		
+// ---- Heap management SVC calls -----------------------------------------------
+		#ifdef USE_HEAP	
+		case SVC_HEAP_ALLOC: svcArgs[0] = (uint32_t) malloc(svcArgs[0]); break;
+		case SVC_HEAP_FREE: free((void*) svcArgs[0]); break;
+		#endif
+		
+// ---- Mutual exclusion lock management SVC calls ------------------------------
+		#ifdef USE_MUTEX
+		case SVC_MTX_INIT: svcArgs[0] = mutex_init((void*) svcArgs[0]); break;
+		case SVC_MTX_CREATE: svcArgs[0] = (uint32_t) mutex_create(); break;
+		case SVC_MTX_TRY_LOCK: svcArgs[0] = mutex_try_lock((void*) svcArgs[0]); break;
+		case SVC_MTX_LOCK: svcArgs[0] = (uint32_t) mutex_lock((void*) svcArgs[0]); break;
+		case SVC_MTX_UNLOCK: svcArgs[0] = mutex_unlock((void*) svcArgs[0]); break;
+		case SVC_MTX_DELETE: svcArgs[0] = mutex_delete((void*) svcArgs[0]); break;
+		#endif
+		
+// ---- Semaphore management SVC calls -------------------------------------------
+		case SVC_SEM_INIT: svcArgs[0] = sem_init((void*) svcArgs[0], svcArgs[1]); break;
+		case SVC_SEM_CREATE: svcArgs[0] = (uint32_t) sem_create(svcArgs[0]); break;
+		case SVC_SEM_DELETE: svcArgs[0] = sem_delete((void*) svcArgs[0]); break;
+		case SVC_SEM_TRY_ACQUIRE: svcArgs[0] = (uint32_t) sem_try_acquire((void*) svcArgs[0]); break;
+		case SVC_SEM_ACQUIRE: svcArgs[0] = sem_acquire((void*) svcArgs[0], TIME_INFINITY); break;
+		case SVC_SEM_ACQUIRE_TIME: svcArgs[0] = sem_acquire((void*) svcArgs[0], svcArgs[1]); break;
+		case SVC_SEM_RELEASE: svcArgs[0] = (uint32_t) sem_release((void*) svcArgs[0]); break;
 		default: break;
 	}
 	return;

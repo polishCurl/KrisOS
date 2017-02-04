@@ -25,8 +25,12 @@
 .\objects\heap.o: .\src\Common\common.h
 .\objects\heap.o: src\Kernel\os.h
 .\objects\heap.o: .\src\Common\common.h
-.\objects\heap.o: .\src\HAL & Drivers\system.h
+.\objects\heap.o: src\Kernel\semaphore.h
+.\objects\heap.o: src\Kernel\KrisOS.h
 .\objects\heap.o: .\src\Common\common.h
+.\objects\heap.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\heap.o: .\src\Common\common.h
+.\objects\heap.o: .\src\HAL & Drivers\system.h
 .\objects\heap.o: .\src\HAL & Drivers\uart.h
 .\objects\heap.o: .\src\Kernel\KrisOS.h
 .\objects\heap.o: .\src\Common\common.h

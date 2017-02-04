@@ -104,6 +104,11 @@ void scheduler_wake_tasks(void) {
 	// Pointer to the task to wake
 	Task* toWake;
 	
+	// Semaphore for which a task was waiting (with timout)
+	#ifdef USE_SEMAPHORE
+		Semaphore* semWaitedFor;
+	#endif
+	
 	__start_critical();
 	{
 		// Go through the delayed queue until a 'not ready' task is encountered (task are 
@@ -114,9 +119,17 @@ void scheduler_wake_tasks(void) {
 			toWake = scheduler.blocked;
 			task_remove(&scheduler.blocked, toWake);
 			toWake->waitCounter = 0;
-			toWake->status = READY;
+			
+			#ifdef USE_SEMAPHORE
+				if (toWake->status == SEM_WAIT) {
+					semWaitedFor = toWake->waitingObj;
+					task_remove(&semWaitedFor->waitingQueue, toWake); 
+					toWake->waitingObj = NULL;
+				}
+			#endif
 			
 			// Insert the task back to the ready queue
+			toWake->status = READY;
 			task_add(&scheduler.ready, toWake);
 		}
 		// Reschedule tasks as the state of ready queues have changed
@@ -222,10 +235,11 @@ uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase,
 * 				OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
+*		waitState - task state for the time it is temporarily suspended
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_sleep(uint64_t delay) {
+uint32_t task_sleep(uint64_t delay, TaskState state) {
 	
 	// Iterators trough the delayed queue and a pointer to the task to delay
 	Task *iterator, *previous, *toDelay;
@@ -244,7 +258,7 @@ uint32_t task_sleep(uint64_t delay) {
 		
 		// Update the wait counter and reschedule tasks
 		toDelay->waitCounter = delay == TIME_INFINITY ? UINT64_MAX : KrisOS.ticks + delay;
-		toDelay->status = SLEEPING;
+		toDelay->status = state;
 		scheduler_run();
 		
 		// Insert the task to the queue with delayed tasks. Insertion sort it 
@@ -375,7 +389,6 @@ uint32_t task_add(Task** queue, Task* toInsert) {
 		}
 	}
 	__end_critical();
-	
 	return EXIT_SUCCESS;
 }
 
@@ -436,11 +449,12 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 	toInit->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
 	scheduler.lastIDUsed++;
 	toInit->waitCounter = 0;
+	toInit->waitingObj = NULL;
 	
 	// Initialise the mutual exclusion lock info - ownership and mutex waiting on 
 	#ifdef USE_MUTEX
 		toInit->basePrio = priority;
-		toInit->mutexHeld = toInit->mutexWaiting = NULL;
+		toInit->mutexHeld = NULL;
 	#endif
 
 	// Set the initial PC to the starting address of task's code
@@ -479,9 +493,6 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 			scheduler_run();
 	} 
 	__end_critical();
-	
-	
-	
 	return EXIT_SUCCESS;
 }
 

@@ -24,6 +24,9 @@ typedef struct {
 	uint32_t maxMtxCriticalSection; 	// Longest critical section implemented using mutexes
 	uint32_t totalMutexNo; 				// Total number of mutexes in use
 #endif
+#ifdef USE_SEMAPHORE
+	uint32_t totalSemNo; 				// Total number of semaphores in use
+#endif
 #endif
 } Kernel; 
 
