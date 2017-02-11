@@ -13,3 +13,4 @@
 #include "mutex.h"
 #include "os.h"
 #include "semaphore.h"
+#include "stats.h"

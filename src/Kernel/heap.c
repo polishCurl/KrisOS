@@ -16,46 +16,9 @@
 
 
 /*-------------------------------------------------------------------------------
-* Heap byte alignment
-*------------------------------------------------------------------------------*/
-#define HEAP_BYTE_ALIGN 8 			
-
-
-/*-------------------------------------------------------------------------------
-* Heap size in bytes (including the currently set word alignment)
-*------------------------------------------------------------------------------*/		
-#define ALIGNED_HEAP_SIZE (HEAP_SIZE % HEAP_BYTE_ALIGN ? 									\
-							(HEAP_SIZE + (HEAP_BYTE_ALIGN - HEAP_SIZE % HEAP_BYTE_ALIGN)) :	\
-							HEAP_SIZE)
-							
-
-/*-------------------------------------------------------------------------------
-* Heap free block definition
+* Heap manager declaration
 --------------------------------------------------------------------------------*/
-typedef struct HeapBlock {
-	size_t blockSize; 				// size in bytes
-	struct HeapBlock* next; 		// pointer to the next free heap block
-} HeapBlock;
-
-
-
-/*-------------------------------------------------------------------------------
-* Heap manager definition
---------------------------------------------------------------------------------*/
-typedef struct HeapManager {
-	HeapBlock startBlock; 				// Beginning and the end of list of free blocks
-	HeapBlock endBlock;
-	uint8_t heapMem[ALIGNED_HEAP_SIZE];	// Heap memory
-} HeapManager;
-
 HeapManager heap;
-
-
-
-/*-------------------------------------------------------------------------------
-* Number of bytes already allocated on heap
---------------------------------------------------------------------------------*/
-uint32_t heapBytesUsed;				
 
 
 
@@ -97,7 +60,7 @@ void heap_init(void){
 	HeapBlock* firstBlock;
 	
 	// Reset the counter
-	heapBytesUsed = 0;					
+	heap.heapBytesUsed = 0;					
 	
 	// Initialise the two blocks used for management, the starting and ending ones
 	heap.startBlock.blockSize = 0;
@@ -110,6 +73,11 @@ void heap_init(void){
 	firstBlock = (void*) &heap.heapMem[0];
 	firstBlock->blockSize = ALIGNED_HEAP_SIZE;
 	firstBlock->next = &heap.endBlock;
+	
+	// Initialise the heap mutex
+	#ifdef USE_MUTEX
+		mutex_init(&heap.heapMutex);
+	#endif
 }
 
 
@@ -144,7 +112,11 @@ void* malloc(size_t bytesToAlloc) {
 	// If the heap is big enough to meet the request
 	if (bytesToAlloc > 0 && bytesToAlloc < ALIGNED_HEAP_SIZE) {
 		
-		__start_critical();
+		#ifdef USE_MUTEX
+			mutex_lock(&heap.heapMutex);
+		#else
+			__start_critical();
+		#endif
 		{
 			// Go through all the existing free blocks until a large enough is found
 			// or we reached the endBlock 
@@ -170,10 +142,14 @@ void* malloc(size_t bytesToAlloc) {
 					iterator->blockSize = bytesToAlloc;
 					heap_insert_free_block(subBlock);
 				}	
-				heapBytesUsed += iterator->blockSize;
+				heap.heapBytesUsed += iterator->blockSize;
 			}
 		}
-		__end_critical();
+		#ifdef USE_MUTEX
+			mutex_unlock(&heap.heapMutex);
+		#else
+			__end_critical();
+		#endif
 	}
 	return allocatedMemory;	
 }
@@ -204,12 +180,20 @@ void free(void* toFree) {
 		bytesToFree -= sizeof(HeapBlock);
 		blockToFree = (HeapBlock*) bytesToFree;
 		
-		__start_critical();
+		#ifdef USE_MUTEX
+			mutex_lock(&heap.heapMutex);
+		#else
+			__start_critical();
+		#endif
 		{
 			heap_insert_free_block(blockToFree);
-			heapBytesUsed -= blockToFree->blockSize;
+			heap.heapBytesUsed -= blockToFree->blockSize;
 		}
-		__end_critical();
+		#ifdef USE_MUTEX
+			mutex_unlock(&heap.heapMutex);
+		#else
+			__end_critical();
+		#endif
 	}
 }	
 

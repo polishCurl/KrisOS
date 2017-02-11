@@ -4,7 +4,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	21/12/2016
-* Last mod: 	21/12/2016
+* Last mod: 	07/02/2017
 *
 * Note: 		
 *******************************************************************************/
@@ -28,7 +28,6 @@ uint32_t mutex_init(Mutex* toInit) {
 	// Set the initial values of member variables of the mutex to initialise
 	TEST_NULL_POINTER(toInit)
 	toInit->owner = toInit->waitingQueue = NULL;
-	toInit->next = NULL;
 	
 	// Update the total number of mutexes declared
 	#ifdef SHOW_DIAGNOSTIC_DATA
@@ -74,9 +73,8 @@ uint32_t mutex_try_lock(Mutex* toLock) {
 	{
 		// The lock specified is ready to be taken. The calling tasks becomes the owner
 		// immediately so both the lock is attached to the task and vice-versa
-		if (toLock->owner == NULL) {
+		if (toLock->owner == NULL && scheduler.runPtr->mutexHeld == NULL) {
 			toLock->owner = scheduler.runPtr;
-			toLock->next = scheduler.runPtr->mutexHeld;
 			scheduler.runPtr->mutexHeld = toLock;
 			exitStatus = EXIT_SUCCESS;
 			
@@ -116,6 +114,10 @@ uint32_t mutex_lock(Mutex* toLock) {
 	// Mutex for which the current task is waiting
 	Mutex* mutexWaiting;
 	TEST_NULL_POINTER(toLock)
+	
+	// Avoid deadlocks by checking if the calling tasks already owns some other mutex
+	if (scheduler.runPtr->mutexHeld != NULL)
+		return EXIT_FAILURE;
 	
 	__start_critical();
 	{
@@ -191,7 +193,7 @@ uint32_t mutex_unlock(Mutex* toUnlock) {
 	__start_critical();
 	{
 		// Remove the lock from the list of owned locks
-		scheduler.runPtr->mutexHeld = scheduler.runPtr->mutexHeld->next;
+		scheduler.runPtr->mutexHeld = NULL;
 		
 		// Check if the time elapsed from the moment the mutex was taken until it
 		// was given has exceeded the current maximum critical section length
@@ -259,7 +261,6 @@ uint32_t mutex_delete(Mutex* toDelete) {
 			return EXIT_FAILURE;
 		}
 		
-		toDelete->next = NULL;
 		toDelete->owner = toDelete->waitingQueue = NULL;
 		free(toDelete);
 	}

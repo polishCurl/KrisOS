@@ -8,7 +8,7 @@
 .\objects\scheduler.o: .\src\Common\common.h
 .\objects\scheduler.o: src\Kernel\kernel.h
 .\objects\scheduler.o: src\Kernel\heap.h
-.\objects\scheduler.o: .\src\Common\common.h
+.\objects\scheduler.o: src\Kernel\mutex.h
 .\objects\scheduler.o: src\Kernel\KrisOS.h
 .\objects\scheduler.o: .\src\Common\common.h
 .\objects\scheduler.o: .\src\HAL & Drivers\tm4c123gh6pm.h
@@ -30,6 +30,7 @@
 .\objects\scheduler.o: .\src\Common\common.h
 .\objects\scheduler.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\scheduler.o: .\src\Common\common.h
+.\objects\scheduler.o: src\Kernel\stats.h
 .\objects\scheduler.o: .\src\HAL & Drivers\system.h
 .\objects\scheduler.o: .\src\HAL & Drivers\uart.h
 .\objects\scheduler.o: .\src\Kernel\KrisOS.h

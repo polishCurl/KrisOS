@@ -27,7 +27,7 @@
 .\objects\uart.o: .\src\Common\common.h
 .\objects\uart.o: .\src\Kernel\kernel.h
 .\objects\uart.o: .\src\Kernel\heap.h
-.\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\mutex.h
 .\objects\uart.o: .\src\Kernel\KrisOS.h
 .\objects\uart.o: .\src\Common\common.h
 .\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
@@ -49,3 +49,4 @@
 .\objects\uart.o: .\src\Common\common.h
 .\objects\uart.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\uart.o: .\src\Common\common.h
+.\objects\uart.o: .\src\Kernel\stats.h

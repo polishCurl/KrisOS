@@ -1,3 +1,5 @@
+
+
 #include "KrisOS.h"
 
 KrisOS_task_define(secondTimer, 200)
@@ -12,12 +14,12 @@ int main(void) {
 	
 	KrisOS_init();
 	
-	KrisOS_stack_usage((uint32_t*) &secondTimerStack[0], secondTimerStackSize);
+	//KrisOS_stack_usage((uint32_t*) &secondTimerStack[0], secondTimerStackSize);
 	KrisOS_task_create_static(&secondTimerTask, secondTimer, &secondTimerStack[secondTimerStackSize], 1);
 	
 	primeNumbersTask = (Task*) KrisOS_task_create(primeNumbers, 400, 4);
 	
-	KrisOS_stack_usage((uint32_t*) &blinkyStack[0], blinkyStackSize);
+	//KrisOS_stack_usage((uint32_t*) &blinkyStack[0], blinkyStackSize);
 	KrisOS_task_create_static(&blinkyTask, blinky, &blinkyStack[blinkyStackSize], 3);
 	
 	KrisOS_sem_init(&testSem, 2);
@@ -83,6 +85,12 @@ void primeNumbers(void) {
 }
 
 
+
+
+
+
+
+/*
 void portFInit(void) {
 	SYSCTL->RCGCGPIO |= 0x00000020;
 	while ((SYSCTL->RCGCGPIO & 0x00000020) == 0);
@@ -120,3 +128,4 @@ void blinky(void) {
 		KrisOS_task_sleep(715);
 	}
 }
+*/

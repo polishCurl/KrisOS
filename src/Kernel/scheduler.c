@@ -22,6 +22,20 @@ Scheduler scheduler;
 
 
 /*-------------------------------------------------------------------------------
+* Function:		idle_task
+* Purpose:    	Idle task. Lowest priority task used for power saving.
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void idle_task(void) {
+	while(1) __wfi();
+}
+
+KrisOS_task_define(idle, 100, UINT8_MAX)
+
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	scheduler_init
 * Purpose:    	Initialise the scheduler
 * Arguments:	-
@@ -39,13 +53,16 @@ void scheduler_init(void) {
 	// Initialise the status bits
 	scheduler.status = 0;
 	
-	// Set the runPtr to the idle task
-	scheduler.runPtr = &idleTask;
-	
-	// Reset the task counter
+	// Reset the task counter and
 	#ifdef SHOW_DIAGNOSTIC_DATA
 		scheduler.totalTaskNo = 0;
+		KrisOS_stack_usage((uint32_t*) &idleStack[0], idleStackSize);
 	#endif	
+	
+	task_create_static(&idleTask, idle_task, &idleStack[idleStackSize], idlePriority, 1);
+		
+	// Set the runPtr to the idle task
+	scheduler.runPtr = &idleTask;
 }
 
 
@@ -444,16 +461,15 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 	// Assign the task's priority, id, status and sleep time. System tasks have negative
 	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
 	// initial stack pointer value
-	toInit->priority = priority;
+	toInit->basePrio = toInit->priority = priority;
 	toInit->status = READY;
 	toInit->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
 	scheduler.lastIDUsed++;
 	toInit->waitCounter = 0;
 	toInit->waitingObj = NULL;
 	
-	// Initialise the mutual exclusion lock info - ownership and mutex waiting on 
+	// Initialise the mutex info - mutexes held by task initialised 
 	#ifdef USE_MUTEX
-		toInit->basePrio = priority;
 		toInit->mutexHeld = NULL;
 	#endif
 

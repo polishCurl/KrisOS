@@ -8,16 +8,54 @@
 *
 * Note: 		malloc and free method headers are already declared in stdlib.h
 *******************************************************************************/
-#include "common.h"
-#include "KrisOS.h"
-
-
-
+#include "mutex.h"
+#ifndef HEAP_H
+#define HEAP_H
 #ifdef USE_HEAP
+
+
+
 /*-------------------------------------------------------------------------------
-* Number of bytes already allocated on heap
+* Heap byte alignment
+*------------------------------------------------------------------------------*/
+#define HEAP_BYTE_ALIGN 8 			
+
+
+
+/*-------------------------------------------------------------------------------
+* Heap size in bytes (including the currently set word alignment)
+*------------------------------------------------------------------------------*/		
+#define ALIGNED_HEAP_SIZE (HEAP_SIZE % HEAP_BYTE_ALIGN ? 									\
+							(HEAP_SIZE + (HEAP_BYTE_ALIGN - HEAP_SIZE % HEAP_BYTE_ALIGN)) :	\
+							HEAP_SIZE)
+				
+				
+
+/*-------------------------------------------------------------------------------
+* Heap free block definition
 --------------------------------------------------------------------------------*/
-extern uint32_t heapBytesUsed;
+typedef struct HeapBlock {
+		size_t blockSize; 				// size in bytes
+		struct HeapBlock* next; 		// pointer to the next free heap block
+} HeapBlock;
+
+
+
+/*-------------------------------------------------------------------------------
+* Heap manager definition
+--------------------------------------------------------------------------------*/
+typedef struct HeapManager {
+	HeapBlock startBlock; 				// Beginning and the end of list of free blocks
+	HeapBlock endBlock;
+	uint8_t heapMem[ALIGNED_HEAP_SIZE];	// Heap memory
+	uint32_t heapBytesUsed;				// Number of bytes already allocated on heap
+#ifdef USE_MUTEX
+	Mutex heapMutex;					// Mutual exclusion lock on the heap
+#endif						
+	
+} HeapManager;
+
+extern HeapManager heap;
 
 
 
@@ -65,4 +103,17 @@ void free(void* toFree);
 --------------------------------------------------------------------------------*/
 size_t align_byte_number(size_t byteNumber);
 
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	heap_insert_free_block
+* Purpose:    	Insert a new block into the list of free blocks in ascending size
+* 				order
+* Arguments:	
+*		toInsert - pointer to the block to insert
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void heap_insert_free_block(HeapBlock* toInsert);
+
+#endif
 #endif

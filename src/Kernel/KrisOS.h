@@ -19,7 +19,7 @@
 * OS features enable/disable (comment out to disable features)
 *******************************************************************************/
 #define USE_MUTEX 					// Use mutexes
-#define USE_SEMAPHORE 				// Use semaphores
+//#define USE_SEMAPHORE 				// Use semaphores
 #define USE_HEAP 					// Use dynamic memory
 #define USE_UART 					// Enable UART driver
 #define SHOW_DIAGNOSTIC_DATA		// Show OS usage statistics etc.
@@ -57,7 +57,6 @@ typedef struct Semaphore Semaphore; // Semaphore
 typedef struct Mutex {
 	Task* owner; 					// Task owning the mutex
 	Task* waitingQueue; 			// Queue of tasks waiting for the mutex
-	Mutex* next; 					// Pointer to the next mutex in the list
 #ifdef SHOW_DIAGNOSTIC_DATA 		// Last time mutex was taken (for critical
 	uint64_t timeTaken; 			// section length calculation)
 #endif
@@ -109,8 +108,8 @@ typedef struct Task {
 	uint64_t waitCounter;			// Remaining time to sleep (in OS 'ticks')
 	uint32_t* stackBase; 			// Pointer to the base of process' stack
 	void* waitingObj;				// Synchronisation object the task is waiting for
-#ifdef USE_MUTEX
 	uint8_t basePrio; 				// Base priority of the task given
+#ifdef USE_MUTEX
 	Mutex* mutexHeld; 				// List of mutexes held
 #endif
 #ifdef SHOW_DIAGNOSTIC_DATA
@@ -129,7 +128,7 @@ typedef struct Task {
 * Heap Manager setup
 *******************************************************************************/
 // Heap size (in bytes)
-#define HEAP_SIZE 4000		
+#define HEAP_SIZE 2000		
 
 // Minimum heap free block size that can still be divided into smaller ones
 #define MIN_BLOCK_SIZE (4 * sizeof(HeapBlock))
@@ -145,7 +144,7 @@ typedef struct Task {
 #define UART_INTERFACE_TYPE 0
 
 // UART0 baud rate
-#define UART_BAUD_RATE 115200
+#define UART_BAUD_RATE 9600
 
 /* UART0 word length
 	0 - 5bits
@@ -604,21 +603,26 @@ uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size);
 /*-------------------------------------------------------------------------------
 * Macro:    	KrisOS_task_define
 * Purpose:    	MACRO speeding up static task declaration by automatically declaring 
-*				necessary variables,
+*				and initialising variables and constants to be passed to 
+*				KrisOS_task_create_static.
 * Arguments:	
 *		NAME - unique name of the task and prefix to the task description variable names.
-*			   1. task code starting address - void <NAME>(void)
+*			   1. task function name - void <NAME>(void)
 *			   2. task struct name prefix - Task <NAME>Task
 *			   3. task stack size - <NAME>StackSize = SIZE
-*			   4. task private stack memory - <NAME>Stack['task stack size']
-*			   
+*			   4. task stack memory - <NAME>Stack['task stack size']
+* 			   5. task priority - <NAME>Priority
+*		STACK_SIZE - task private stack memory size
+* 		PRIORITY - task priority
 * Returns: 
 *		Creates the aforementioned variables at compile-time
 --------------------------------------------------------------------------------*/
-#define KrisOS_task_define(NAME, STACK_SIZE) 								\
+#define KrisOS_task_define(NAME, STACK_SIZE, PRIORITY) 						\
 	void NAME ## (void);													\
 	Task NAME ## Task;											  			\
 	const size_t NAME ## StackSize = STACK_SIZE;							\
 	uint8_t NAME ## Stack[NAME ## StackSize];								\
-
+	const uint8_t NAME ## Priority = PRIORITY;
+	
+	
 #endif

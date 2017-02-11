@@ -8,9 +8,10 @@
 *
 * Note: 	
 *******************************************************************************/
-#include "KrisOS.h"
-#include "system.h"
 #include "kernel.h"
+#include "system.h"
+#include "KrisOS.h"
+
 
 
 /*-------------------------------------------------------------------------------
@@ -24,138 +25,6 @@ Kernel KrisOS;
 * Value of exception return for SVC calls
 --------------------------------------------------------------------------------*/
 uint32_t svc_exc_return;
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:		idle_task
-* Purpose:    	Idle task. Lowest priority task used for power saving.
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void idle_task(void) {
-	while(1) __wfi();
-}
-
-KrisOS_task_define(idle, 100)
-
-
-
-#ifdef SHOW_DIAGNOSTIC_DATA
-/*-------------------------------------------------------------------------------
-* Function:		stats_task
-* Purpose:    	KrisOS performance statistics task. Displays diagnostic data. 
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void stats_task(void) {
-	
-	// Per-task CPU usage, the last time the statistics task was run and the current 
-	// value of OS timer
-	uint32_t cpuUsage;
-	uint64_t lastRun;
-	uint64_t currentTime;
-	
-	// Task registry iterator
-	int32_t index;
-	Task* iterator;
-	
-	// Stack usage helper iterator and stack usage value
-	uint32_t* stackUsageHelper;
-	uint32_t stackUsage;
-	
-	while(1) {
-		
-		// Reset the usage data
-		scheduler.idleTime = scheduler.contextSwitchNo = 0;
-		#ifdef USE_MUTEX
-			KrisOS.maxMtxCriticalSection = 0;
-		#endif
-		
-		// Take note of the time the task iteration is taking place
-		lastRun = KrisOS.ticks;
-		
-		// Suspend the task in order to take time to gather usage data
-		task_sleep(DIAG_DATA_RATE, SLEEPING);
-		
-		currentTime = KrisOS.ticks;
-		
-		#ifdef USE_MUTEX
-			mutex_lock(&uartMtx);
-		#endif
-		{
-			// Display OS usage data
-			fprintf(uart, "\n------------------------------------------------------------------------------\n");
-			fprintf(uart, "Time running:\t\t%d days, %d hours, %d minutes, %d seconds\n", 
-				    (uint32_t) (currentTime / 86400000UL),
-				   (uint32_t) ((currentTime % 86400000UL)) / 3600000, 
-				   (uint32_t) ((currentTime % 3600000)) / 60000, 
-				   (uint32_t) ((currentTime % 60000)) / 1000);
-			fprintf(uart, "Measurement period:\t%d ms\n", (uint32_t) (currentTime - lastRun));
-			fprintf(uart, "Context switches:\t%d\n", scheduler.contextSwitchNo);
-			fprintf(uart, "Total task number:\t%d\n", scheduler.totalTaskNo);
-			
-			#ifdef USE_MUTEX
-				fprintf(uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
-				fprintf(uart, "Max mutex lock time:\t%d ms\n", KrisOS.maxMtxCriticalSection);
-			#endif
-			
-			#ifdef USE_SEMAPHORE
-				fprintf(uart, "Total semaphore number:\t%d\n", KrisOS.totalSemNo);
-			#endif
-			
-			#ifdef USE_HEAP
-				fprintf(uart, "Heap usage:\t\t%dB/%dB = %d%%\n", heapBytesUsed, HEAP_SIZE, heapBytesUsed * 100 / HEAP_SIZE);
-			#endif
-			
-			// Display the task manager (per-task statistics)
-			fprintf(uart, "\nTID\tCPU usage\tStack usage\tPriority\tStatus\t\tMemory\n");
-			for (index = 0; index < scheduler.totalTaskNo; index++) {
-				iterator = scheduler.taskRegistry[index];
-				
-				// Compute the CPU usage as the proportion of the OS ticks spend executing the task
-				// to the total number of OS ticks since the last time the statistics task was run
-				cpuUsage = iterator->cpuUsage * 100 / (currentTime - lastRun);
-				
-				// Calculate the stack usage by calculating the offset from the stack base to the first
-				// memory location that hasn't been modified
-				stackUsageHelper = (uint32_t*) iterator->sp;
-				while (*stackUsageHelper-- != 0xDEADBEEF);
-				if (iterator->memoryType == DYNAMIC) 
-					stackUsage = iterator->stackSize - ((stackUsageHelper - iterator->stackBase) << 2);
-				else 
-					stackUsage = (iterator->stackBase - stackUsageHelper) << 2;
-					
-				fprintf(uart, "%d\t%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsage, stackUsage, iterator->priority);
-				iterator->cpuUsage = 0;
-				
-				// Display the current task status 
-				switch(iterator->status) {
-					case RUNNING: fprintf(uart, "RUNNING\t\t"); break;
-					case READY: fprintf(uart, "READY\t\t"); break;
-					case SLEEPING: fprintf(uart, "SLEEPING\t"); break;
-					case MTX_WAIT: fprintf(uart, "MUTEX WAIT\t"); break;
-					case SEM_WAIT: fprintf(uart, "SEM WAIT\t"); break;
-					default: break;
-				}
-
-				// Display the type of memory allocation used for the task and its stack (static/dynamic)
-				switch(iterator->memoryType) {
-					case STATIC: fprintf(uart, "Static\n"); break;
-					case DYNAMIC: fprintf(uart, "Dynamic\n"); break;
-					default: break;
-				}
-			}
-			fprintf(uart, "------------------------------------------------------------------------------\n");
-		}
-		#ifdef USE_MUTEX
-			mutex_unlock(&uartMtx);
-		#endif
-	}
-}
-
-KrisOS_task_define(stats, 400)
-#endif
 
 
 
@@ -174,38 +43,20 @@ void os_init(void) {
 		__enable_fpu();
 		
 		// Set up the system clock
-		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);					
-
-		// Initialise the heap
-		#ifdef USE_HEAP
-			heap_init();
-		#endif		
+		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);
 		
 		// Initialse the scheduler
 		scheduler_init();
 		
-		// Create system tasks:
-		// 1. Idle task (priviliged, lowest possible task priority)
+		// Initialise the OS usage statistics task
 		#ifdef SHOW_DIAGNOSTIC_DATA
-			KrisOS_stack_usage((uint32_t*) &idleStack[0], idleStackSize);
+			stats_init();
 		#endif
-		task_create_static(&idleTask, idle_task, &idleStack[idleStackSize], UINT8_MAX, 1);
-		
-		#ifdef SHOW_DIAGNOSTIC_DATA
-			// 2. OS performance statistics task. Displays usage data periodically.
-			KrisOS_stack_usage((uint32_t*) &statsStack[0], statsStackSize);
-			task_create_static(&statsTask, stats_task, &statsStack[statsStackSize], UINT8_MAX - 1, 1);	
-
-			// Reset the mutex counter
-			#ifdef USE_MUTEX
-				KrisOS.totalMutexNo = 0;
-			#endif
 			
-			// Reset the mutex counter
-			#ifdef USE_SEMAPHORE
-				KrisOS.totalSemNo = 0;
-			#endif
-		#endif
+		// Initialise the heap
+		#ifdef USE_HEAP
+			heap_init();
+		#endif			
 			
 		// Initialise the uart serial interface
 		#ifdef USE_UART		
@@ -370,6 +221,7 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		#endif
 		
 // ---- Semaphore management SVC calls -------------------------------------------
+		#ifdef USE_SEMAPHORE
 		case SVC_SEM_INIT: svcArgs[0] = sem_init((void*) svcArgs[0], svcArgs[1]); break;
 		case SVC_SEM_CREATE: svcArgs[0] = (uint32_t) sem_create(svcArgs[0]); break;
 		case SVC_SEM_DELETE: svcArgs[0] = sem_delete((void*) svcArgs[0]); break;
@@ -377,6 +229,7 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_SEM_ACQUIRE: svcArgs[0] = sem_acquire((void*) svcArgs[0], TIME_INFINITY); break;
 		case SVC_SEM_ACQUIRE_TIME: svcArgs[0] = sem_acquire((void*) svcArgs[0], svcArgs[1]); break;
 		case SVC_SEM_RELEASE: svcArgs[0] = (uint32_t) sem_release((void*) svcArgs[0]); break;
+		#endif 
 		default: break;
 	}
 	return;
