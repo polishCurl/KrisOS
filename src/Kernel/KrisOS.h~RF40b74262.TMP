@@ -48,7 +48,6 @@ typedef struct Semaphore Semaphore; // Semaphore
 // This is just a rough estimate due to the low priority of the task.
 #define DIAG_DATA_RATE 10000
 
-// Allows users to check the system clock frequency
 extern uint32_t SYSTEM_CLOCK_FREQ;
 
 
@@ -146,7 +145,7 @@ typedef struct Task {
 #define UART_INTERFACE_TYPE 0
 
 // UART0 baud rate
-#define UART_BAUD_RATE 115200
+#define UART_BAUD_RATE 9600
 
 /* UART0 word length
 	0 - 5bits
@@ -179,7 +178,7 @@ typedef struct __FILE {
 	int handle;
 } __FILE;
 
-extern __FILE uart;
+extern __FILE *uart;
 #endif
 
 // Mutex lock on UART for avoiding mixing output from different tasks

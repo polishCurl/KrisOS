@@ -405,7 +405,7 @@
             <File>
               <FileName>stats.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\stats.c</FilePath>
+              <FilePath>.\src\Kernel\stats.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -421,11 +421,6 @@
               <FileName>nvic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\HAL &amp; Drivers\nvic.c</FilePath>
-            </File>
-            <File>
-              <FileName>retarget.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\HAL &amp; Drivers\retarget.c</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
@@ -453,9 +448,19 @@
           <GroupName>User Code</GroupName>
           <Files>
             <File>
-              <FileName>demo2.c</FileName>
+              <FileName>nokia5110.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\User Code\demo2.c</FilePath>
+              <FilePath>.\src\User Code\nokia5110.c</FilePath>
+            </File>
+            <File>
+              <FileName>retarget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\retarget.c</FilePath>
+            </File>
+            <File>
+              <FileName>demo3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\demo3.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -860,7 +865,7 @@
             <File>
               <FileName>stats.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\stats.c</FilePath>
+              <FilePath>.\src\Kernel\stats.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -876,11 +881,6 @@
               <FileName>nvic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\HAL &amp; Drivers\nvic.c</FilePath>
-            </File>
-            <File>
-              <FileName>retarget.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\HAL &amp; Drivers\retarget.c</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
@@ -908,9 +908,19 @@
           <GroupName>User Code</GroupName>
           <Files>
             <File>
-              <FileName>demo2.c</FileName>
+              <FileName>nokia5110.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\User Code\demo2.c</FilePath>
+              <FilePath>.\src\User Code\nokia5110.c</FilePath>
+            </File>
+            <File>
+              <FileName>retarget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\retarget.c</FilePath>
+            </File>
+            <File>
+              <FileName>demo3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\demo3.c</FilePath>
             </File>
           </Files>
         </Group>

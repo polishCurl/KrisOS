@@ -18,8 +18,7 @@
 /*-------------------------------------------------------------------------------
 * Uart I/O stream 'as file' declarations 
 --------------------------------------------------------------------------------*/
-__FILE UART_FILE;
-__FILE *uart;
+__FILE uart;
 
 
 
@@ -62,7 +61,7 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 	float32_t dividerFrac;			
 	
 	// Activate UART0 on port A and disable UART device for time of configuration
-	SYSCTL->RCGCUART |= (1 << RCGCUART_UART0_Pos);		
+	SYSCTL->RCGCUART |= (1 << RCGC_UART0_Pos);		
 	SYSCTL->RCGCGPIO |= (1 << RCGCGPIO_PORTA_Pos); 
 	UART0->CTL &= ~(1 << CTL_UARTEN_Pos); 							   
 				   
@@ -76,6 +75,7 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 	
 	// Enable port A pins 1 and 0. Set GPIOA pins 1-0 to alternative function and
 	// enable digitial I/O on pins 1-0 of GPIOA	
+	GPIOA->PCTL &= ~((0xFU << PCTL_PMC1_Pos) | (0xFU << PCTL_PMC0_Pos));
 	GPIOA->PCTL |= (1 << PCTL_PMC1_Pos) | (1 << PCTL_PMC0_Pos); 
 	GPIOA->AFSEL |= (1 << PIN0_Pos) | (1 << PIN1_Pos);	 
 	GPIOA->DEN |= (1 << PIN0_Pos) | (1 << PIN1_Pos);				   
@@ -109,9 +109,6 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 	
 	// Enable the receive, transmitter and the whole UART module
 	UART0->CTL |= (1 << CTL_RXE_Pos) | (1 << CTL_TXE_Pos) | (1 << CTL_UARTEN_Pos);
-
-	// Create a file pointer for redirecting I/O stream
-	uart = &UART_FILE;
 
 	// Initialise the UART mutex
 	#ifdef USE_MUTEX	

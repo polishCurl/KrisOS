@@ -1,6 +1,6 @@
 /*******************************************************************************
-* File:     	uart_mtx_stats_demo.c
-* Brief:    	First demo program
+* File:     	demo2.c
+* Brief:    	Second KrisOS demo program
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	10/02/2017
@@ -8,7 +8,7 @@
 *
 * Note: 		
 * 	Demo application showing mutual exclusion lock on the UART module in
-* 	operation. OS performance statistics task is run periodically too. All user
+* 	operation. KrisOS performance statistics task is run periodically too. All user
 * 	tasks are dynamically allocated on heap and spawned from an initiator tasks,
 * 	which deletes itself upon completion.
 *******************************************************************************/
@@ -40,7 +40,7 @@ void primes(void) {
 		
 		// Print the starting message
 		KrisOS_mutex_lock(&uartMtx);
-		fprintf(uart, "\nPrime numbers between %d and %d are: \n", low, high);
+		fprintf(&uart, "\nPrime numbers between %d and %d are: \n", low, high);
 		KrisOS_mutex_unlock(&uartMtx);
 	
 		// Display all the prime numbers between high and low, go to sleep for 
@@ -58,7 +58,7 @@ void primes(void) {
 
 			if (flag == 0) {
 				KrisOS_mutex_lock(&uartMtx);
-				fprintf(uart, "%d ", low);
+				fprintf(&uart, "%d ", low);
 				KrisOS_mutex_unlock(&uartMtx);
 			}
 			
@@ -83,7 +83,7 @@ void secondTimer(void) {
 	while(1) {
 		KrisOS_task_sleep(1000);
 		KrisOS_mutex_lock(&uartMtx);
-		fprintf(uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
+		fprintf(&uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
 		KrisOS_mutex_unlock(&uartMtx);
 	}
 }

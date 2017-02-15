@@ -90,32 +90,32 @@ void stats_task(void) {
 		#endif
 		{
 			// Display OS usage data
-			fprintf(uart, "\n------------------------------------------------------------------------------\n");
-			fprintf(uart, "Time running:\t\t%d days, %d hours, %d minutes, %d seconds\n", 
+			fprintf(&uart, "\n------------------------------------------------------------------------------\n");
+			fprintf(&uart, "Time running:\t\t%d days, %d hours, %d minutes, %d seconds\n", 
 				    (uint32_t) (currentTime / 86400000UL),
 				   (uint32_t) ((currentTime % 86400000UL)) / 3600000, 
 				   (uint32_t) ((currentTime % 3600000)) / 60000, 
 				   (uint32_t) ((currentTime % 60000)) / 1000);
-			fprintf(uart, "Measurement period:\t%d ms\n", (uint32_t) (currentTime - lastRun));
-			fprintf(uart, "Context switches:\t%d\n", scheduler.contextSwitchNo);
-			fprintf(uart, "Total task number:\t%d\n", scheduler.totalTaskNo);
+			fprintf(&uart, "Measurement period:\t%d ms\n", (uint32_t) (currentTime - lastRun));
+			fprintf(&uart, "Context switches:\t%d\n", scheduler.contextSwitchNo);
+			fprintf(&uart, "Total task number:\t%d\n", scheduler.totalTaskNo);
 			
 			#ifdef USE_MUTEX
-				fprintf(uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
-				fprintf(uart, "Max mutex lock time:\t%d ms\n", KrisOS.maxMtxCriticalSection);
+				fprintf(&uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
+				fprintf(&uart, "Max mutex lock time:\t%d ms\n", KrisOS.maxMtxCriticalSection);
 			#endif
 			
 			#ifdef USE_SEMAPHORE
-				fprintf(uart, "Total semaphore number:\t%d\n", KrisOS.totalSemNo);
+				fprintf(&uart, "Total semaphore number:\t%d\n", KrisOS.totalSemNo);
 			#endif
 			
 			#ifdef USE_HEAP
-				fprintf(uart, "Heap usage:\t\t%dB/%dB = %d%%\n", heap.heapBytesUsed, HEAP_SIZE, 
+				fprintf(&uart, "Heap usage:\t\t%dB/%dB = %d%%\n", heap.heapBytesUsed, HEAP_SIZE, 
 					    heap.heapBytesUsed * 100 / HEAP_SIZE);
 			#endif
 			
 			// Display the task manager (per-task statistics)
-			fprintf(uart, "\nTID\tCPU usage\tStack usage\tPriority\tStatus\t\tMemory\n");
+			fprintf(&uart, "\nTID\tCPU usage\tStack usage\tPriority\tStatus\t\tMemory\n");
 			for (index = 0; index < scheduler.totalTaskNo; index++) {
 				iterator = scheduler.taskRegistry[index];
 				
@@ -132,27 +132,27 @@ void stats_task(void) {
 				else 
 					stackUsage = (iterator->stackBase - stackUsageHelper) << 2;
 					
-				fprintf(uart, "%d\t%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsage, stackUsage, iterator->priority);
+				fprintf(&uart, "%d\t%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsage, stackUsage, iterator->priority);
 				iterator->cpuUsage = 0;
 				
 				// Display the current task status 
 				switch(iterator->status) {
-					case RUNNING: fprintf(uart, "RUNNING\t\t"); break;
-					case READY: fprintf(uart, "READY\t\t"); break;
-					case SLEEPING: fprintf(uart, "SLEEPING\t"); break;
-					case MTX_WAIT: fprintf(uart, "MUTEX WAIT\t"); break;
-					case SEM_WAIT: fprintf(uart, "SEM WAIT\t"); break;
+					case RUNNING: fprintf(&uart, "RUNNING\t\t"); break;
+					case READY: fprintf(&uart, "READY\t\t"); break;
+					case SLEEPING: fprintf(&uart, "SLEEPING\t"); break;
+					case MTX_WAIT: fprintf(&uart, "MUTEX WAIT\t"); break;
+					case SEM_WAIT: fprintf(&uart, "SEM WAIT\t"); break;
 					default: break;
 				}
 
 				// Display the type of memory allocation used for the task and its stack (static/dynamic)
 				switch(iterator->memoryType) {
-					case STATIC: fprintf(uart, "Static\n"); break;
-					case DYNAMIC: fprintf(uart, "Dynamic\n"); break;
+					case STATIC: fprintf(&uart, "Static\n"); break;
+					case DYNAMIC: fprintf(&uart, "Dynamic\n"); break;
 					default: break;
 				}
 			}
-			fprintf(uart, "------------------------------------------------------------------------------\n");
+			fprintf(&uart, "------------------------------------------------------------------------------\n");
 		}
 		#ifdef USE_MUTEX
 			mutex_unlock(&uartMtx);

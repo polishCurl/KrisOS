@@ -363,20 +363,20 @@ typedef struct {                          // SYSCTL Structure
 #define SYSCTL ((SYSCTL_Type*) SYSCTL_Base)
 
 // RCGCUART register bit numbers
-#define RCGC_UART0_Pos 0
-#define RCGC_UART1_Pos 1
-#define RCGC_UART2_Pos 2
-#define RCGC_UART3_Pos 3
-#define RCGC_UART4_Pos 4
-#define RCGC_UART5_Pos 5
-#define RCGC_UART6_Pos 6
-#define RCGC_UART7_Pos 7
+#define RCGCUART_UART0_Pos 0
+#define RCGCUART_UART1_Pos 1
+#define RCGCUART_UART2_Pos 2
+#define RCGCUART_UART3_Pos 3
+#define RCGCUART_UART4_Pos 4
+#define RCGCUART_UART5_Pos 5
+#define RCGCUART_UART6_Pos 6
+#define RCGCUART_UART7_Pos 7
 
 // RCGCSSI Serial Synchronous Interface module enable bit numbers
-#define RCGC_SSI0_Pos 0
-#define RCGC_SSI1_Pos 1
-#define RCGC_SSI2_Pos 2
-#define RCGC_SSI3_Pos 3
+#define RCGCUART_SSI0_Pos 0
+#define RCGCUART_SSI1_Pos 1
+#define RCGCUART_SSI2_Pos 2
+#define RCGCUART_SSI3_Pos 3
 
 // RCGCGPIO register bit numbers
 #define RCGCGPIO_PORTA_Pos 0

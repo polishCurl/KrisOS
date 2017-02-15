@@ -9,7 +9,8 @@
 * Note: 		
 *******************************************************************************/
 #include "KrisOS.h"
-#include "system.h"
+#include "uart.h"
+#include "nokia5110.h"
 #include <stdio.h>
 #include <rt_misc.h>
 
@@ -42,10 +43,14 @@ FILE __stdin;
 *		0 upon sucessful completion
 --------------------------------------------------------------------------------*/
 int fputc(int character, FILE *file) {
-#ifdef USE_UART
-	if (file == &UART_FILE)
-		uart_send_char(character); 
-#endif	
+	
+	if (file == &nokia5110)
+		nokia5110_send_char(character);
+		
+	#ifdef USE_UART
+		if (file == &uart)
+			uart_send_char(character); 
+	#endif	
 	return 0;
 }
 
@@ -55,13 +60,14 @@ int fputc(int character, FILE *file) {
 * Function:    	fgetc
 * Purpose:    	Read a character from the specified input stream 
 * Arguments:
-*		file - pointer to the input stream (unused) 
+*		file - pointer to the input stream
 * Returns: 		
 *		character read
 --------------------------------------------------------------------------------*/
 int fgetc(FILE *file) {
+	
 #ifdef USE_UART
-	if (file == &UART_FILE)
+	if (file == &uart)
 		return uart_get_char();
 #endif
 	return 0;
@@ -105,7 +111,7 @@ void _ttywrch(int character) {
 --------------------------------------------------------------------------------*/
 void _sys_exit(int return_code) {
 #ifdef USE_UART
-	fprintf(uart, "Terminating KrisOS...");
+	fprintf(&uart, "Terminating KrisOS...");
 #endif
 	while(1);
 }

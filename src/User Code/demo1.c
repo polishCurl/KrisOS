@@ -36,7 +36,7 @@ void primes(void) {
 		// Initialise the range and output header message.
 		low = 2;
 		high = 20000;
-		fprintf(uart, "\nPrime numbers between %d and %d are: \n", low, high);
+		fprintf(&uart, "\nPrime numbers between %d and %d are: \n", low, high);
 	
 		// Display all the prime numbers between high and low, go to sleep for 
 		// some time, then repeat.
@@ -52,7 +52,7 @@ void primes(void) {
 				}
 
 			if (flag == 0) 
-				fprintf(uart, "%d ", low);
+				fprintf(&uart, "%d ", low);
 			
 			++low;
 		}
@@ -74,7 +74,7 @@ void secondTimer(void) {
 	uint32_t secondsElapsed = 0;
 	while(1) {
 		KrisOS_task_sleep(1000);
-		fprintf(uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
+		fprintf(&uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
 	}
 }
 
