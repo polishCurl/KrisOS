@@ -56,7 +56,7 @@ void scheduler_init(void) {
 	// Reset the task counter and
 	#ifdef SHOW_DIAGNOSTIC_DATA
 		scheduler.totalTaskNo = 0;
-		KrisOS_stack_usage((uint32_t*) &idleStack[0], idleStackSize);
+		KrisOS_stack_usage_config((uint32_t*) &idleStack[0], idleStackSize);
 	#endif	
 	
 	task_create_static(&idleTask, idle_task, &idleStack[idleStackSize], idlePriority, 1);
@@ -79,7 +79,7 @@ void scheduler_run(void) {
 	{
 		// Pick either the top priority ready task or (if the time-sliced preemption 
 		// flag is set) the task next in queue with respect to the currently running one
-		if (scheduler.status & (1 << TIME_PREEMPT_Pos) && scheduler.runPtr->next->priority == scheduler.runPtr->priority)
+		if (scheduler.status & (1 << TIME_PREEMPT) && scheduler.runPtr->next->priority == scheduler.runPtr->priority)
 			scheduler.topPrioTask = scheduler.runPtr->next;
 		else
 			scheduler.topPrioTask = scheduler.ready;
@@ -87,7 +87,7 @@ void scheduler_run(void) {
 		// Perform context-switch only if the next task to run is different from the 
 		// current one, according to the scheduling policy
 		if (scheduler.topPrioTask != scheduler.runPtr) {
-			SCB->ICSR |= (1 << PENDSV_Pos);	
+			SCB->ICSR |= (1 << PENDSV);	
 			
 			// Update current task's state only if it hasn't been updated yet due to some request.
 			// (Sleep/Mutex wait/...)
@@ -97,7 +97,7 @@ void scheduler_run(void) {
 			
 			// The current time-slice will now be divided between more than one task so 
 			// time-sliced preemption is switched off until the next time slice is entered
-			scheduler.status &= ~(1 << TIME_PREEMPT_Pos);
+			scheduler.status &= ~(1 << TIME_PREEMPT);
 			
 			// Update the context switch counter
 			#ifdef SHOW_DIAGNOSTIC_DATA
@@ -197,7 +197,7 @@ Task* task_create_dynamic(void* startAddr, uint32_t stackSize, uint32_t priority
 		toCreate->stackSize = stackSize;
 	
 		// Preprocess the stack memory for debugging purpose (estimating stack usage)
-		KrisOS_stack_usage(toCreate->stackBase, stackSize);
+		KrisOS_stack_usage_config(toCreate->stackBase, stackSize);
 	#endif
 	
 	// Initialise the task's control block and stack frame
@@ -528,7 +528,7 @@ void task_complete_handler(void) {
 
 #ifdef SHOW_DIAGNOSTIC_DATA
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_stack_usage
+* Function:    	KrisOS_stack_usage_config
 * Purpose:    	Reset the stack memory given in order to extract stack usage data later
 * Arguments:	
 *		toPrepare - top of the stack memory to reset
@@ -536,7 +536,7 @@ void task_complete_handler(void) {
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size) {
+uint32_t KrisOS_stack_usage_config(uint32_t* toPrepare, uint32_t size) {
 	
 	uint32_t* iterator;
 	uint32_t* endAddress;

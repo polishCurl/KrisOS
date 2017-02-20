@@ -153,17 +153,17 @@ typedef struct
 #define SCB_Base 0xE000ED00
 #define SCB ((SCB_Type*) SCB_Base)
 
-// ICSR register bit numbers
-#define NMISET_Pos 31 					// NMI Set Pending
-#define PENDSV_Pos 28 					// PendSV Set Pending
-#define UNPENDSV_Pos 27 				// PendSV Clear Pending
-#define PENDSTSET_Pos 26 				// SysTick Set Pending
-#define PENDSTCLR_Pos 25 				// SysTick Clear Pending
-#define ISRPRE_Pos 23 					// Debug Inrerrupt Handling
+// ICSR register 
+#define NMISET 31 					// NMI Set Pending
+#define PENDSV 28 					// PendSV Set Pending
+#define UNPENDSV 27 				// PendSV Clear Pending
+#define PENDSTSET 26 				// SysTick Set Pending
+#define PENDSTCLR 25 				// SysTick Clear Pending
+#define ISRPRE 23 					// Debug Inrerrupt Handling
 #define ISRPEND 22 						// Interrupt Pending
-#define VECPEND_Pos 12 					// Interrupt Pending Vector Number
-#define RETBASE_Pos 11 					// Return to Base
-#define VECACT_Pos 0					// Interrupt Active Vector Number
+#define VECPEND 12 					// Interrupt Pending Vector Number
+#define RETBASE 11 					// Return to Base
+#define VECACT 0					// Interrupt Active Vector Number
 
 
 
@@ -362,54 +362,60 @@ typedef struct {                          // SYSCTL Structure
 #define SYSCTL_Base 0x400FE000
 #define SYSCTL ((SYSCTL_Type*) SYSCTL_Base)
 
-// RCGCUART register bit numbers
-#define RCGC_UART0_Pos 0
-#define RCGC_UART1_Pos 1
-#define RCGC_UART2_Pos 2
-#define RCGC_UART3_Pos 3
-#define RCGC_UART4_Pos 4
-#define RCGC_UART5_Pos 5
-#define RCGC_UART6_Pos 6
-#define RCGC_UART7_Pos 7
+// RCGCUART Run mode clock gating control
+#define RCGC_UART0 0
+#define RCGC_UART1 1
+#define RCGC_UART2 2
+#define RCGC_UART3 3
+#define RCGC_UART4 4
+#define RCGC_UART5 5
+#define RCGC_UART6 6
+#define RCGC_UART7 7
 
-// RCGCSSI Serial Synchronous Interface module enable bit numbers
-#define RCGC_SSI0_Pos 0
-#define RCGC_SSI1_Pos 1
-#define RCGC_SSI2_Pos 2
-#define RCGC_SSI3_Pos 3
+// RCGCSSI Run mode clock gating control
+#define RCGC_SSI0 0
+#define RCGC_SSI1 1
+#define RCGC_SSI2 2
+#define RCGC_SSI3 3
 
-// RCGCGPIO register bit numbers
-#define RCGCGPIO_PORTA_Pos 0
-#define RCGCGPIO_PORTB_Pos 1
-#define RCGCGPIO_PORTC_Pos 2
-#define RCGCGPIO_PORTD_Pos 3
-#define RCGCGPIO_PORTE_Pos 4
-#define RCGCGPIO_PORTF_Pos 5
+// RCGCI2C Run mode clock gating control
+#define RCGC_I2C0 0
+#define RCGC_I2C1 1
+#define RCGC_I2C2 2
+#define RCGC_I2C3 3
 
-// RCC register bit numbers
-#define ACG_Pos 27
-#define SYSDIV_Pos 23
-#define USESYSDIV_Pos 22
-#define USEPWMDIV_Pos 20
-#define PWMDIV_Pos 17
-#define PWRDN_Pos 13
-#define BYPASS_Pos 11
-#define XTAL_Pos 6
-#define OSCSRC_Pos 4
-#define MOSCDIS_Pos 0
+// RCGCGPIO register 
+#define RCGCGPIO_PORTA 0
+#define RCGCGPIO_PORTB 1
+#define RCGCGPIO_PORTC 2
+#define RCGCGPIO_PORTD 3
+#define RCGCGPIO_PORTE 4
+#define RCGCGPIO_PORTF 5
 
-// RCC2 register bit numbers
-#define USERCC2_Pos 31
-#define DIV400_Pos 30
-#define SYSDIV2_Pos 23
-#define SYSDIV2LSB_Pos 22
+// RCC register 
+#define RCC_ACG 27
+#define RCC_SYSDIV 23
+#define RCC_USESYSDIV 22
+#define RCC_USEPWMDIV 20
+#define RCC_PWMDIV 17
+#define RCC_PWRDN 13
+#define RCC_BYPASS 11
+#define RCC_XTAL 6
+#define RCC_OSCSRC 4
+#define RCC_MOSCDIS 0
+
+// RCC2 register 
+#define USERCC2 31
+#define DIV400 30
+#define SYSDIV2 23
+#define SYSDIV2LSB 22
 #define USBPWRDN 14
-#define PWRDN2_Pos 13
-#define BYPASS2_Pos 11
-#define OSCSRC2_Pos 4
+#define PWRDN2 13
+#define BYPASS2 11
+#define OSCSRC2 4
 
-// RIS register bit numbers
-#define PLLRIS_Pos 6
+// RIS register 
+#define PLLRIS 6
 
 
 
@@ -451,11 +457,12 @@ typedef struct
 #define SYSTICK_Base 0xE000E010
 #define SYSTICK ((SYSTICK_Type*) SYSTICK_Base)
 
-// CTRL register bit numbers
-#define COUNT_Pos 16
-#define CLK_SRC_Pos 2
-#define INTEN_Pos 1
-#define ENABLE_Pos 0
+// CTRL register 
+#define COUNT 16
+#define CLK_SRC 2
+#define INTEN 1
+#define ENABLE 0
+
 
 
 /*-------------------------------------------------------------------------------
@@ -503,25 +510,27 @@ typedef struct {                       // GPIOA Structure
 #define GPIOE ((GPIO_Type*) GPIOE_Base)
 #define GPIOF ((GPIO_Type*) GPIOF_Base)
 
-// GPIOPCTL register bit numbers
-#define PCTL_PMC0_Pos 0
-#define PCTL_PMC1_Pos 4
-#define PCTL_PMC2_Pos 8
-#define PCTL_PMC3_Pos 12
-#define PCTL_PMC4_Pos 16
-#define PCTL_PMC5_Pos 20
-#define PCTL_PMC6_Pos 24
-#define PCTL_PMC7_Pos 28
+// GPIOPCTL register 
+#define PCTL_PMC0 0
+#define PCTL_PMC1 4
+#define PCTL_PMC2 8
+#define PCTL_PMC3 12
+#define PCTL_PMC4 16
+#define PCTL_PMC5 20
+#define PCTL_PMC6 24
+#define PCTL_PMC7 28
 
 // PIN offsets
-#define PIN0_Pos 0
-#define PIN1_Pos 1
-#define PIN2_Pos 2
-#define PIN3_Pos 3
-#define PIN4_Pos 4
-#define PIN5_Pos 5
-#define PIN6_Pos 6
-#define PIN7_Pos 7
+#define PIN0 0
+#define PIN1 1
+#define PIN2 2
+#define PIN3 3
+#define PIN4 4
+#define PIN5 5
+#define PIN6 6
+#define PIN7 7
+
+
 
 /*-------------------------------------------------------------------------------
 * UART0 registers
@@ -555,73 +564,74 @@ typedef struct {                     	// UART0 Structure
 #define UART0_Base 0x4000C000
 #define UART0 ((UART_Type*) UART0_Base)
 
-// CTL register bit numbers
-#define CTL_CTSEN_Pos 15
-#define CTL_RTSEN_Pos 14
-#define CTL_RTS_Pos 11
-#define CTL_RXE_Pos 9
-#define CTL_TXE_Pos 8
-#define CTL_LBE_Pos 7
-#define CTL_HSE_Pos 5
-#define CTL_EOT_Pos 4
-#define CTL_SMART_Pos 3
-#define CTL_SIRLP_Pos 2
-#define CTL_SIREN_Pos 1
-#define CTL_UARTEN_Pos 0
+// CTL register 
+#define CTL_CTSEN 15
+#define CTL_RTSEN 14
+#define CTL_RTS 11
+#define CTL_RXE 9
+#define CTL_TXE 8
+#define CTL_LBE 7
+#define CTL_HSE 5
+#define CTL_EOT 4
+#define CTL_SMART 3
+#define CTL_SIRLP 2
+#define CTL_SIREN 1
+#define CTL_UARTEN 0
 
-// LCRH register bit numbers
-#define LCHR_SPS_Pos 7
-#define LCHR_WLEN_Pos 5
-#define LCHR_FEN_Pos 4
-#define LCHR_STP2_Pos 3
-#define LCHR_EPS_Pos 2
-#define LCHR_PEN_Pos 1
-#define LCHR_BRK_Pos 0
+// LCRH register 
+#define LCHR_SPS 7
+#define LCHR_WLEN 5
+#define LCHR_FEN 4
+#define LCHR_STP2 3
+#define LCHR_EPS 2
+#define LCHR_PEN 1
+#define LCHR_BRK 0
 
-// FR register bit numbers
-#define FR_TXFE_Pos 7 				// Transmit FIFO empty
-#define FR_RXFF_Pos 6				// Receive FIFO full
-#define FR_TXFF_Pos 5 				// Transmit FIFO full
-#define FR_RXFE_Pos 4 				// Receive FIFO empty
-#define FR_BUSY_Pos 3 				// UART busy
-#define FR_CTS_Pos 0 				// Clear to send
+// FR register 
+#define FR_TXFE 7 				// Transmit FIFO empty
+#define FR_RXFF 6				// Receive FIFO full
+#define FR_TXFF 5 				// Transmit FIFO full
+#define FR_RXFE 4 				// Receive FIFO empty
+#define FR_BUSY 3 				// UART busy
+#define FR_CTS 0 				// Clear to send
 
-// IFLS register bit numbers
-#define RXIFSEL_Pos 3 				// UART Receive Interrupt FIFO Level Select
-#define TXIFSEL_Pos 0 				// UART Transmit Interrupt FIFO Level Select
+// IFLS register 
+#define RXIFSEL 3 				// UART Receive Interrupt FIFO Level Select
+#define TXIFSEL 0 				// UART Transmit Interrupt FIFO Level Select
 
-// IM register bit numbers
-#define BITIM9_Pos 12 				// UART 9-Bit Mode Interrupt Mask
-#define OEIM_Pos 10 				// UART Overrun Error Interrupt Mask
-#define BEIM_Pos 9 					// UART Break Error Interrupt Mask
-#define PEIM_Pos 8 					// UART Parity Error Interrupt Mask
-#define FEIM_Pos 7 					// UART Framing Error Interrupt Mask
-#define RTIM_Pos 6 					// UART Receive Time-Out Interrupt Mask
-#define TXIM_Pos 5 					// UART Transmit Interrupt Mask
-#define RXIM_Pos 4 					// UART Receive Interrupt Mask
-#define CTIM_Pos 1 					// UART Clear to Send Interrupt Mask
+// IM register 
+#define BITIM9 12 				// UART 9-Bit Mode Interrupt Mask
+#define OEIM 10 				// UART Overrun Error Interrupt Mask
+#define BEIM 9 					// UART Break Error Interrupt Mask
+#define PEIM 8 					// UART Parity Error Interrupt Mask
+#define FEIM 7 					// UART Framing Error Interrupt Mask
+#define RTIM 6 					// UART Receive Time-Out Interrupt Mask
+#define TXIM 5 					// UART Transmit Interrupt Mask
+#define RXIM 4 					// UART Receive Interrupt Mask
+#define CTIM 1 					// UART Clear to Send Interrupt Mask
 
-// RIS register bit numbers
-#define BITRIS9_Pos 12 				// UART 9-Bit Mode Raw Interrupt Status
-#define OERIS_Pos 10 				// UART Overrun Error Raw Interrupt Status
-#define BERIS_Pos 9 				// UART Break Error Raw Interrupt Status
-#define PERIS_Pos 8 				// UART Parity Error Raw Interrupt Status
-#define FERIS_Pos 7 				// UART Framing Error Raw Interrupt Status
-#define RTRIS_Pos 6 				// UART Receive Time-Out Raw Interrupt Status
-#define TXRIS_Pos 5 				// UART Transmit Raw Interrupt Status
-#define RXRIS_Pos 4 				// UART Receive Raw Interrupt Status
-#define CTRIS_Pos 1 				// UART Clear to Send Raw Interrupt Status
+// RIS register 
+#define BITRIS9 12 				// UART 9-Bit Mode Raw Interrupt Status
+#define OERIS 10 				// UART Overrun Error Raw Interrupt Status
+#define BERIS 9 				// UART Break Error Raw Interrupt Status
+#define PERIS 8 				// UART Parity Error Raw Interrupt Status
+#define FERIS 7 				// UART Framing Error Raw Interrupt Status
+#define RTRIS 6 				// UART Receive Time-Out Raw Interrupt Status
+#define TXRIS 5 				// UART Transmit Raw Interrupt Status
+#define RXRIS 4 				// UART Receive Raw Interrupt Status
+#define CTRIS 1 				// UART Clear to Send Raw Interrupt Status
 
-// ICR register bit numbers
-#define BITIC9_Pos 12 				// UART 9-Bit Mode Interrupt Clear
-#define OEIC_Pos 10 				// UART Overrun Error Interrupt Clear
-#define BEIC_Pos 9 					// UART Break Error Interrupt Clear
-#define PEIC_Pos 8 					// UART Parity Error Interrupt Clear
-#define FEIC_Pos 7 					// UART Framing Error Interrupt Clear
-#define RTIC_Pos 6 					// UART Receive TICe-Out Interrupt Clear
-#define TXIC_Pos 5 					// UART Transmit Interrupt Clear
-#define RXIC_Pos 4 					// UART Receive Interrupt Clear
-#define CTIC_Pos 1 					// UART Clear to Send Interrupt Clear
+// ICR register 
+#define BITIC9 12 				// UART 9-Bit Mode Interrupt Clear
+#define OEIC 10 				// UART Overrun Error Interrupt Clear
+#define BEIC 9 					// UART Break Error Interrupt Clear
+#define PEIC 8 					// UART Parity Error Interrupt Clear
+#define FEIC 7 					// UART Framing Error Interrupt Clear
+#define RTIC 6 					// UART Receive TICe-Out Interrupt Clear
+#define TXIC 5 					// UART Transmit Interrupt Clear
+#define RXIC 4 					// UART Receive Interrupt Clear
+#define CTIC 1 					// UART Clear to Send Interrupt Clear
+
 
 
 /*-------------------------------------------------------------------------------
@@ -645,43 +655,116 @@ typedef struct {                    // SSI0 Structure
 #define SSI0_Base 0x40008000
 #define SSI0 ((SSI0_Type*) SSI0_Base)
 
-// CR0 register bit numbers
-#define CR0_SCR_Pos 8
-#define CR0_SPH_Pos 7
-#define CR0_SPO_Pos 6
-#define CR0_FRF_Pos 4
-#define CR0_DSS_Pos 0
+// CR0 register 
+#define CR0_SCR 8
+#define CR0_SPH 7
+#define CR0_SPO 6
+#define CR0_FRF 4
+#define CR0_DSS 0
 
-// CR1 register bit numbers
-#define CR1_EOT_Pos 4
-#define CR1_MS_Pos 2
-#define CR1_SSE_Pos 1
-#define CR1_LBM_Pos 0
+// CR1 register 
+#define CR1_EOT 4
+#define CR1_MS 2
+#define CR1_SSE 1
+#define CR1_LBM 0
 
-// SR register bit numbers
-#define SR_BSY_Pos 4
-#define SR_RFF_Pos 3
-#define SR_RNE_Pos 2
-#define SR_TNF_Pos 1
-#define SR_TFE_Pos 0
+// SR register 
+#define SR_BSY 4
+#define SR_RFF 3
+#define SR_RNE 2
+#define SR_TNF 1
+#define SR_TFE 0
 
-// IM register bit numbers
-#define IM_TXIM_Pos 3
-#define IM_RXIM_Pos 2
-#define IM_RTIM_Pos 1
-#define IM_RORIM_Pos 0
+// IM register 
+#define IM_TXIM 3
+#define IM_RXIM 2
+#define IM_RTIM 1
+#define IM_RORIM 0
 
-// RIS register bit numbers
-#define RIS_TXRIS_Pos 3
-#define RIS_RXRIS_Pos 2
-#define RIS_RTRIS_Pos 1
-#define RIS_RORRIS_Pos 0
+// RIS register 
+#define RIS_TXRIS 3
+#define RIS_RXRIS 2
+#define RIS_RTRIS 1
+#define RIS_RORRIS 0
 
-// MIS register bit numbers
-#define MIS_TXMIS_Pos 3
-#define MIS_RXMIS_Pos 2
-#define MIS_RTMIS_Pos 1
-#define MIS_RORMIS_Pos 0
+// MIS register 
+#define MIS_TXMIS 3
+#define MIS_RXMIS 2
+#define MIS_RTMIS 1
+#define MIS_RORMIS 0
+
+
+
+/*-------------------------------------------------------------------------------
+* I2C registers 
+*------------------------------------------------------------------------------*/
+typedef struct {                                    // I2C0 Structure    
+  __IO uint32_t  MSA;                               // I2C Master Slave Address
+  union {
+    __IO uint32_t  MCS_I2C0_ALT;                    // I2C Master Control/Status                                             
+    __IO uint32_t  MCS;                             // I2C Master Control/Status                                             
+  };
+  __IO uint32_t  MDR;                               // I2C Master Data                                                       
+  __IO uint32_t  MTPR;                              // I2C Master Timer Period                                               
+  __IO uint32_t  MIMR;                              // I2C Master Interrupt Mask                                             
+  __IO uint32_t  MRIS;                              // I2C Master Raw Interrupt Status                                       
+  __IO uint32_t  MMIS;                              // I2C Master Masked Interrupt Status                                    
+  __O  uint32_t  MICR;                              // I2C Master Interrupt Clear                                            
+  __IO uint32_t  MCR;                               // I2C Master Configuration                                              
+  __IO uint32_t  MCLKOCNT;                          // I2C Master Clock Low Timeout Count                                    
+  __I  uint32_t  RESERVED;
+  __IO uint32_t  MBMON;                             // I2C Master Bus Monitor                                                
+  __I  uint32_t  RESERVED1[2];
+  __IO uint32_t  MCR2;                              // I2C Master Configuration 2                                            
+  __I  uint32_t  RESERVED2[497];
+  __IO uint32_t  SOAR;                              // I2C Slave Own Address                                       
+  union {
+    __IO uint32_t  SCSR_I2C0_ALT;                   // I2C Slave Control/Status                                              
+    __IO uint32_t  SCSR;                            // I2C Slave Control/Status                                              
+  };
+  __IO uint32_t  SDR;                               // I2C Slave Data                                                        
+  __IO uint32_t  SIMR;                              // I2C Slave Interrupt Mask                                              
+  __IO uint32_t  SRIS;                              // I2C Slave Raw Interrupt Status                                        
+  __IO uint32_t  SMIS;                              // I2C Slave Masked Interrupt Status                                     
+  __O  uint32_t  SICR;                              // I2C Slave Interrupt Clear                                             
+  __IO uint32_t  SOAR2;                             // I2C Slave Own Address 2                                               
+  __IO uint32_t  SACKCTL;                           // I2C Slave ACK Control                                                 
+  __I  uint32_t  RESERVED3[487];
+  __IO uint32_t  PP;                                // I2C Peripheral Properties                                             
+  __IO uint32_t  PC;                                // I2C Peripheral Configuration                                          
+} I2C0_Type;
+
+#define I2C0_BASE 0x40020000UL
+#define I2C0 ((I2C0_Type*) I2C0_BASE)
+
+// MCR Master Configuration Register 
+#define MCR_GPE 6
+#define MCR_SFE 5
+#define MCR_MFE 4
+#define MCR_LPBK 0
+
+// MTPR Master Timer Period Register  
+#define MTPR_HS 7
+#define MTPR_TPR 0
+
+// MCS Master Control Status
+#define MCS_HS 4 			// Write
+#define MCS_ACK 3
+#define MCS_STOP 2
+#define MCS_START 1
+#define MCS_RUN 0
+#define MCS_CLKTO 7			// Read
+#define MCS_BUSBSY 6
+#define MCS_IDLE 5
+#define MCS_ARBLST 4
+#define MCS_DATACK 3
+#define MCS_ADRACK 2 			
+#define MCS_ERROR 1
+#define MCS_BUSY 0
+
+// MSA Master Slave Address
+#define MSA_SA 1
+#define MSA_RS 0
 
 
 

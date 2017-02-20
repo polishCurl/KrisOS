@@ -589,7 +589,7 @@ uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 
 #ifdef SHOW_DIAGNOSTIC_DATA
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_stack_usage
+* Function:    	KrisOS_stack_usage_config
 * Purpose:    	Reset the stack memory given in order to extract stack usage data later
 * Arguments:	
 *		toPrepare - top of the stack memory to reset
@@ -597,7 +597,7 @@ uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_stack_usage(uint32_t* toPrepare, uint32_t size);
+uint32_t KrisOS_stack_usage_config(uint32_t* toPrepare, uint32_t size);
 #endif
 
 

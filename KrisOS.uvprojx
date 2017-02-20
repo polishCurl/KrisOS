@@ -458,6 +458,11 @@
               <FilePath>.\src\User Code\retarget.c</FilePath>
             </File>
             <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\i2c.c</FilePath>
+            </File>
+            <File>
               <FileName>demo3.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
@@ -916,6 +921,11 @@
               <FileName>retarget.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\User Code\retarget.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\i2c.c</FilePath>
             </File>
             <File>
               <FileName>demo3.c</FileName>

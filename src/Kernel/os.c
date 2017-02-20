@@ -102,7 +102,7 @@ void os_start(void) {
 	
 	// Initially it is assumed that the first task will run until it's time preempted
 	// (will use its time slice completely)
-	scheduler.status |= (1 << TIME_PREEMPT_Pos);
+	scheduler.status |= (1 << TIME_PREEMPT);
 	
 	// Set up periodic interrupts
 	systick_config(SYSTEM_CLOCK_FREQ / OS_CLOCK_FREQ);	
@@ -136,10 +136,10 @@ void SysTick_Handler(void) {
 	// If the currently running task has used up its entire time slice, then
 	// it should be preempted.
 	if (KrisOS.ticks % TIME_SLICE == 0) {
-		if (scheduler.status & (1 << TIME_PREEMPT_Pos))
+		if (scheduler.status & (1 << TIME_PREEMPT))
 			scheduler_run();
 		else
-			scheduler.status |= (1 << TIME_PREEMPT_Pos);
+			scheduler.status |= (1 << TIME_PREEMPT);
 	}
 }
 

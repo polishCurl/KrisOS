@@ -37,7 +37,7 @@ void stats_init(void) {
 	#endif
 	
 	// Initialise the stats task
-	KrisOS_stack_usage((uint32_t*) &statsStack[0], statsStackSize);
+	KrisOS_stack_usage_config((uint32_t*) &statsStack[0], statsStackSize);
 	task_create_static(&statsTask, stats_task, &statsStack[statsStackSize], statsPriority, 1);
 }
 

@@ -23,7 +23,7 @@
 /*-------------------------------------------------------------------------------
 * Bit masks and shift values	
 --------------------------------------------------------------------------------*/
-#define PRIO_Pos 5 				// LSB position of priority within given byte
+#define PRIO 5 				// LSB position of priority within given byte
 #define PRIO_Msk 0x7 			// Interrupt priority mask
 #define ACT_Msk 0x1 			// Interrupt-active mask
 #define EXCEPTION_No 15 		// Number of Cortex-M4 processor exceptions
@@ -110,9 +110,9 @@ uint32_t nvic_read_active(IRQn_Type irq) {
 --------------------------------------------------------------------------------*/
 void nvic_set_priority(IRQn_Type irq, uint32_t priority) {
 	if (irq >= 0)
-		NVIC->IP[irq] = (priority & PRIO_Msk) << PRIO_Pos;
+		NVIC->IP[irq] = (priority & PRIO_Msk) << PRIO;
 	else 
-		SCB->SHP[EXCEP_IRQ_No + irq] = (priority & PRIO_Msk) << PRIO_Pos;
+		SCB->SHP[EXCEP_IRQ_No + irq] = (priority & PRIO_Msk) << PRIO;
 }
 
 
@@ -126,9 +126,9 @@ void nvic_set_priority(IRQn_Type irq, uint32_t priority) {
 --------------------------------------------------------------------------------*/
 uint32_t nvic_get_priority(IRQn_Type irq) {
 	if (irq >= 0)
-		return (NVIC->IP[irq] >> PRIO_Pos) & PRIO_Msk;
+		return (NVIC->IP[irq] >> PRIO) & PRIO_Msk;
 	else 
-		return (SCB->SHP[EXCEP_IRQ_No + irq] >> PRIO_Pos) & PRIO_Msk;
+		return (SCB->SHP[EXCEP_IRQ_No + irq] >> PRIO) & PRIO_Msk;
 }
 
 

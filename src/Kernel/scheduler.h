@@ -53,7 +53,7 @@ extern uint32_t svc_exc_return;
 *------------------------------------------------------------------------------*/
 // Time sliced preemption enable bit in scheduler status field. If 1, time-slice 
 // preemption should be performed at the end of the time slice.
-#define TIME_PREEMPT_Pos 0 					
+#define TIME_PREEMPT 0 					
 
 // Scheduler definition
 typedef struct {

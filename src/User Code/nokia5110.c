@@ -171,43 +171,43 @@ void nokia5110_init(void) {
 	uint32_t delay;
 	
 	// Activate the SSI0 module and enable clock on port A. Add a small delay.
-	SYSCTL->RCGCSSI |= 1 << RCGC_SSI0_Pos;
-	SYSCTL->RCGCGPIO |= (1 << RCGCGPIO_PORTA_Pos); 
-	while ((SYSCTL->RCGCGPIO & (1 << RCGCGPIO_PORTA_Pos)) == 0);
+	SYSCTL->RCGCSSI |= 1 << RCGC_SSI0;
+	SYSCTL->RCGCGPIO |= (1 << RCGCGPIO_PORTA); 
+	while ((SYSCTL->RCGCGPIO & (1 << RCGCGPIO_PORTA)) == 0);
 	
 	// Set GPIO PA6 and PA7 to output and enable digital I/O on PA2-PA7
 	// (excluding PA4)
-	GPIOA->DIR |= (1 << PIN6_Pos) |  (1 << PIN7_Pos);
-	GPIOA->DEN |= (1 << PIN2_Pos) | (1 << PIN3_Pos) | (1 << PIN5_Pos) | 
-				  (1 << PIN6_Pos) | (1 << PIN7_Pos);
+	GPIOA->DIR |= (1 << PIN6) |  (1 << PIN7);
+	GPIOA->DEN |= (1 << PIN2) | (1 << PIN3) | (1 << PIN5) | 
+				  (1 << PIN6) | (1 << PIN7);
 	
 	// Set the pins PA2, PA3 and PA5 alternative function - SSI and PA6, PA7 to 
 	// GPIO
-	GPIOA->AFSEL |= (1 << PIN2_Pos) | (1 << PIN3_Pos) | (1 << PIN5_Pos);
-	GPIOA->AFSEL &= ~((1 << PIN6_Pos) | (1 << PIN7_Pos));
-	GPIOA->PCTL &= ~((0xFU << PCTL_PMC6_Pos) | (0xFU << PCTL_PMC7_Pos) |
-				     (0xFU << PCTL_PMC2_Pos) | (0xFU << PCTL_PMC3_Pos) | 
-				     (0xFU << PCTL_PMC5_Pos)); 
-	GPIOA->PCTL |= (2 << PCTL_PMC2_Pos) | (2 << PCTL_PMC3_Pos) | 
-				   (2 << PCTL_PMC5_Pos); 
+	GPIOA->AFSEL |= (1 << PIN2) | (1 << PIN3) | (1 << PIN5);
+	GPIOA->AFSEL &= ~((1 << PIN6) | (1 << PIN7));
+	GPIOA->PCTL &= ~((0xFU << PCTL_PMC6) | (0xFU << PCTL_PMC7) |
+				     (0xFU << PCTL_PMC2) | (0xFU << PCTL_PMC3) | 
+				     (0xFU << PCTL_PMC5)); 
+	GPIOA->PCTL |= (2 << PCTL_PMC2) | (2 << PCTL_PMC3) | 
+				   (2 << PCTL_PMC5); 
 	
 	// Disable SSI0 for setup, and set it to master mode
-	SSI0->CR1 &= ~(1 << CR1_SSE_Pos);
-	SSI0->CR1 &= ~(1 << CR1_MS_Pos);
+	SSI0->CR1 &= ~(1 << CR1_SSE);
+	SSI0->CR1 &= ~(1 << CR1_MS);
 	
 	// SSI0 clock is derived from system clock:			
 	// SSInCLK = SysClk / ( CPSDVSR * (1 + SCR))
 	SSI0->CC &= ~0xF;
 	SSI0->CPSR = SYSTEM_CLOCK_FREQ / 1000000 / SSI0_CLK_FREQ_MHZ;
-	SSI0->CR0 &= ~(0xFF << CR0_SCR_Pos);
+	SSI0->CR0 &= ~(0xFF << CR0_SCR);
 	
 	// Freescale format, 8-bit data. Also set clock phase and polarity
-	SSI0->CR0 &= ~((1 << CR0_SPH_Pos) | (1 << CR0_SPO_Pos) | (0x3 << CR0_FRF_Pos));
-	SSI0->CR0 &= ~(0xF << CR0_DSS_Pos);
-	SSI0->CR0 |= 0x7 << CR0_DSS_Pos;
+	SSI0->CR0 &= ~((1 << CR0_SPH) | (1 << CR0_SPO) | (0x3 << CR0_FRF));
+	SSI0->CR0 &= ~(0xF << CR0_DSS);
+	SSI0->CR0 |= 0x7 << CR0_DSS;
 	
 	// Re-enable SSI0
-	SSI0->CR1 |= 1 << CR1_SSE_Pos;
+	SSI0->CR1 |= 1 << CR1_SSE;
 	
 	// Reset the LCD screen controller
 	RST = RST_LOW;
@@ -247,11 +247,11 @@ void nokia5110_send(TransferType type, uint8_t data) {
 	DC = type == DATA ? DC_DATA : DC_COMMAND;
 	
 	// Wait until the TX FIFO is not full send the data
-	while ((SSI0->SR & (1 << SR_TFE_Pos)) == 0);
+	while ((SSI0->SR & (1 << SR_TFE)) == 0);
 	SSI0->DR = data;
 	
 	// Wait for acknowledge and remove it from the RX FIFO
-	while ((SSI0->SR & (1 << SR_RNE_Pos)) == 0);
+	while ((SSI0->SR & (1 << SR_RNE)) == 0);
 	data = SSI0->DR;
 }
 
