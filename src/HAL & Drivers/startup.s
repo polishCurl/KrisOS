@@ -14,8 +14,8 @@
 ;-------------------------------------------------------------------------------
 ; Stack Configuration, double stacking in use
 ;-------------------------------------------------------------------------------
-Handler_Stack_Size	EQU     0x00000100		  ; Stack size for handler mode (MSP)
-Thread_Stack_Size	EQU     0x00000500		  ; Stack size for thread mode (PSP)
+Handler_Stack_Size	EQU     0x00000200		  ; Stack size for handler mode (MSP)
+Thread_Stack_Size	EQU     0x00000100		  ; Stack size for thread mode (PSP)
 
 ; Stack memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3 
@@ -31,7 +31,7 @@ __initial_sp
 ; Heap Configuration
 ;-------------------------------------------------------------------------------
 				EXPORT 	Heap_Size
-Heap_Size       EQU     0x00000080
+Heap_Size       EQU     0x00000100
 
 ; HEAP memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3

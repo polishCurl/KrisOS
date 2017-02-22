@@ -3,8 +3,8 @@
 * Brief:    	Header file for nokia5110.c
 * Author: 		Krzysztof Koch
 * Version:		V1.00
-* Date created:	12/02/2017
-* Last mod: 	12/02/2017
+* Date created:	15/02/2017
+* Last mod: 	21/02/2017
 *
 * Note: 
 * 	Tiva C Pin pins used for connecting to the nokia 5110 LCD screen. The maximum 

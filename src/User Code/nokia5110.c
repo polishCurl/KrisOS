@@ -137,7 +137,7 @@ const uint8_t font_5x7[] = {
 
 
 /*-----------------------------------------------------------------------------
-* Screen dimensions (in memory)
+* Screen dimensions (frame buffer)
 ------------------------------------------------------------------------------*/
 #define NOKIA5110_WIDTH 84
 #define NOKIA5110_HEIGHT 6

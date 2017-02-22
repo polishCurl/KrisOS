@@ -19,7 +19,7 @@
 * OS features enable/disable (comment out to disable features)
 *******************************************************************************/
 #define USE_MUTEX 					// Use mutexes
-#define USE_SEMAPHORE 				// Use semaphores
+//#define USE_SEMAPHORE 				// Use semaphores
 #define USE_HEAP 					// Use dynamic memory
 #define USE_UART 					// Enable UART driver
 #define SHOW_DIAGNOSTIC_DATA		// Show OS usage statistics etc.
@@ -46,7 +46,7 @@ typedef struct Semaphore Semaphore; // Semaphore
 
 // Diagnostic data refresh rate (in ms). How frequently the KrisOS stats task is run
 // This is just a rough estimate due to the low priority of the task.
-#define DIAG_DATA_RATE 5000
+#define DIAG_DATA_RATE 10000
 
 // Allows users to check the system clock frequency
 extern uint32_t SYSTEM_CLOCK_FREQ;
@@ -582,29 +582,6 @@ uint32_t __svc(SVC_SEM_ACQUIRE_TIME) KrisOS_sem_acquire_timeout(Semaphore* toAcq
 *		exit status (if lock already acquired - EXIT_FAILURE)
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_release_from_ISR
-* Purpose:    	Release the semaphore specified by an interrupt service routine
-* Arguments:	
-*		toRelease - semaphore to release		
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void KrisOS_sem_release_from_ISR(Semaphore* toRelease);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_acquire_from_ISR
-* Purpose:    	Take the semaphore by an interrupt service routine. Don't wait if
-*				unsuccessful
-* Arguments:	
-* 		toAcquire - semaphore to acquire
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire);
 
 #endif
 

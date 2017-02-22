@@ -467,6 +467,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
             </File>
+            <File>
+              <FileName>light_sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\light_sensor.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -931,6 +936,11 @@
               <FileName>demo3.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
+            </File>
+            <File>
+              <FileName>light_sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\light_sensor.c</FilePath>
             </File>
           </Files>
         </Group>

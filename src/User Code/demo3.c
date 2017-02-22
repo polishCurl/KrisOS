@@ -11,53 +11,111 @@
 #include "KrisOS.h"
 #include "nokia5110.h"
 #include "i2c.h"
+#include "light_sensor.h"
 
 
 
 /*-------------------------------------------------------------------------------
-* Task: 	nokiaLCDTest
-* Purpose: 	Test the nokia 5110 LCD screen driver
+* Nokia 5110 LCD screen mutual exclusion lock
 --------------------------------------------------------------------------------*/
-KrisOS_task_define(nokiaLCDTest, 400, 1)
+Mutex nokiaMtx;
 
 
-void nokiaLCDTest(void) {
 
+/*-------------------------------------------------------------------------------
+* Task: 	nokiaLCDSetup
+* Purpose: 	One-off LCD screen setup task run first and then removed from memory
+*			(allocated on heap)
+--------------------------------------------------------------------------------*/
+void nokiaLCDSetup(void) {
+
+	// Initialise the screen together with a mutex on it
+	KrisOS_mutex_init(&nokiaMtx);
 	nokia5110_init();
+	
+	// 'Say my name baby'
+	nokia5110_set_cursor(25, 5);
+	fprintf(&nokia5110, "KrisOS"); 	
+}
+
+
+
+
+KrisOS_task_define(thermometer, 200, 20)
+/*-------------------------------------------------------------------------------
+* Task: 	thermometer
+* Purpose: 	Thermometer task that periodically reads the temperature from TC74
+*			digital resistor and displays it on nokia LCD screen
+--------------------------------------------------------------------------------*/
+void thermometer(void) {
+	
+	// Current temperature
+	int8_t temperature;
+	
+	// Initialise the I2C module for communicating with the temperature sensor
+	i2c_init();
+	i2c_slave_addr(0x48);
+	
 	while(1) {
-		fprintf(&nokia5110, "KrisOS"); 
-		nokia5110_set_cursor(0, 4);
-		fprintf(&nokia5110, "Embedded OS by\nKrzysztof Koch"); 
-		KrisOS_task_sleep(5000);
-		nokia5110_clear();
-		fprintf(&nokia5110, "Time for the I2C protocol and temperature sensor reading");
-		KrisOS_task_sleep(5000);
-		nokia5110_clear();
+		
+		// Request the temperature reading
+		i2c_write(0x00, START, STOP);
+		temperature = i2c_read(START, STOP);
+		
+		// Display the current temperature
+		KrisOS_mutex_lock(&nokiaMtx);
+		nokia5110_set_cursor(0, 0);
+		fprintf(&nokia5110, "Temp:  %dC", temperature);
+		KrisOS_mutex_unlock(&nokiaMtx);
+		
+		// Wait for some time
+		KrisOS_task_sleep(500);
 	}
 }
 
 
 
+
+KrisOS_task_define(lightSensor, 200, 2)
 /*-------------------------------------------------------------------------------
-* Task: 	i2cTest
-* Purpose: 	Test the I2C interface to the TC74A0 serial digital thermal sensor
+* Task: 	lightSensor
+* Purpose: 	The illumination level monitor task
 --------------------------------------------------------------------------------*/
-KrisOS_task_define(i2cTest, 400, 20)
-
-
-void i2cTest(void) {
-	int8_t temperature;
-	i2c_init();
-	i2c_slave_addr(0x48);
+void lightSensor(void) {
 	
+	// Initialise the semaphore for interrupt-task synchronisation
+	KrisOS_sem_init(&lightSensorSem, 0);
+	
+	// Initialise the ADC module with digital comparator interrupts when the input
+	// value exceed given threshold
+	light_sensor_init(3000);
+	
+	// Initialise the buzzer
+	buzzer_init();
+
 	while(1) {
-		temperature = 0xff;
-		//i2c_write(0x01, START, CONTINUE); 
-		//i2c_write(0x80, CONTINUED, STOP);
-		i2c_write(0x00, START, STOP);
-		temperature = i2c_read(START, STOP);
-		fprintf(&uart, "%d\n", temperature);
-		KrisOS_task_sleep(5000);
+		
+		// Wait on the semaphore - wait untill ADC0SS3 IRQ is generated which 
+		// releases this semaphore
+		KrisOS_sem_acquire(&lightSensorSem);
+		
+		// Output the warning message
+		KrisOS_mutex_lock(&nokiaMtx);
+		nokia5110_set_cursor(0, 1);
+		fprintf(&nokia5110, "TOO MUCH LIGHT");
+		KrisOS_mutex_unlock(&nokiaMtx);
+		
+		// Generate the 'beep'
+		PIEZO = 0x2;
+		KrisOS_task_sleep(200);
+		PIEZO = 0;
+		KrisOS_task_sleep(800);
+		
+		// Clear the warning message
+		KrisOS_mutex_lock(&nokiaMtx);
+		nokia5110_set_cursor(0, 1);
+		fprintf(&nokia5110, "              ");
+		KrisOS_mutex_unlock(&nokiaMtx);
 	}
 }
 
@@ -67,19 +125,22 @@ void i2cTest(void) {
 * SETUP
 *******************************************************************************/
 int main(void) {	
-	
+
 	// Initialise the operating system
 	KrisOS_init();
 	
-	// Create the LCD screen tester task
-	KrisOS_stack_usage_config((void*) &nokiaLCDTestStack[0], nokiaLCDTestStackSize);
-	KrisOS_task_create_static(&nokiaLCDTestTask, nokiaLCDTest, 
-		&nokiaLCDTestStack[nokiaLCDTestStackSize], nokiaLCDTestPriority); 
+	// Create the LCD screen setup task to be run first (high priority)
+	KrisOS_task_create(nokiaLCDSetup, 200, 1);
 	
-	// Create the I2C tester task
-	KrisOS_stack_usage_config((void*) &i2cTestStack[0], i2cTestStackSize);
-	KrisOS_task_create_static(&i2cTestTask, i2cTest, 
-		&i2cTestStack[i2cTestStackSize], i2cTestPriority); 
+	// Create the thermometer task
+	KrisOS_stack_usage_config((void*) &thermometerStack[0], thermometerStackSize);
+	KrisOS_task_create_static(&thermometerTask, thermometer, 
+		&thermometerStack[thermometerStackSize], thermometerPriority); 
+	
+	// Create light monitor task
+	KrisOS_stack_usage_config((void*) &lightSensorStack[0], lightSensorStackSize);
+	KrisOS_task_create_static(&lightSensorTask, lightSensor, 
+		&lightSensorStack[lightSensorStackSize], lightSensorPriority); 
 
 	// Run the operating system
 	KrisOS_start();

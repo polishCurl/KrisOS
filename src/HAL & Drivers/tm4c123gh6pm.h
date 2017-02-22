@@ -362,7 +362,7 @@ typedef struct {                          // SYSCTL Structure
 #define SYSCTL_Base 0x400FE000
 #define SYSCTL ((SYSCTL_Type*) SYSCTL_Base)
 
-// RCGCUART Run mode clock gating control
+// RCGCUART Universal Asynchronous Receiver/Transmitter Run mode clock gating control
 #define RCGC_UART0 0
 #define RCGC_UART1 1
 #define RCGC_UART2 2
@@ -372,17 +372,21 @@ typedef struct {                          // SYSCTL Structure
 #define RCGC_UART6 6
 #define RCGC_UART7 7
 
-// RCGCSSI Run mode clock gating control
+// RCGCSSI Synchronous Serial Interfface Run mode clock gating control
 #define RCGC_SSI0 0
 #define RCGC_SSI1 1
 #define RCGC_SSI2 2
 #define RCGC_SSI3 3
 
-// RCGCI2C Run mode clock gating control
+// RCGCI2C Inter-Integrated Circuit Run mode clock gating control
 #define RCGC_I2C0 0
 #define RCGC_I2C1 1
 #define RCGC_I2C2 2
 #define RCGC_I2C3 3
+
+// RCGCADC Analog-to-Digital Converter Run mode clock gating control
+#define RCGC_ADC0 0
+#define RCGC_ADC1 1
 
 // RCGCGPIO register 
 #define RCGCGPIO_PORTA 0
@@ -650,10 +654,10 @@ typedef struct {                    // SSI0 Structure
   __IO uint32_t  DMACTL;            // SSI DMA Control
   __I  uint32_t  RESERVED[1000];
   __IO uint32_t  CC;                // SSI Clock Configuration
-} SSI0_Type;
+} SSI_Type;
 
 #define SSI0_Base 0x40008000
-#define SSI0 ((SSI0_Type*) SSI0_Base)
+#define SSI0 ((SSI_Type*) SSI0_Base)
 
 // CR0 register 
 #define CR0_SCR 8
@@ -732,10 +736,10 @@ typedef struct {                                    // I2C0 Structure
   __I  uint32_t  RESERVED3[487];
   __IO uint32_t  PP;                                // I2C Peripheral Properties                                             
   __IO uint32_t  PC;                                // I2C Peripheral Configuration                                          
-} I2C0_Type;
+} I2C_Type;
 
 #define I2C0_BASE 0x40020000UL
-#define I2C0 ((I2C0_Type*) I2C0_BASE)
+#define I2C0 ((I2C_Type*) I2C0_BASE)
 
 // MCR Master Configuration Register 
 #define MCR_GPE 6
@@ -765,6 +769,181 @@ typedef struct {                                    // I2C0 Structure
 // MSA Master Slave Address
 #define MSA_SA 1
 #define MSA_RS 0
+
+
+
+/*-------------------------------------------------------------------------------
+* ADC registers 
+*------------------------------------------------------------------------------*/
+typedef struct {                                    // ADC0 Structure                                                        
+  __IO uint32_t  ACTSS;                             // ADC Active Sample Sequencer                                           
+  __IO uint32_t  RIS;                               // ADC Raw Interrupt Status                                              
+  __IO uint32_t  IM;                                // ADC Interrupt Mask                                                    
+  __IO uint32_t  ISC;                               // ADC Interrupt Status and Clear                                        
+  __IO uint32_t  OSTAT;                             // ADC Overflow Status                                                   
+  __IO uint32_t  EMUX;                              // ADC Event Multiplexer Select                                          
+  __IO uint32_t  USTAT;                             // ADC Underflow Status                                                  
+  __IO uint32_t  TSSEL;                             // ADC Trigger Source Select                                             
+  __IO uint32_t  SSPRI;                             // ADC Sample Sequencer Priority                                         
+  __IO uint32_t  SPC;                               // ADC Sample Phase Control                                              
+  __IO uint32_t  PSSI;                              // ADC Processor Sample Sequence Initiate                                
+  __I  uint32_t  RESERVED;
+  __IO uint32_t  SAC;                               // ADC Sample Averaging Control                                          
+  __IO uint32_t  DCISC;                             // ADC Digital Comparator Interrupt Status and Clear                     
+  __IO uint32_t  CTL;                               // ADC Control                                                           
+  __I  uint32_t  RESERVED1;
+  __IO uint32_t  SSMUX0;                            // ADC Sample Sequence Input Multiplexer Select 0                        
+  __IO uint32_t  SSCTL0;                            // ADC Sample Sequence Control 0                                         
+  __IO uint32_t  SSFIFO0;                           // ADC Sample Sequence Result FIFO 0                                     
+  __IO uint32_t  SSFSTAT0;                          // ADC Sample Sequence FIFO 0 Status                                     
+  __IO uint32_t  SSOP0;                             // ADC Sample Sequence 0 Operation                                       
+  __IO uint32_t  SSDC0;                             // ADC Sample Sequence 0 Digital Comparator Select                       
+  __I  uint32_t  RESERVED2[2];
+  __IO uint32_t  SSMUX1;                            // ADC Sample Sequence Input Multiplexer Select 1                        
+  __IO uint32_t  SSCTL1;                            // ADC Sample Sequence Control 1                                         
+  __IO uint32_t  SSFIFO1;                           // ADC Sample Sequence Result FIFO 1                                     
+  __IO uint32_t  SSFSTAT1;                          // ADC Sample Sequence FIFO 1 Status                                     
+  __IO uint32_t  SSOP1;                             // ADC Sample Sequence 1 Operation                                       
+  __IO uint32_t  SSDC1;                             // ADC Sample Sequence 1 Digital Comparator Select                       
+  __I  uint32_t  RESERVED3[2];
+  __IO uint32_t  SSMUX2;                            // ADC Sample Sequence Input Multiplexer Select 2                        
+  __IO uint32_t  SSCTL2;                            // ADC Sample Sequence Control 2                                         
+  __IO uint32_t  SSFIFO2;                           // ADC Sample Sequence Result FIFO 2                                     
+  __IO uint32_t  SSFSTAT2;                          // ADC Sample Sequence FIFO 2 Status                                     
+  __IO uint32_t  SSOP2;                             // ADC Sample Sequence 2 Operation                                       
+  __IO uint32_t  SSDC2;                             // ADC Sample Sequence 2 Digital Comparator Select                       
+  __I  uint32_t  RESERVED4[2];
+  __IO uint32_t  SSMUX3;                            // ADC Sample Sequence Input Multiplexer Select 3                        
+  __IO uint32_t  SSCTL3;                            // ADC Sample Sequence Control 3                                         
+  __IO uint32_t  SSFIFO3;                           // ADC Sample Sequence Result FIFO 3                                     
+  __IO uint32_t  SSFSTAT3;                          // ADC Sample Sequence FIFO 3 Status                                     
+  __IO uint32_t  SSOP3;                             // ADC Sample Sequence 3 Operation                                       
+  __IO uint32_t  SSDC3;                             // ADC Sample Sequence 3 Digital Comparator Select                       
+  __I  uint32_t  RESERVED5[786];
+  __O  uint32_t  DCRIC;                             // ADC Digital Comparator Reset Initial Conditions                       
+  __I  uint32_t  RESERVED6[63];
+  __IO uint32_t  DCCTL0;                            // ADC Digital Comparator Control 0                                      
+  __IO uint32_t  DCCTL1;                            // ADC Digital Comparator Control 1                                      
+  __IO uint32_t  DCCTL2;                            // ADC Digital Comparator Control 2                                      
+  __IO uint32_t  DCCTL3;                            // ADC Digital Comparator Control 3                                      
+  __IO uint32_t  DCCTL4;                            // ADC Digital Comparator Control 4                                      
+  __IO uint32_t  DCCTL5;                            // ADC Digital Comparator Control 5                                      
+  __IO uint32_t  DCCTL6;                            // ADC Digital Comparator Control 6                                      
+  __IO uint32_t  DCCTL7;                            // ADC Digital Comparator Control 7                                      
+  __I  uint32_t  RESERVED7[8];
+  __IO uint32_t  DCCMP0;                            // ADC Digital Comparator Range 0                                        
+  __IO uint32_t  DCCMP1;                            // ADC Digital Comparator Range 1                                        
+  __IO uint32_t  DCCMP2;                            // ADC Digital Comparator Range 2                                        
+  __IO uint32_t  DCCMP3;                            // ADC Digital Comparator Range 3                                        
+  __IO uint32_t  DCCMP4;                            // ADC Digital Comparator Range 4                                        
+  __IO uint32_t  DCCMP5;                            // ADC Digital Comparator Range 5                                        
+  __IO uint32_t  DCCMP6;                            // ADC Digital Comparator Range 6                                        
+  __IO uint32_t  DCCMP7;                            // ADC Digital Comparator Range 7                                        
+  __I  uint32_t  RESERVED8[88];
+  __IO uint32_t  PP;                                // ADC Peripheral Properties                                             
+  __IO uint32_t  PC;                                // ADC Peripheral Configuration                                          
+  __IO uint32_t  CC;                                // ADC Clock Configuration                                               
+} ADC_Type;
+
+#define ADC0_BASE 0x40038000UL
+#define ADC1_BASE 0x40039000UL
+#define ADC0 ((ADC_Type*) ADC0_BASE)
+#define ADC1 ((ADC_Type*) ADC1_BASE)
+
+
+// ACTSS Active Sample Sequencer Register
+#define ACTSS_ASEN0 0
+#define ACTSS_ASEN1 1
+#define ACTSS_ASEN2 2
+#define ACTSS_ASEN3 3
+#define ACTSS_BUSY 16
+
+// RIS Raw Interrupt Status Register
+#define RIS_INR0 0
+#define RIS_INR1 1
+#define RIS_INR2 2
+#define RIS_INR3 3
+#define RIS_INRDC 16
+
+// IM Interrupt Mask Register
+#define IM_MASK0 0
+#define IM_MASK1 1
+#define IM_MASK2 2
+#define IM_MASK3 3
+#define IM_DCONSS0 16
+#define IM_DCONSS1 17
+#define IM_DCONSS2 18
+#define IM_DCONSS3 19
+
+// ISC Interrupt Status and Clear Register
+#define ISC_IN0 0
+#define ISC_IN1 1
+#define ISC_IN2 2
+#define ISC_IN3 3
+#define ISC_DCINSS0 16
+#define ISC_DCINSS1 17
+#define ISC_DCINSS2 18
+#define ISC_DCINSS3 19
+
+// EMUX Event Multiplexer Select Register
+#define EMUX_EM0 0
+#define EMUX_EM1 4
+#define EMUX_EM2 8
+#define EMUX_EM3 12
+
+// ADC Processor Sample Sequence Initiate Register                
+#define PSSI_SS0 0    
+#define PSSI_SS1 1 
+#define PSSI_SS2 2  
+#define PSSI_SS3 3 
+#define PSSI_SYNCWAIT 27  
+#define PSSI_GSYNC 31
+
+// SSCTL3 Sample Sequence Control 3 Register
+#define SSCTL3_D0 0
+#define SSCTL3_END0 1
+#define SSCTL3_IE0 2
+#define SSCTL3_TS0 3
+
+// ADC Digital Comparator Control 0 Register
+#define DCCTL0_CIM 0
+#define DCCTL0_CIC 2
+#define DCCTL0_CIE 4 
+#define DCCTL0_CTM 8
+#define DCCTL0_CTC 10
+#define DCCTL0_CTE 12
+
+// ADC Digital Comparator Range 0 Register
+#define DCCMP0_COMP0 0
+#define DCCMP0_COMP1 16
+
+// DCRIC Digital Comparator Reset Initial Condition Register
+#define DCRIC_DCINT0 0
+#define DCRIC_DCINT1 1
+#define DCRIC_DCINT2 2
+#define DCRIC_DCINT3 3
+#define DCRIC_DCINT4 4
+#define DCRIC_DCINT5 5
+#define DCRIC_DCINT6 6
+#define DCRIC_DCINT7 7
+#define DCRIC_DCTRIG0 16
+#define DCRIC_DCTRIG1 17
+#define DCRIC_DCTRIG2 18
+#define DCRIC_DCTRIG3 19
+#define DCRIC_DCTRIG4 20
+#define DCRIC_DCTRIG5 21
+#define DCRIC_DCTRIG6 22
+#define DCRIC_DCTRIG7 23
+
+// DCISC Digital Comparator Interrupt Status and Clear Register
+#define DCISC_DCINT0 0
+#define DCISC_DCINT1 1
+#define DCISC_DCINT2 2
+#define DCISC_DCINT3 3
+#define DCISC_DCINT4 4
+#define DCISC_DCINT5 5
+#define DCISC_DCINT6 6
+#define DCISC_DCINT7 7
 
 
 

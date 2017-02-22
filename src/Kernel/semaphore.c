@@ -163,7 +163,7 @@ uint32_t sem_acquire(Semaphore* toAcquire, uint32_t timout) {
 * Function:    	sem_release
 * Purpose:    	Release the semaphore specified
 * Arguments:	
-*		toRelease - mutex to unlock
+*		toRelease - semaphore to release
 * Returns: 		
 *		exit status (if lock already acquired - EXIT_FAILURE)
 --------------------------------------------------------------------------------*/
@@ -191,6 +191,31 @@ uint32_t sem_release(Semaphore* toRelease) {
 	return EXIT_SUCCESS;
 }
 
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_release_from_ISR
+* Purpose:    	Release the semaphore by an interrupt service routine
+* Arguments:	
+*		toRelease - semaphore to release		
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void KrisOS_sem_release_from_ISR(Semaphore* toRelease) {
+	sem_release(toRelease);
+}
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_sem_acquire_from_ISR
+* Purpose:    	Take the semaphore by an interrupt service routine. Don't wait if
+*				unsuccessful
+* Arguments:	
+* 		toAcquire - semaphore to acquire
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire) {
+	sem_try_acquire(toAcquire);
+}
 
 
 

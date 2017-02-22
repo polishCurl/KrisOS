@@ -39,6 +39,12 @@ Section Cross References
     os.o(i.SVC_Handler_C) refers to mutex.o(i.mutex_lock) for mutex_lock
     os.o(i.SVC_Handler_C) refers to mutex.o(i.mutex_unlock) for mutex_unlock
     os.o(i.SVC_Handler_C) refers to mutex.o(i.mutex_delete) for mutex_delete
+    os.o(i.SVC_Handler_C) refers to semaphore.o(i.sem_init) for sem_init
+    os.o(i.SVC_Handler_C) refers to semaphore.o(i.sem_create) for sem_create
+    os.o(i.SVC_Handler_C) refers to semaphore.o(i.sem_delete) for sem_delete
+    os.o(i.SVC_Handler_C) refers to semaphore.o(i.sem_try_acquire) for sem_try_acquire
+    os.o(i.SVC_Handler_C) refers to semaphore.o(i.sem_acquire) for sem_acquire
+    os.o(i.SVC_Handler_C) refers to semaphore.o(i.sem_release) for sem_release
     os.o(i.SysTick_Handler) refers to scheduler.o(i.scheduler_wake_tasks) for scheduler_wake_tasks
     os.o(i.SysTick_Handler) refers to lludivv7m.o(.text) for __aeabi_uldivmod
     os.o(i.SysTick_Handler) refers to scheduler.o(i.scheduler_run) for scheduler_run
@@ -126,6 +132,31 @@ Section Cross References
     mutex.o(i.mutex_unlock) refers to scheduler.o(i.scheduler_run) for scheduler_run
     mutex.o(i.mutex_unlock) refers to scheduler.o(.bss) for scheduler
     mutex.o(i.mutex_unlock) refers to os.o(.bss) for KrisOS
+    semaphore.o(i.KrisOS_sem_acquire_from_ISR) refers to semaphore.o(i.sem_try_acquire) for sem_try_acquire
+    semaphore.o(i.KrisOS_sem_release_from_ISR) refers to semaphore.o(i.sem_release) for sem_release
+    semaphore.o(i.sem_acquire) refers to exit.o(.text) for exit
+    semaphore.o(i.sem_acquire) refers to special_reg_access.o(.text) for __start_critical
+    semaphore.o(i.sem_acquire) refers to semaphore.o(i.sem_try_acquire) for sem_try_acquire
+    semaphore.o(i.sem_acquire) refers to scheduler.o(i.task_sleep) for task_sleep
+    semaphore.o(i.sem_acquire) refers to scheduler.o(i.task_remove) for task_remove
+    semaphore.o(i.sem_acquire) refers to scheduler.o(i.scheduler_run) for scheduler_run
+    semaphore.o(i.sem_acquire) refers to scheduler.o(i.task_add) for task_add
+    semaphore.o(i.sem_acquire) refers to scheduler.o(.bss) for scheduler
+    semaphore.o(i.sem_create) refers to heap.o(i.malloc) for malloc
+    semaphore.o(i.sem_create) refers to semaphore.o(i.sem_init) for sem_init
+    semaphore.o(i.sem_delete) refers to exit.o(.text) for exit
+    semaphore.o(i.sem_delete) refers to heap.o(i.free) for free
+    semaphore.o(i.sem_delete) refers to os.o(.bss) for KrisOS
+    semaphore.o(i.sem_init) refers to exit.o(.text) for exit
+    semaphore.o(i.sem_init) refers to os.o(.bss) for KrisOS
+    semaphore.o(i.sem_release) refers to exit.o(.text) for exit
+    semaphore.o(i.sem_release) refers to special_reg_access.o(.text) for __start_critical
+    semaphore.o(i.sem_release) refers to scheduler.o(i.task_remove) for task_remove
+    semaphore.o(i.sem_release) refers to scheduler.o(i.task_add) for task_add
+    semaphore.o(i.sem_release) refers to scheduler.o(i.scheduler_run) for scheduler_run
+    semaphore.o(i.sem_release) refers to scheduler.o(.bss) for scheduler
+    semaphore.o(i.sem_try_acquire) refers to exit.o(.text) for exit
+    semaphore.o(i.sem_try_acquire) refers to special_reg_access.o(.text) for __start_critical
     stats.o(i.stats_init) refers to scheduler.o(i.KrisOS_stack_usage_config) for KrisOS_stack_usage_config
     stats.o(i.stats_init) refers to scheduler.o(i.task_create_static) for task_create_static
     stats.o(i.stats_init) refers to os.o(.bss) for KrisOS
@@ -161,6 +192,7 @@ Section Cross References
     startup.o(RESET) refers to startup.o(STACK) for __initial_sp
     startup.o(RESET) refers to startup.o(.text) for Reset_Handler
     startup.o(RESET) refers to os.o(i.SysTick_Handler) for SysTick_Handler
+    startup.o(RESET) refers to light_sensor.o(i.ADC0SS3_Handler) for ADC0SS3_Handler
     startup.o(.text) refers (Special) to heapauxi.o(.text) for __use_two_region_memory
     startup.o(.text) refers to special_reg_access.o(.text) for __set_control
     startup.o(.text) refers to os.o(i.SVC_Handler_C) for SVC_Handler_C
@@ -196,24 +228,36 @@ Section Cross References
     retarget.o(i.fputc) refers to uart.o(.data) for uart
     retarget.o(.data) refers (Special) to use_no_semi.o(.text) for __use_no_semihosting_swi
     i2c.o(i.i2c_init) refers to time.o(.data) for SYSTEM_CLOCK_FREQ
-    demo3.o(i.i2cTest) refers to _printf_percent.o(.ARM.Collect$$_printf_percent$$00000000) for _printf_percent
-    demo3.o(i.i2cTest) refers to _printf_d.o(.ARM.Collect$$_printf_percent$$00000009) for _printf_d
-    demo3.o(i.i2cTest) refers to _printf_dec.o(.text) for _printf_int_dec
-    demo3.o(i.i2cTest) refers to i2c.o(i.i2c_init) for i2c_init
-    demo3.o(i.i2cTest) refers to i2c.o(i.i2c_slave_addr) for i2c_slave_addr
-    demo3.o(i.i2cTest) refers to i2c.o(i.i2c_write) for i2c_write
-    demo3.o(i.i2cTest) refers to i2c.o(i.i2c_read) for i2c_read
-    demo3.o(i.i2cTest) refers to noretval__2fprintf.o(.text) for __2fprintf
-    demo3.o(i.i2cTest) refers to uart.o(.data) for uart
+    demo3.o(i.lightSensor) refers to light_sensor.o(i.light_sensor_init) for light_sensor_init
+    demo3.o(i.lightSensor) refers to light_sensor.o(i.buzzer_init) for buzzer_init
+    demo3.o(i.lightSensor) refers to nokia5110.o(i.nokia5110_set_cursor) for nokia5110_set_cursor
+    demo3.o(i.lightSensor) refers to noretval__2fprintf.o(.text) for __2fprintf
+    demo3.o(i.lightSensor) refers to light_sensor.o(.data) for lightSensorSem
+    demo3.o(i.lightSensor) refers to demo3.o(.bss) for nokiaMtx
+    demo3.o(i.lightSensor) refers to nokia5110.o(.data) for nokia5110
     demo3.o(i.main) refers to scheduler.o(i.KrisOS_stack_usage_config) for KrisOS_stack_usage_config
-    demo3.o(i.main) refers to demo3.o(.bss) for nokiaLCDTestStack
-    demo3.o(i.main) refers to demo3.o(i.nokiaLCDTest) for nokiaLCDTest
-    demo3.o(i.main) refers to demo3.o(i.i2cTest) for i2cTest
-    demo3.o(i.nokiaLCDTest) refers to nokia5110.o(i.nokia5110_init) for nokia5110_init
-    demo3.o(i.nokiaLCDTest) refers to noretval__2fprintf.o(.text) for __2fprintf
-    demo3.o(i.nokiaLCDTest) refers to nokia5110.o(i.nokia5110_set_cursor) for nokia5110_set_cursor
-    demo3.o(i.nokiaLCDTest) refers to nokia5110.o(i.nokia5110_clear) for nokia5110_clear
-    demo3.o(i.nokiaLCDTest) refers to nokia5110.o(.data) for nokia5110
+    demo3.o(i.main) refers to demo3.o(i.nokiaLCDSetup) for nokiaLCDSetup
+    demo3.o(i.main) refers to demo3.o(.bss) for thermometerStack
+    demo3.o(i.main) refers to demo3.o(i.thermometer) for thermometer
+    demo3.o(i.main) refers to demo3.o(i.lightSensor) for lightSensor
+    demo3.o(i.nokiaLCDSetup) refers to nokia5110.o(i.nokia5110_init) for nokia5110_init
+    demo3.o(i.nokiaLCDSetup) refers to nokia5110.o(i.nokia5110_set_cursor) for nokia5110_set_cursor
+    demo3.o(i.nokiaLCDSetup) refers to noretval__2fprintf.o(.text) for __2fprintf
+    demo3.o(i.nokiaLCDSetup) refers to demo3.o(.bss) for nokiaMtx
+    demo3.o(i.nokiaLCDSetup) refers to nokia5110.o(.data) for nokia5110
+    demo3.o(i.thermometer) refers to _printf_percent.o(.ARM.Collect$$_printf_percent$$00000000) for _printf_percent
+    demo3.o(i.thermometer) refers to _printf_d.o(.ARM.Collect$$_printf_percent$$00000009) for _printf_d
+    demo3.o(i.thermometer) refers to _printf_dec.o(.text) for _printf_int_dec
+    demo3.o(i.thermometer) refers to i2c.o(i.i2c_init) for i2c_init
+    demo3.o(i.thermometer) refers to i2c.o(i.i2c_slave_addr) for i2c_slave_addr
+    demo3.o(i.thermometer) refers to i2c.o(i.i2c_write) for i2c_write
+    demo3.o(i.thermometer) refers to i2c.o(i.i2c_read) for i2c_read
+    demo3.o(i.thermometer) refers to nokia5110.o(i.nokia5110_set_cursor) for nokia5110_set_cursor
+    demo3.o(i.thermometer) refers to noretval__2fprintf.o(.text) for __2fprintf
+    demo3.o(i.thermometer) refers to demo3.o(.bss) for nokiaMtx
+    demo3.o(i.thermometer) refers to nokia5110.o(.data) for nokia5110
+    light_sensor.o(i.ADC0SS3_Handler) refers to semaphore.o(i.KrisOS_sem_release_from_ISR) for KrisOS_sem_release_from_ISR
+    light_sensor.o(i.ADC0SS3_Handler) refers to light_sensor.o(.data) for lightSensorSem
     __2fprintf.o(.text) refers to _printf_char_file.o(.text) for _printf_char_file
     noretval__2fprintf.o(.text) refers to _printf_char_file.o(.text) for _printf_char_file
     __printf.o(.text) refers to _printf_percent.o(.ARM.Collect$$_printf_percent$$00000000) for _printf_percent
@@ -347,6 +391,7 @@ Section Cross References
 Removing Unused input sections from the image.
 
     Removing scheduler.o(.constdata), (5 bytes).
+    Removing semaphore.o(i.KrisOS_sem_acquire_from_ISR), (12 bytes).
     Removing stats.o(.constdata), (5 bytes).
     Removing fifo.o(i.fifo_get), (52 bytes).
     Removing fifo.o(i.fifo_put), (66 bytes).
@@ -358,7 +403,7 @@ Removing Unused input sections from the image.
     Removing retarget.o(.data), (8 bytes).
     Removing demo3.o(.constdata), (13 bytes).
 
-11 unused section(s) (total 277 bytes) removed from the image.
+12 unused section(s) (total 289 bytes) removed from the image.
 
 ==============================================================================
 
@@ -370,72 +415,72 @@ Image Symbol Table
 
     RESET                                    0x00000000   Section      620  startup.o(RESET)
     ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit3.o ABSOLUTE
-    ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit2.o ABSOLUTE
-    ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit1.o ABSOLUTE
     ../clib/angel/boardlib.s                 0x00000000   Number         0  boardshut.o ABSOLUTE
+    ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit1.o ABSOLUTE
+    ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit2.o ABSOLUTE
     ../clib/angel/handlers.s                 0x00000000   Number         0  __scatter_copy.o ABSOLUTE
     ../clib/angel/handlers.s                 0x00000000   Number         0  __scatter_zi.o ABSOLUTE
-    ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry4.o ABSOLUTE
     ../clib/angel/kernel.s                   0x00000000   Number         0  rtexit.o ABSOLUTE
-    ../clib/angel/kernel.s                   0x00000000   Number         0  rtexit2.o ABSOLUTE
     ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry2.o ABSOLUTE
     ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry.o ABSOLUTE
-    ../clib/angel/rt.s                       0x00000000   Number         0  rt_raise.o ABSOLUTE
-    ../clib/angel/rt.s                       0x00000000   Number         0  rt_div0.o ABSOLUTE
+    ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry4.o ABSOLUTE
+    ../clib/angel/kernel.s                   0x00000000   Number         0  rtexit2.o ABSOLUTE
     ../clib/angel/rt.s                       0x00000000   Number         0  aeabi_ldiv0_sigfpe.o ABSOLUTE
+    ../clib/angel/rt.s                       0x00000000   Number         0  rt_raise.o ABSOLUTE
     ../clib/angel/rt.s                       0x00000000   Number         0  aeabi_ldiv0.o ABSOLUTE
+    ../clib/angel/rt.s                       0x00000000   Number         0  rt_div0.o ABSOLUTE
     ../clib/angel/scatter.s                  0x00000000   Number         0  __scatter.o ABSOLUTE
     ../clib/angel/startup.s                  0x00000000   Number         0  __main.o ABSOLUTE
-    ../clib/angel/sys.s                      0x00000000   Number         0  sys_stackheap_outer.o ABSOLUTE
-    ../clib/angel/sys.s                      0x00000000   Number         0  indicate_semi.o ABSOLUTE
-    ../clib/angel/sys.s                      0x00000000   Number         0  libspace.o ABSOLUTE
     ../clib/angel/sys.s                      0x00000000   Number         0  use_no_semi.o ABSOLUTE
+    ../clib/angel/sys.s                      0x00000000   Number         0  libspace.o ABSOLUTE
+    ../clib/angel/sys.s                      0x00000000   Number         0  indicate_semi.o ABSOLUTE
+    ../clib/angel/sys.s                      0x00000000   Number         0  sys_stackheap_outer.o ABSOLUTE
     ../clib/angel/sysapp.c                   0x00000000   Number         0  sys_command.o ABSOLUTE
-    ../clib/armsys.c                         0x00000000   Number         0  _get_argv_nomalloc.o ABSOLUTE
+    ../clib/armsys.c                         0x00000000   Number         0  argv_veneer.o ABSOLUTE
     ../clib/armsys.c                         0x00000000   Number         0  no_argv.o ABSOLUTE
     ../clib/armsys.c                         0x00000000   Number         0  argv_veneer.o ABSOLUTE
-    ../clib/armsys.c                         0x00000000   Number         0  argv_veneer.o ABSOLUTE
+    ../clib/armsys.c                         0x00000000   Number         0  _get_argv_nomalloc.o ABSOLUTE
     ../clib/heapalloc.c                      0x00000000   Number         0  hrguard.o ABSOLUTE
     ../clib/heapaux.c                        0x00000000   Number         0  heapauxi.o ABSOLUTE
     ../clib/libinit.s                        0x00000000   Number         0  libshutdown2.o ABSOLUTE
-    ../clib/libinit.s                        0x00000000   Number         0  libinit.o ABSOLUTE
-    ../clib/libinit.s                        0x00000000   Number         0  libshutdown.o ABSOLUTE
     ../clib/libinit.s                        0x00000000   Number         0  libinit2.o ABSOLUTE
+    ../clib/libinit.s                        0x00000000   Number         0  libshutdown.o ABSOLUTE
+    ../clib/libinit.s                        0x00000000   Number         0  libinit.o ABSOLUTE
     ../clib/longlong.s                       0x00000000   Number         0  lludivv7m.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  _printf_intcommon.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __printf_flags_wp.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __printf_nopercent.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  _printf_char_common.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  _printf_dec.o ABSOLUTE
     ../clib/printf.c                         0x00000000   Number         0  _printf_char_file.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  noretval__2fprintf.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  _printf_intcommon.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __printf_ss.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __printf_flags_ss.o ABSOLUTE
     ../clib/printf.c                         0x00000000   Number         0  __printf_flags.o ABSOLUTE
     ../clib/printf.c                         0x00000000   Number         0  __printf_ss_wp.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __2fprintf.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __printf_wp.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __printf_flags_ss.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __printf.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __printf_flags_wp.o ABSOLUTE
     ../clib/printf.c                         0x00000000   Number         0  __printf_flags_ss_wp.o ABSOLUTE
-    ../clib/printf.c                         0x00000000   Number         0  __printf_ss.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __printf.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __printf_wp.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  _printf_dec.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  noretval__2fprintf.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __2fprintf.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  __printf_nopercent.o ABSOLUTE
+    ../clib/printf.c                         0x00000000   Number         0  _printf_char_common.o ABSOLUTE
     ../clib/printf_percent.s                 0x00000000   Number         0  _printf_percent_end.o ABSOLUTE
-    ../clib/printf_percent.s                 0x00000000   Number         0  _printf_percent.o ABSOLUTE
     ../clib/printf_percent.s                 0x00000000   Number         0  _printf_d.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_outer.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_formal.o ABSOLUTE
+    ../clib/printf_percent.s                 0x00000000   Number         0  _printf_percent.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_stak_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_other.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_segv_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_abrt_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_pvfn_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_outer.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_rtred_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_general.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  __raise.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_formal.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_formal.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_outer.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_cppl_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_abrt_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_outer.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_formal.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_exit.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_stak_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_pvfn_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_rtred_inner.o ABSOLUTE
     ../clib/signal.s                         0x00000000   Number         0  defsig.o ABSOLUTE
     ../clib/stdlib.c                         0x00000000   Number         0  exit.o ABSOLUTE
     ../fplib/fpinit.s                        0x00000000   Number         0  fpinit.o ABSOLUTE
@@ -454,6 +499,7 @@ Image Symbol Table
     src\Kernel\stats.c                       0x00000000   Number         0  stats.o ABSOLUTE
     src\User Code\demo3.c                    0x00000000   Number         0  demo3.o ABSOLUTE
     src\User Code\i2c.c                      0x00000000   Number         0  i2c.o ABSOLUTE
+    src\User Code\light_sensor.c             0x00000000   Number         0  light_sensor.o ABSOLUTE
     src\User Code\nokia5110.c                0x00000000   Number         0  nokia5110.o ABSOLUTE
     src\User Code\retarget.c                 0x00000000   Number         0  retarget.o ABSOLUTE
     !!!main                                  0x0000026c   Section        8  __main.o(!!!main)
@@ -522,85 +568,97 @@ Image Symbol Table
     _printf_input_char                       0x00000711   Thumb Code    10  _printf_char_common.o(.text)
     .text                                    0x00000740   Section       74  sys_stackheap_outer.o(.text)
     .text                                    0x0000078c   Section        8  libspace.o(.text)
-    i.KrisOS_stack_usage_config              0x00000794   Section        0  scheduler.o(i.KrisOS_stack_usage_config)
-    i.SVC_Handler_C                          0x000007b4   Section        0  os.o(i.SVC_Handler_C)
-    i.SysTick_Handler                        0x000008e4   Section        0  os.o(i.SysTick_Handler)
-    i._sys_exit                              0x00000964   Section        0  retarget.o(i._sys_exit)
-    i.align_byte_number                      0x0000098c   Section        0  heap.o(i.align_byte_number)
-    i.ferror                                 0x0000099a   Section        0  retarget.o(i.ferror)
-    i.fputc                                  0x000009a4   Section        0  retarget.o(i.fputc)
-    i.free                                   0x000009d0   Section        0  heap.o(i.free)
-    i.heap_init                              0x00000a20   Section        0  heap.o(i.heap_init)
-    i.heap_insert_free_block                 0x00000a5c   Section        0  heap.o(i.heap_insert_free_block)
-    i.i2cTest                                0x00000a78   Section        0  demo3.o(i.i2cTest)
-    i.i2c_init                               0x00000ab8   Section        0  i2c.o(i.i2c_init)
-    i.i2c_read                               0x00000b58   Section        0  i2c.o(i.i2c_read)
-    i.i2c_slave_addr                         0x00000bb8   Section        0  i2c.o(i.i2c_slave_addr)
-    i.i2c_write                              0x00000bc4   Section        0  i2c.o(i.i2c_write)
-    i.idle_task                              0x00000c28   Section        0  scheduler.o(i.idle_task)
-    i.main                                   0x00000c30   Section        0  demo3.o(i.main)
-    i.malloc                                 0x00000c80   Section        0  heap.o(i.malloc)
-    i.mutex_create                           0x00000d08   Section        0  mutex.o(i.mutex_create)
-    i.mutex_delete                           0x00000d1c   Section        0  mutex.o(i.mutex_delete)
-    i.mutex_init                             0x00000d60   Section        0  mutex.o(i.mutex_init)
-    i.mutex_lock                             0x00000d84   Section        0  mutex.o(i.mutex_lock)
-    i.mutex_release_all                      0x00000e50   Section        0  mutex.o(i.mutex_release_all)
-    i.mutex_try_lock                         0x00000e78   Section        0  mutex.o(i.mutex_try_lock)
-    i.mutex_unlock                           0x00000ed0   Section        0  mutex.o(i.mutex_unlock)
-    i.nokia5110_clear                        0x00000f9c   Section        0  nokia5110.o(i.nokia5110_clear)
-    i.nokia5110_init                         0x00000fbc   Section        0  nokia5110.o(i.nokia5110_init)
-    i.nokia5110_send                         0x00001114   Section        0  nokia5110.o(i.nokia5110_send)
-    i.nokia5110_send_char                    0x00001150   Section        0  nokia5110.o(i.nokia5110_send_char)
-    i.nokia5110_set_cursor                   0x000011b4   Section        0  nokia5110.o(i.nokia5110_set_cursor)
-    i.nokiaLCDTest                           0x000011e8   Section        0  demo3.o(i.nokiaLCDTest)
-    i.nvic_clear_pending                     0x0000128c   Section        0  nvic.o(i.nvic_clear_pending)
-    i.nvic_disable_irq                       0x000012b0   Section        0  nvic.o(i.nvic_disable_irq)
-    i.nvic_enable_irq                        0x000012d4   Section        0  nvic.o(i.nvic_enable_irq)
-    i.nvic_get_priority                      0x000012fc   Section        0  nvic.o(i.nvic_get_priority)
-    i.nvic_irq_prio_check                    0x00001320   Section        0  nvic.o(i.nvic_irq_prio_check)
-    i.nvic_read_active                       0x00001330   Section        0  nvic.o(i.nvic_read_active)
-    i.nvic_set_pending                       0x00001354   Section        0  nvic.o(i.nvic_set_pending)
-    i.nvic_set_priority                      0x00001378   Section        0  nvic.o(i.nvic_set_priority)
-    i.os_init                                0x000013a0   Section        0  os.o(i.os_init)
-    i.os_start                               0x000013fc   Section        0  os.o(i.os_start)
-    i.scheduler_init                         0x00001470   Section        0  scheduler.o(i.scheduler_init)
-    i.scheduler_run                          0x000014b8   Section        0  scheduler.o(i.scheduler_run)
-    i.scheduler_wake_tasks                   0x00001540   Section        0  scheduler.o(i.scheduler_wake_tasks)
-    i.stats_init                             0x00001594   Section        0  stats.o(i.stats_init)
-    i.stats_task                             0x000015cc   Section        0  stats.o(i.stats_task)
-    i.system_clock_config                    0x0000198c   Section        0  time.o(i.system_clock_config)
-    i.systick_config                         0x00001a58   Section        0  time.o(i.systick_config)
-    i.task_add                               0x00001a80   Section        0  scheduler.o(i.task_add)
-    i.task_complete_handler                  0x00001ada   Section        0  scheduler.o(i.task_complete_handler)
-    i.task_create_dynamic                    0x00001ade   Section        0  scheduler.o(i.task_create_dynamic)
-    i.task_create_static                     0x00001b4e   Section        0  scheduler.o(i.task_create_static)
-    i.task_delete                            0x00001b98   Section        0  scheduler.o(i.task_delete)
-    i.task_init                              0x00001c00   Section        0  scheduler.o(i.task_init)
-    i.task_remove                            0x00001cb8   Section        0  scheduler.o(i.task_remove)
-    i.task_sleep                             0x00001cf0   Section        0  scheduler.o(i.task_sleep)
-    i.uart_init                              0x00001db0   Section        0  uart.o(i.uart_init)
-    i.uart_send_char                         0x00001ec4   Section        0  uart.o(i.uart_send_char)
-    x$fpl$fpinit                             0x00001edc   Section       10  fpinit.o(x$fpl$fpinit)
-    $v0                                      0x00001edc   Number         0  fpinit.o(x$fpl$fpinit)
-    .constdata                               0x00001ee6   Section      480  nokia5110.o(.constdata)
-    .conststring                             0x000020c8   Section      164  stats.o(.conststring)
+    i.ADC0SS3_Handler                        0x00000794   Section        0  light_sensor.o(i.ADC0SS3_Handler)
+    i.KrisOS_sem_release_from_ISR            0x000007bc   Section        0  semaphore.o(i.KrisOS_sem_release_from_ISR)
+    i.KrisOS_stack_usage_config              0x000007c8   Section        0  scheduler.o(i.KrisOS_stack_usage_config)
+    i.SVC_Handler_C                          0x000007e8   Section        0  os.o(i.SVC_Handler_C)
+    i.SysTick_Handler                        0x0000096c   Section        0  os.o(i.SysTick_Handler)
+    i._sys_exit                              0x000009ec   Section        0  retarget.o(i._sys_exit)
+    i.align_byte_number                      0x00000a14   Section        0  heap.o(i.align_byte_number)
+    i.buzzer_init                            0x00000a24   Section        0  light_sensor.o(i.buzzer_init)
+    i.ferror                                 0x00000a84   Section        0  retarget.o(i.ferror)
+    i.fputc                                  0x00000a8c   Section        0  retarget.o(i.fputc)
+    i.free                                   0x00000ab8   Section        0  heap.o(i.free)
+    i.heap_init                              0x00000b08   Section        0  heap.o(i.heap_init)
+    i.heap_insert_free_block                 0x00000b44   Section        0  heap.o(i.heap_insert_free_block)
+    i.i2c_init                               0x00000b60   Section        0  i2c.o(i.i2c_init)
+    i.i2c_read                               0x00000c00   Section        0  i2c.o(i.i2c_read)
+    i.i2c_slave_addr                         0x00000c60   Section        0  i2c.o(i.i2c_slave_addr)
+    i.i2c_write                              0x00000c6c   Section        0  i2c.o(i.i2c_write)
+    i.idle_task                              0x00000cd0   Section        0  scheduler.o(i.idle_task)
+    i.lightSensor                            0x00000cd8   Section        0  demo3.o(i.lightSensor)
+    i.light_sensor_init                      0x00000d68   Section        0  light_sensor.o(i.light_sensor_init)
+    i.main                                   0x00000e90   Section        0  demo3.o(i.main)
+    i.malloc                                 0x00000ee4   Section        0  heap.o(i.malloc)
+    i.mutex_create                           0x00000f6c   Section        0  mutex.o(i.mutex_create)
+    i.mutex_delete                           0x00000f80   Section        0  mutex.o(i.mutex_delete)
+    i.mutex_init                             0x00000fc4   Section        0  mutex.o(i.mutex_init)
+    i.mutex_lock                             0x00000fe8   Section        0  mutex.o(i.mutex_lock)
+    i.mutex_release_all                      0x000010b4   Section        0  mutex.o(i.mutex_release_all)
+    i.mutex_try_lock                         0x000010dc   Section        0  mutex.o(i.mutex_try_lock)
+    i.mutex_unlock                           0x00001134   Section        0  mutex.o(i.mutex_unlock)
+    i.nokia5110_clear                        0x00001200   Section        0  nokia5110.o(i.nokia5110_clear)
+    i.nokia5110_init                         0x00001220   Section        0  nokia5110.o(i.nokia5110_init)
+    i.nokia5110_send                         0x00001378   Section        0  nokia5110.o(i.nokia5110_send)
+    i.nokia5110_send_char                    0x000013b4   Section        0  nokia5110.o(i.nokia5110_send_char)
+    i.nokia5110_set_cursor                   0x00001418   Section        0  nokia5110.o(i.nokia5110_set_cursor)
+    i.nokiaLCDSetup                          0x0000144c   Section        0  demo3.o(i.nokiaLCDSetup)
+    i.nvic_clear_pending                     0x00001478   Section        0  nvic.o(i.nvic_clear_pending)
+    i.nvic_disable_irq                       0x0000149c   Section        0  nvic.o(i.nvic_disable_irq)
+    i.nvic_enable_irq                        0x000014c0   Section        0  nvic.o(i.nvic_enable_irq)
+    i.nvic_get_priority                      0x000014e8   Section        0  nvic.o(i.nvic_get_priority)
+    i.nvic_irq_prio_check                    0x0000150c   Section        0  nvic.o(i.nvic_irq_prio_check)
+    i.nvic_read_active                       0x0000151c   Section        0  nvic.o(i.nvic_read_active)
+    i.nvic_set_pending                       0x00001540   Section        0  nvic.o(i.nvic_set_pending)
+    i.nvic_set_priority                      0x00001564   Section        0  nvic.o(i.nvic_set_priority)
+    i.os_init                                0x0000158c   Section        0  os.o(i.os_init)
+    i.os_start                               0x000015e8   Section        0  os.o(i.os_start)
+    i.scheduler_init                         0x0000165c   Section        0  scheduler.o(i.scheduler_init)
+    i.scheduler_run                          0x000016a4   Section        0  scheduler.o(i.scheduler_run)
+    i.scheduler_wake_tasks                   0x0000172c   Section        0  scheduler.o(i.scheduler_wake_tasks)
+    i.sem_acquire                            0x00001794   Section        0  semaphore.o(i.sem_acquire)
+    i.sem_create                             0x000017ec   Section        0  semaphore.o(i.sem_create)
+    i.sem_delete                             0x00001804   Section        0  semaphore.o(i.sem_delete)
+    i.sem_init                               0x00001834   Section        0  semaphore.o(i.sem_init)
+    i.sem_release                            0x0000185c   Section        0  semaphore.o(i.sem_release)
+    i.sem_try_acquire                        0x000018a0   Section        0  semaphore.o(i.sem_try_acquire)
+    i.stats_init                             0x000018c8   Section        0  stats.o(i.stats_init)
+    i.stats_task                             0x00001904   Section        0  stats.o(i.stats_task)
+    i.system_clock_config                    0x00001cec   Section        0  time.o(i.system_clock_config)
+    i.systick_config                         0x00001db8   Section        0  time.o(i.systick_config)
+    i.task_add                               0x00001de0   Section        0  scheduler.o(i.task_add)
+    i.task_complete_handler                  0x00001e3a   Section        0  scheduler.o(i.task_complete_handler)
+    i.task_create_dynamic                    0x00001e3e   Section        0  scheduler.o(i.task_create_dynamic)
+    i.task_create_static                     0x00001eae   Section        0  scheduler.o(i.task_create_static)
+    i.task_delete                            0x00001ef8   Section        0  scheduler.o(i.task_delete)
+    i.task_init                              0x00001f60   Section        0  scheduler.o(i.task_init)
+    i.task_remove                            0x00002018   Section        0  scheduler.o(i.task_remove)
+    i.task_sleep                             0x00002050   Section        0  scheduler.o(i.task_sleep)
+    i.thermometer                            0x00002110   Section        0  demo3.o(i.thermometer)
+    i.uart_init                              0x00002168   Section        0  uart.o(i.uart_init)
+    i.uart_send_char                         0x0000227c   Section        0  uart.o(i.uart_send_char)
+    x$fpl$fpinit                             0x00002294   Section       10  fpinit.o(x$fpl$fpinit)
+    $v0                                      0x00002294   Number         0  fpinit.o(x$fpl$fpinit)
+    .constdata                               0x0000229e   Section      480  nokia5110.o(.constdata)
+    .conststring                             0x00002480   Section      164  stats.o(.conststring)
     .data                                    0x20000000   Section        4  os.o(.data)
     .data                                    0x20000004   Section        4  time.o(.data)
     .data                                    0x20000008   Section        4  uart.o(.data)
     .data                                    0x2000000c   Section        8  nokia5110.o(.data)
-    .bss                                     0x20000018   Section     2040  heap.o(.bss)
-    .bss                                     0x20000810   Section       24  os.o(.bss)
-    .bss                                     0x20000828   Section      284  scheduler.o(.bss)
-    .bss                                     0x20000948   Section      464  stats.o(.bss)
-    .bss                                     0x20000b18   Section       16  uart.o(.bss)
-    .bss                                     0x20000b28   Section      928  demo3.o(.bss)
-    .bss                                     0x20000ec8   Section       96  libspace.o(.bss)
-    HEAP                                     0x20000f28   Section      128  startup.o(HEAP)
-    Heap_Mem                                 0x20000f28   Data         128  startup.o(HEAP)
-    STACK                                    0x20000fa8   Section     1536  startup.o(STACK)
-    Handler_Stack                            0x20000fa8   Data         256  startup.o(STACK)
-    __initial_handler_sp                     0x200010a8   Data           0  startup.o(STACK)
-    __initial_sp                             0x200015a8   Data           0  startup.o(STACK)
+    .data                                    0x20000014   Section        8  light_sensor.o(.data)
+    .bss                                     0x20000020   Section     2040  heap.o(.bss)
+    .bss                                     0x20000818   Section       32  os.o(.bss)
+    .bss                                     0x20000838   Section      284  scheduler.o(.bss)
+    .bss                                     0x20000958   Section      464  stats.o(.bss)
+    .bss                                     0x20000b28   Section       16  uart.o(.bss)
+    .bss                                     0x20000b38   Section      544  demo3.o(.bss)
+    .bss                                     0x20000d58   Section       96  libspace.o(.bss)
+    HEAP                                     0x20000db8   Section      256  startup.o(HEAP)
+    Heap_Mem                                 0x20000db8   Data         256  startup.o(HEAP)
+    STACK                                    0x20000eb8   Section      768  startup.o(STACK)
+    Handler_Stack                            0x20000eb8   Data         512  startup.o(STACK)
+    __initial_handler_sp                     0x200010b8   Data           0  startup.o(STACK)
+    __initial_sp                             0x200011b8   Data           0  startup.o(STACK)
 
     Global Symbols
 
@@ -641,7 +699,7 @@ Image Symbol Table
     _terminate_alloc                          - Undefined Weak Reference
     _terminate_user_alloc                     - Undefined Weak Reference
     _terminateio                              - Undefined Weak Reference
-    Heap_Size                                0x00000080   Number         0  startup.o ABSOLUTE
+    Heap_Size                                0x00000100   Number         0  startup.o ABSOLUTE
     __main                                   0x0000026d   Thumb Code     8  __main.o(!!!main)
     __scatterload                            0x00000275   Thumb Code     0  __scatter.o(!!!scatter)
     __scatterload_rt2                        0x00000275   Thumb Code    44  __scatter.o(!!!scatter)
@@ -717,7 +775,6 @@ Image Symbol Table
     ADC0SS0_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
     ADC0SS1_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
     ADC0SS2_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
-    ADC0SS3_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
     ADC1SS0_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
     ADC1SS1_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
     ADC1SS2_Handler                          0x0000040f   Thumb Code     0  startup.o(.text)
@@ -841,89 +898,102 @@ Image Symbol Table
     __user_libspace                          0x0000078d   Thumb Code     8  libspace.o(.text)
     __user_perproc_libspace                  0x0000078d   Thumb Code     0  libspace.o(.text)
     __user_perthread_libspace                0x0000078d   Thumb Code     0  libspace.o(.text)
-    KrisOS_stack_usage_config                0x00000795   Thumb Code    28  scheduler.o(i.KrisOS_stack_usage_config)
-    SVC_Handler_C                            0x000007b5   Thumb Code   304  os.o(i.SVC_Handler_C)
-    SysTick_Handler                          0x000008e5   Thumb Code   120  os.o(i.SysTick_Handler)
-    _sys_exit                                0x00000965   Thumb Code    12  retarget.o(i._sys_exit)
-    align_byte_number                        0x0000098d   Thumb Code    14  heap.o(i.align_byte_number)
-    ferror                                   0x0000099b   Thumb Code     8  retarget.o(i.ferror)
-    fputc                                    0x000009a5   Thumb Code    34  retarget.o(i.fputc)
-    free                                     0x000009d1   Thumb Code    70  heap.o(i.free)
-    heap_init                                0x00000a21   Thumb Code    56  heap.o(i.heap_init)
-    heap_insert_free_block                   0x00000a5d   Thumb Code    24  heap.o(i.heap_insert_free_block)
-    i2cTest                                  0x00000a79   Thumb Code    54  demo3.o(i.i2cTest)
-    i2c_init                                 0x00000ab9   Thumb Code   134  i2c.o(i.i2c_init)
-    i2c_read                                 0x00000b59   Thumb Code    90  i2c.o(i.i2c_read)
-    i2c_slave_addr                           0x00000bb9   Thumb Code     8  i2c.o(i.i2c_slave_addr)
-    i2c_write                                0x00000bc5   Thumb Code    94  i2c.o(i.i2c_write)
-    idle_task                                0x00000c29   Thumb Code     6  scheduler.o(i.idle_task)
-    main                                     0x00000c31   Thumb Code    48  demo3.o(i.main)
-    malloc                                   0x00000c81   Thumb Code   128  heap.o(i.malloc)
-    mutex_create                             0x00000d09   Thumb Code    20  mutex.o(i.mutex_create)
-    mutex_delete                             0x00000d1d   Thumb Code    62  mutex.o(i.mutex_delete)
-    mutex_init                               0x00000d61   Thumb Code    32  mutex.o(i.mutex_init)
-    mutex_lock                               0x00000d85   Thumb Code   198  mutex.o(i.mutex_lock)
-    mutex_release_all                        0x00000e51   Thumb Code    38  mutex.o(i.mutex_release_all)
-    mutex_try_lock                           0x00000e79   Thumb Code    80  mutex.o(i.mutex_try_lock)
-    mutex_unlock                             0x00000ed1   Thumb Code   196  mutex.o(i.mutex_unlock)
-    nokia5110_clear                          0x00000f9d   Thumb Code    32  nokia5110.o(i.nokia5110_clear)
-    nokia5110_init                           0x00000fbd   Thumb Code   302  nokia5110.o(i.nokia5110_init)
-    nokia5110_send                           0x00001115   Thumb Code    52  nokia5110.o(i.nokia5110_send)
-    nokia5110_send_char                      0x00001151   Thumb Code    92  nokia5110.o(i.nokia5110_send_char)
-    nokia5110_set_cursor                     0x000011b5   Thumb Code    46  nokia5110.o(i.nokia5110_set_cursor)
-    nokiaLCDTest                             0x000011e9   Thumb Code    60  demo3.o(i.nokiaLCDTest)
-    nvic_clear_pending                       0x0000128d   Thumb Code    32  nvic.o(i.nvic_clear_pending)
-    nvic_disable_irq                         0x000012b1   Thumb Code    32  nvic.o(i.nvic_disable_irq)
-    nvic_enable_irq                          0x000012d5   Thumb Code    40  nvic.o(i.nvic_enable_irq)
-    nvic_get_priority                        0x000012fd   Thumb Code    26  nvic.o(i.nvic_get_priority)
-    nvic_irq_prio_check                      0x00001321   Thumb Code    16  nvic.o(i.nvic_irq_prio_check)
-    nvic_read_active                         0x00001331   Thumb Code    30  nvic.o(i.nvic_read_active)
-    nvic_set_pending                         0x00001355   Thumb Code    32  nvic.o(i.nvic_set_pending)
-    nvic_set_priority                        0x00001379   Thumb Code    30  nvic.o(i.nvic_set_priority)
-    os_init                                  0x000013a1   Thumb Code    88  os.o(i.os_init)
-    os_start                                 0x000013fd   Thumb Code    98  os.o(i.os_start)
-    scheduler_init                           0x00001471   Thumb Code    54  scheduler.o(i.scheduler_init)
-    scheduler_run                            0x000014b9   Thumb Code   128  scheduler.o(i.scheduler_run)
-    scheduler_wake_tasks                     0x00001541   Thumb Code    76  scheduler.o(i.scheduler_wake_tasks)
-    stats_init                               0x00001595   Thumb Code    36  stats.o(i.stats_init)
-    stats_task                               0x000015cd   Thumb Code   552  stats.o(i.stats_task)
-    system_clock_config                      0x0000198d   Thumb Code   184  time.o(i.system_clock_config)
-    systick_config                           0x00001a59   Thumb Code    36  time.o(i.systick_config)
-    task_add                                 0x00001a81   Thumb Code    90  scheduler.o(i.task_add)
-    task_complete_handler                    0x00001adb   Thumb Code     4  scheduler.o(i.task_complete_handler)
-    task_create_dynamic                      0x00001adf   Thumb Code   112  scheduler.o(i.task_create_dynamic)
-    task_create_static                       0x00001b4f   Thumb Code    72  scheduler.o(i.task_create_static)
-    task_delete                              0x00001b99   Thumb Code   100  scheduler.o(i.task_delete)
-    task_init                                0x00001c01   Thumb Code   172  scheduler.o(i.task_init)
-    task_remove                              0x00001cb9   Thumb Code    56  scheduler.o(i.task_remove)
-    task_sleep                               0x00001cf1   Thumb Code   182  scheduler.o(i.task_sleep)
-    uart_init                                0x00001db1   Thumb Code   248  uart.o(i.uart_init)
-    uart_send_char                           0x00001ec5   Thumb Code    20  uart.o(i.uart_send_char)
-    _fp_init                                 0x00001edd   Thumb Code    10  fpinit.o(x$fpl$fpinit)
-    __fplib_config_fpu_vfp                   0x00001ee5   Thumb Code     0  fpinit.o(x$fpl$fpinit)
-    __fplib_config_pureend_doubles           0x00001ee5   Thumb Code     0  fpinit.o(x$fpl$fpinit)
-    font_5x7                                 0x00001ee6   Data         480  nokia5110.o(.constdata)
-    Region$$Table$$Base                      0x0000216c   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x0000218c   Number         0  anon$$obj.o(Region$$Table)
+    ADC0SS3_Handler                          0x00000795   Thumb Code    32  light_sensor.o(i.ADC0SS3_Handler)
+    KrisOS_sem_release_from_ISR              0x000007bd   Thumb Code    12  semaphore.o(i.KrisOS_sem_release_from_ISR)
+    KrisOS_stack_usage_config                0x000007c9   Thumb Code    28  scheduler.o(i.KrisOS_stack_usage_config)
+    SVC_Handler_C                            0x000007e9   Thumb Code   388  os.o(i.SVC_Handler_C)
+    SysTick_Handler                          0x0000096d   Thumb Code   120  os.o(i.SysTick_Handler)
+    _sys_exit                                0x000009ed   Thumb Code    12  retarget.o(i._sys_exit)
+    align_byte_number                        0x00000a15   Thumb Code    14  heap.o(i.align_byte_number)
+    buzzer_init                              0x00000a25   Thumb Code    84  light_sensor.o(i.buzzer_init)
+    ferror                                   0x00000a85   Thumb Code     8  retarget.o(i.ferror)
+    fputc                                    0x00000a8d   Thumb Code    34  retarget.o(i.fputc)
+    free                                     0x00000ab9   Thumb Code    70  heap.o(i.free)
+    heap_init                                0x00000b09   Thumb Code    56  heap.o(i.heap_init)
+    heap_insert_free_block                   0x00000b45   Thumb Code    24  heap.o(i.heap_insert_free_block)
+    i2c_init                                 0x00000b61   Thumb Code   134  i2c.o(i.i2c_init)
+    i2c_read                                 0x00000c01   Thumb Code    90  i2c.o(i.i2c_read)
+    i2c_slave_addr                           0x00000c61   Thumb Code     8  i2c.o(i.i2c_slave_addr)
+    i2c_write                                0x00000c6d   Thumb Code    94  i2c.o(i.i2c_write)
+    idle_task                                0x00000cd1   Thumb Code     6  scheduler.o(i.idle_task)
+    lightSensor                              0x00000cd9   Thumb Code    96  demo3.o(i.lightSensor)
+    light_sensor_init                        0x00000d69   Thumb Code   274  light_sensor.o(i.light_sensor_init)
+    main                                     0x00000e91   Thumb Code    56  demo3.o(i.main)
+    malloc                                   0x00000ee5   Thumb Code   128  heap.o(i.malloc)
+    mutex_create                             0x00000f6d   Thumb Code    20  mutex.o(i.mutex_create)
+    mutex_delete                             0x00000f81   Thumb Code    62  mutex.o(i.mutex_delete)
+    mutex_init                               0x00000fc5   Thumb Code    32  mutex.o(i.mutex_init)
+    mutex_lock                               0x00000fe9   Thumb Code   198  mutex.o(i.mutex_lock)
+    mutex_release_all                        0x000010b5   Thumb Code    38  mutex.o(i.mutex_release_all)
+    mutex_try_lock                           0x000010dd   Thumb Code    80  mutex.o(i.mutex_try_lock)
+    mutex_unlock                             0x00001135   Thumb Code   196  mutex.o(i.mutex_unlock)
+    nokia5110_clear                          0x00001201   Thumb Code    32  nokia5110.o(i.nokia5110_clear)
+    nokia5110_init                           0x00001221   Thumb Code   302  nokia5110.o(i.nokia5110_init)
+    nokia5110_send                           0x00001379   Thumb Code    52  nokia5110.o(i.nokia5110_send)
+    nokia5110_send_char                      0x000013b5   Thumb Code    92  nokia5110.o(i.nokia5110_send_char)
+    nokia5110_set_cursor                     0x00001419   Thumb Code    46  nokia5110.o(i.nokia5110_set_cursor)
+    nokiaLCDSetup                            0x0000144d   Thumb Code    28  demo3.o(i.nokiaLCDSetup)
+    nvic_clear_pending                       0x00001479   Thumb Code    32  nvic.o(i.nvic_clear_pending)
+    nvic_disable_irq                         0x0000149d   Thumb Code    32  nvic.o(i.nvic_disable_irq)
+    nvic_enable_irq                          0x000014c1   Thumb Code    40  nvic.o(i.nvic_enable_irq)
+    nvic_get_priority                        0x000014e9   Thumb Code    26  nvic.o(i.nvic_get_priority)
+    nvic_irq_prio_check                      0x0000150d   Thumb Code    16  nvic.o(i.nvic_irq_prio_check)
+    nvic_read_active                         0x0000151d   Thumb Code    30  nvic.o(i.nvic_read_active)
+    nvic_set_pending                         0x00001541   Thumb Code    32  nvic.o(i.nvic_set_pending)
+    nvic_set_priority                        0x00001565   Thumb Code    30  nvic.o(i.nvic_set_priority)
+    os_init                                  0x0000158d   Thumb Code    88  os.o(i.os_init)
+    os_start                                 0x000015e9   Thumb Code    98  os.o(i.os_start)
+    scheduler_init                           0x0000165d   Thumb Code    54  scheduler.o(i.scheduler_init)
+    scheduler_run                            0x000016a5   Thumb Code   128  scheduler.o(i.scheduler_run)
+    scheduler_wake_tasks                     0x0000172d   Thumb Code    96  scheduler.o(i.scheduler_wake_tasks)
+    sem_acquire                              0x00001795   Thumb Code    82  semaphore.o(i.sem_acquire)
+    sem_create                               0x000017ed   Thumb Code    24  semaphore.o(i.sem_create)
+    sem_delete                               0x00001805   Thumb Code    42  semaphore.o(i.sem_delete)
+    sem_init                                 0x00001835   Thumb Code    34  semaphore.o(i.sem_init)
+    sem_release                              0x0000185d   Thumb Code    62  semaphore.o(i.sem_release)
+    sem_try_acquire                          0x000018a1   Thumb Code    40  semaphore.o(i.sem_try_acquire)
+    stats_init                               0x000018c9   Thumb Code    38  stats.o(i.stats_init)
+    stats_task                               0x00001905   Thumb Code   564  stats.o(i.stats_task)
+    system_clock_config                      0x00001ced   Thumb Code   184  time.o(i.system_clock_config)
+    systick_config                           0x00001db9   Thumb Code    36  time.o(i.systick_config)
+    task_add                                 0x00001de1   Thumb Code    90  scheduler.o(i.task_add)
+    task_complete_handler                    0x00001e3b   Thumb Code     4  scheduler.o(i.task_complete_handler)
+    task_create_dynamic                      0x00001e3f   Thumb Code   112  scheduler.o(i.task_create_dynamic)
+    task_create_static                       0x00001eaf   Thumb Code    72  scheduler.o(i.task_create_static)
+    task_delete                              0x00001ef9   Thumb Code   100  scheduler.o(i.task_delete)
+    task_init                                0x00001f61   Thumb Code   172  scheduler.o(i.task_init)
+    task_remove                              0x00002019   Thumb Code    56  scheduler.o(i.task_remove)
+    task_sleep                               0x00002051   Thumb Code   182  scheduler.o(i.task_sleep)
+    thermometer                              0x00002111   Thumb Code    66  demo3.o(i.thermometer)
+    uart_init                                0x00002169   Thumb Code   248  uart.o(i.uart_init)
+    uart_send_char                           0x0000227d   Thumb Code    20  uart.o(i.uart_send_char)
+    _fp_init                                 0x00002295   Thumb Code    10  fpinit.o(x$fpl$fpinit)
+    __fplib_config_fpu_vfp                   0x0000229d   Thumb Code     0  fpinit.o(x$fpl$fpinit)
+    __fplib_config_pureend_doubles           0x0000229d   Thumb Code     0  fpinit.o(x$fpl$fpinit)
+    font_5x7                                 0x0000229e   Data         480  nokia5110.o(.constdata)
+    Region$$Table$$Base                      0x00002524   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x00002544   Number         0  anon$$obj.o(Region$$Table)
     svc_exc_return                           0x20000000   Data           4  os.o(.data)
     SYSTEM_CLOCK_FREQ                        0x20000004   Data           4  time.o(.data)
     uart                                     0x20000008   Data           4  uart.o(.data)
     cursorRow                                0x2000000c   Data           1  nokia5110.o(.data)
     nokia5110                                0x20000010   Data           4  nokia5110.o(.data)
-    heap                                     0x20000018   Data        2040  heap.o(.bss)
-    KrisOS                                   0x20000810   Data          24  os.o(.bss)
-    scheduler                                0x20000828   Data         116  scheduler.o(.bss)
-    idleTask                                 0x200008a0   Data          64  scheduler.o(.bss)
-    idleStack                                0x200008e0   Data         100  scheduler.o(.bss)
-    statsTask                                0x20000948   Data          64  stats.o(.bss)
-    statsStack                               0x20000988   Data         400  stats.o(.bss)
-    uartMtx                                  0x20000b18   Data          16  uart.o(.bss)
-    nokiaLCDTestTask                         0x20000b28   Data          64  demo3.o(.bss)
-    nokiaLCDTestStack                        0x20000b68   Data         400  demo3.o(.bss)
-    i2cTestTask                              0x20000cf8   Data          64  demo3.o(.bss)
-    i2cTestStack                             0x20000d38   Data         400  demo3.o(.bss)
-    __libspace_start                         0x20000ec8   Data          96  libspace.o(.bss)
-    __temporary_stack_top$libspace           0x20000f28   Data           0  libspace.o(.bss)
+    lightSensorSem                           0x20000014   Data           8  light_sensor.o(.data)
+    heap                                     0x20000020   Data        2040  heap.o(.bss)
+    KrisOS                                   0x20000818   Data          32  os.o(.bss)
+    scheduler                                0x20000838   Data         116  scheduler.o(.bss)
+    idleTask                                 0x200008b0   Data          64  scheduler.o(.bss)
+    idleStack                                0x200008f0   Data         100  scheduler.o(.bss)
+    statsTask                                0x20000958   Data          64  stats.o(.bss)
+    statsStack                               0x20000998   Data         400  stats.o(.bss)
+    uartMtx                                  0x20000b28   Data          16  uart.o(.bss)
+    nokiaMtx                                 0x20000b38   Data          16  demo3.o(.bss)
+    thermometerTask                          0x20000b48   Data          64  demo3.o(.bss)
+    thermometerStack                         0x20000b88   Data         200  demo3.o(.bss)
+    lightSensorTask                          0x20000c50   Data          64  demo3.o(.bss)
+    lightSensorStack                         0x20000c90   Data         200  demo3.o(.bss)
+    __libspace_start                         0x20000d58   Data          96  libspace.o(.bss)
+    __temporary_stack_top$libspace           0x20000db8   Data           0  libspace.o(.bss)
 
 
 
@@ -933,172 +1003,184 @@ Memory Map of the image
 
   Image Entry point : 0x00000389
 
-  Load Region LR_1 (Base: 0x00000000, Size: 0x000021a0, Max: 0xffffffff, ABSOLUTE)
+  Load Region LR_1 (Base: 0x00000000, Size: 0x00002560, Max: 0xffffffff, ABSOLUTE)
 
-    Execution Region ER_RO (Base: 0x00000000, Size: 0x0000218c, Max: 0xffffffff, ABSOLUTE)
+    Execution Region ER_RO (Base: 0x00000000, Size: 0x00002544, Max: 0xffffffff, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x00000000   0x0000026c   Data   RO          599    RESET               startup.o
-    0x0000026c   0x00000008   Code   RO          829  * !!!main             c_w.l(__main.o)
-    0x00000274   0x00000034   Code   RO          997    !!!scatter          c_w.l(__scatter.o)
-    0x000002a8   0x0000001a   Code   RO          999    !!handler_copy      c_w.l(__scatter_copy.o)
+    0x00000000   0x0000026c   Data   RO          647    RESET               startup.o
+    0x0000026c   0x00000008   Code   RO          925  * !!!main             c_w.l(__main.o)
+    0x00000274   0x00000034   Code   RO         1093    !!!scatter          c_w.l(__scatter.o)
+    0x000002a8   0x0000001a   Code   RO         1095    !!handler_copy      c_w.l(__scatter_copy.o)
     0x000002c2   0x00000002   PAD
-    0x000002c4   0x0000001c   Code   RO         1001    !!handler_zi        c_w.l(__scatter_zi.o)
-    0x000002e0   0x00000000   Code   RO          824    .ARM.Collect$$_printf_percent$$00000000  c_w.l(_printf_percent.o)
-    0x000002e0   0x00000006   Code   RO          823    .ARM.Collect$$_printf_percent$$00000009  c_w.l(_printf_d.o)
-    0x000002e6   0x00000004   Code   RO          842    .ARM.Collect$$_printf_percent$$00000017  c_w.l(_printf_percent_end.o)
-    0x000002ea   0x00000002   Code   RO          884    .ARM.Collect$$libinit$$00000000  c_w.l(libinit.o)
-    0x000002ec   0x00000004   Code   RO          895    .ARM.Collect$$libinit$$00000001  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          898    .ARM.Collect$$libinit$$00000004  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          901    .ARM.Collect$$libinit$$0000000A  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          903    .ARM.Collect$$libinit$$0000000C  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          905    .ARM.Collect$$libinit$$0000000E  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          908    .ARM.Collect$$libinit$$00000011  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          910    .ARM.Collect$$libinit$$00000013  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          912    .ARM.Collect$$libinit$$00000015  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          914    .ARM.Collect$$libinit$$00000017  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          916    .ARM.Collect$$libinit$$00000019  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          918    .ARM.Collect$$libinit$$0000001B  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          920    .ARM.Collect$$libinit$$0000001D  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          922    .ARM.Collect$$libinit$$0000001F  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          924    .ARM.Collect$$libinit$$00000021  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          926    .ARM.Collect$$libinit$$00000023  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          928    .ARM.Collect$$libinit$$00000025  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          932    .ARM.Collect$$libinit$$0000002C  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          934    .ARM.Collect$$libinit$$0000002E  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          936    .ARM.Collect$$libinit$$00000030  c_w.l(libinit2.o)
-    0x000002f0   0x00000000   Code   RO          938    .ARM.Collect$$libinit$$00000032  c_w.l(libinit2.o)
-    0x000002f0   0x00000002   Code   RO          939    .ARM.Collect$$libinit$$00000033  c_w.l(libinit2.o)
-    0x000002f2   0x00000002   Code   RO          885    .ARM.Collect$$libshutdown$$00000000  c_w.l(libshutdown.o)
-    0x000002f4   0x00000000   Code   RO          941    .ARM.Collect$$libshutdown$$00000002  c_w.l(libshutdown2.o)
-    0x000002f4   0x00000000   Code   RO          943    .ARM.Collect$$libshutdown$$00000004  c_w.l(libshutdown2.o)
-    0x000002f4   0x00000000   Code   RO          946    .ARM.Collect$$libshutdown$$00000007  c_w.l(libshutdown2.o)
-    0x000002f4   0x00000000   Code   RO          949    .ARM.Collect$$libshutdown$$0000000A  c_w.l(libshutdown2.o)
-    0x000002f4   0x00000000   Code   RO          951    .ARM.Collect$$libshutdown$$0000000C  c_w.l(libshutdown2.o)
-    0x000002f4   0x00000000   Code   RO          954    .ARM.Collect$$libshutdown$$0000000F  c_w.l(libshutdown2.o)
-    0x000002f4   0x00000002   Code   RO          955    .ARM.Collect$$libshutdown$$00000010  c_w.l(libshutdown2.o)
-    0x000002f6   0x00000000   Code   RO          831    .ARM.Collect$$rtentry$$00000000  c_w.l(__rtentry.o)
-    0x000002f6   0x00000000   Code   RO          844    .ARM.Collect$$rtentry$$00000002  c_w.l(__rtentry2.o)
-    0x000002f6   0x00000006   Code   RO          856    .ARM.Collect$$rtentry$$00000004  c_w.l(__rtentry4.o)
-    0x000002fc   0x00000000   Code   RO          846    .ARM.Collect$$rtentry$$00000009  c_w.l(__rtentry2.o)
-    0x000002fc   0x00000004   Code   RO          847    .ARM.Collect$$rtentry$$0000000A  c_w.l(__rtentry2.o)
-    0x00000300   0x00000000   Code   RO          849    .ARM.Collect$$rtentry$$0000000C  c_w.l(__rtentry2.o)
-    0x00000300   0x00000008   Code   RO          850    .ARM.Collect$$rtentry$$0000000D  c_w.l(__rtentry2.o)
-    0x00000308   0x00000002   Code   RO          832    .ARM.Collect$$rtexit$$00000000  c_w.l(rtexit.o)
-    0x0000030a   0x00000000   Code   RO          859    .ARM.Collect$$rtexit$$00000002  c_w.l(rtexit2.o)
-    0x0000030a   0x00000004   Code   RO          860    .ARM.Collect$$rtexit$$00000003  c_w.l(rtexit2.o)
-    0x0000030e   0x00000006   Code   RO          861    .ARM.Collect$$rtexit$$00000004  c_w.l(rtexit2.o)
-    0x00000314   0x00000074   Code   RO          592    .text               special_reg_access.o
-    0x00000388   0x000000b4   Code   RO          600  * .text               startup.o
-    0x0000043c   0x00000002   Code   RO          791    .text               c_w.l(use_no_semi.o)
-    0x0000043e   0x000000ee   Code   RO          793    .text               c_w.l(lludivv7m.o)
-    0x0000052c   0x00000014   Code   RO          797    .text               c_w.l(noretval__2fprintf.o)
-    0x00000540   0x00000068   Code   RO          799    .text               c_w.l(__printf.o)
-    0x000005a8   0x00000078   Code   RO          801    .text               c_w.l(_printf_dec.o)
-    0x00000620   0x00000012   Code   RO          825    .text               c_w.l(exit.o)
-    0x00000632   0x00000006   Code   RO          827    .text               c_w.l(heapauxi.o)
-    0x00000638   0x000000b2   Code   RO          838    .text               c_w.l(_printf_intcommon.o)
+    0x000002c4   0x0000001c   Code   RO         1097    !!handler_zi        c_w.l(__scatter_zi.o)
+    0x000002e0   0x00000000   Code   RO          920    .ARM.Collect$$_printf_percent$$00000000  c_w.l(_printf_percent.o)
+    0x000002e0   0x00000006   Code   RO          919    .ARM.Collect$$_printf_percent$$00000009  c_w.l(_printf_d.o)
+    0x000002e6   0x00000004   Code   RO          938    .ARM.Collect$$_printf_percent$$00000017  c_w.l(_printf_percent_end.o)
+    0x000002ea   0x00000002   Code   RO          980    .ARM.Collect$$libinit$$00000000  c_w.l(libinit.o)
+    0x000002ec   0x00000004   Code   RO          991    .ARM.Collect$$libinit$$00000001  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO          994    .ARM.Collect$$libinit$$00000004  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO          997    .ARM.Collect$$libinit$$0000000A  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO          999    .ARM.Collect$$libinit$$0000000C  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1001    .ARM.Collect$$libinit$$0000000E  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1004    .ARM.Collect$$libinit$$00000011  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1006    .ARM.Collect$$libinit$$00000013  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1008    .ARM.Collect$$libinit$$00000015  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1010    .ARM.Collect$$libinit$$00000017  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1012    .ARM.Collect$$libinit$$00000019  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1014    .ARM.Collect$$libinit$$0000001B  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1016    .ARM.Collect$$libinit$$0000001D  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1018    .ARM.Collect$$libinit$$0000001F  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1020    .ARM.Collect$$libinit$$00000021  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1022    .ARM.Collect$$libinit$$00000023  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1024    .ARM.Collect$$libinit$$00000025  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1028    .ARM.Collect$$libinit$$0000002C  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1030    .ARM.Collect$$libinit$$0000002E  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1032    .ARM.Collect$$libinit$$00000030  c_w.l(libinit2.o)
+    0x000002f0   0x00000000   Code   RO         1034    .ARM.Collect$$libinit$$00000032  c_w.l(libinit2.o)
+    0x000002f0   0x00000002   Code   RO         1035    .ARM.Collect$$libinit$$00000033  c_w.l(libinit2.o)
+    0x000002f2   0x00000002   Code   RO          981    .ARM.Collect$$libshutdown$$00000000  c_w.l(libshutdown.o)
+    0x000002f4   0x00000000   Code   RO         1037    .ARM.Collect$$libshutdown$$00000002  c_w.l(libshutdown2.o)
+    0x000002f4   0x00000000   Code   RO         1039    .ARM.Collect$$libshutdown$$00000004  c_w.l(libshutdown2.o)
+    0x000002f4   0x00000000   Code   RO         1042    .ARM.Collect$$libshutdown$$00000007  c_w.l(libshutdown2.o)
+    0x000002f4   0x00000000   Code   RO         1045    .ARM.Collect$$libshutdown$$0000000A  c_w.l(libshutdown2.o)
+    0x000002f4   0x00000000   Code   RO         1047    .ARM.Collect$$libshutdown$$0000000C  c_w.l(libshutdown2.o)
+    0x000002f4   0x00000000   Code   RO         1050    .ARM.Collect$$libshutdown$$0000000F  c_w.l(libshutdown2.o)
+    0x000002f4   0x00000002   Code   RO         1051    .ARM.Collect$$libshutdown$$00000010  c_w.l(libshutdown2.o)
+    0x000002f6   0x00000000   Code   RO          927    .ARM.Collect$$rtentry$$00000000  c_w.l(__rtentry.o)
+    0x000002f6   0x00000000   Code   RO          940    .ARM.Collect$$rtentry$$00000002  c_w.l(__rtentry2.o)
+    0x000002f6   0x00000006   Code   RO          952    .ARM.Collect$$rtentry$$00000004  c_w.l(__rtentry4.o)
+    0x000002fc   0x00000000   Code   RO          942    .ARM.Collect$$rtentry$$00000009  c_w.l(__rtentry2.o)
+    0x000002fc   0x00000004   Code   RO          943    .ARM.Collect$$rtentry$$0000000A  c_w.l(__rtentry2.o)
+    0x00000300   0x00000000   Code   RO          945    .ARM.Collect$$rtentry$$0000000C  c_w.l(__rtentry2.o)
+    0x00000300   0x00000008   Code   RO          946    .ARM.Collect$$rtentry$$0000000D  c_w.l(__rtentry2.o)
+    0x00000308   0x00000002   Code   RO          928    .ARM.Collect$$rtexit$$00000000  c_w.l(rtexit.o)
+    0x0000030a   0x00000000   Code   RO          955    .ARM.Collect$$rtexit$$00000002  c_w.l(rtexit2.o)
+    0x0000030a   0x00000004   Code   RO          956    .ARM.Collect$$rtexit$$00000003  c_w.l(rtexit2.o)
+    0x0000030e   0x00000006   Code   RO          957    .ARM.Collect$$rtexit$$00000004  c_w.l(rtexit2.o)
+    0x00000314   0x00000074   Code   RO          640    .text               special_reg_access.o
+    0x00000388   0x000000b4   Code   RO          648  * .text               startup.o
+    0x0000043c   0x00000002   Code   RO          887    .text               c_w.l(use_no_semi.o)
+    0x0000043e   0x000000ee   Code   RO          889    .text               c_w.l(lludivv7m.o)
+    0x0000052c   0x00000014   Code   RO          893    .text               c_w.l(noretval__2fprintf.o)
+    0x00000540   0x00000068   Code   RO          895    .text               c_w.l(__printf.o)
+    0x000005a8   0x00000078   Code   RO          897    .text               c_w.l(_printf_dec.o)
+    0x00000620   0x00000012   Code   RO          921    .text               c_w.l(exit.o)
+    0x00000632   0x00000006   Code   RO          923    .text               c_w.l(heapauxi.o)
+    0x00000638   0x000000b2   Code   RO          934    .text               c_w.l(_printf_intcommon.o)
     0x000006ea   0x00000002   PAD
-    0x000006ec   0x00000024   Code   RO          840    .text               c_w.l(_printf_char_file.o)
-    0x00000710   0x00000030   Code   RO          867    .text               c_w.l(_printf_char_common.o)
-    0x00000740   0x0000004a   Code   RO          869    .text               c_w.l(sys_stackheap_outer.o)
+    0x000006ec   0x00000024   Code   RO          936    .text               c_w.l(_printf_char_file.o)
+    0x00000710   0x00000030   Code   RO          963    .text               c_w.l(_printf_char_common.o)
+    0x00000740   0x0000004a   Code   RO          965    .text               c_w.l(sys_stackheap_outer.o)
     0x0000078a   0x00000002   PAD
-    0x0000078c   0x00000008   Code   RO          886    .text               c_w.l(libspace.o)
-    0x00000794   0x00000020   Code   RO          149    i.KrisOS_stack_usage_config  scheduler.o
-    0x000007b4   0x00000130   Code   RO          103    i.SVC_Handler_C     os.o
-    0x000008e4   0x00000080   Code   RO          104    i.SysTick_Handler   os.o
-    0x00000964   0x00000028   Code   RO          661    i._sys_exit         retarget.o
-    0x0000098c   0x0000000e   Code   RO            1    i.align_byte_number  heap.o
-    0x0000099a   0x00000008   Code   RO          663    i.ferror            retarget.o
-    0x000009a2   0x00000002   PAD
-    0x000009a4   0x0000002c   Code   RO          665    i.fputc             retarget.o
-    0x000009d0   0x00000050   Code   RO            2    i.free              heap.o
-    0x00000a20   0x0000003c   Code   RO            3    i.heap_init         heap.o
-    0x00000a5c   0x0000001c   Code   RO            4    i.heap_insert_free_block  heap.o
-    0x00000a78   0x00000040   Code   RO          757    i.i2cTest           demo3.o
-    0x00000ab8   0x000000a0   Code   RO          724    i.i2c_init          i2c.o
-    0x00000b58   0x00000060   Code   RO          725    i.i2c_read          i2c.o
-    0x00000bb8   0x0000000c   Code   RO          726    i.i2c_slave_addr    i2c.o
-    0x00000bc4   0x00000064   Code   RO          727    i.i2c_write         i2c.o
-    0x00000c28   0x00000006   Code   RO          150    i.idle_task         scheduler.o
-    0x00000c2e   0x00000002   PAD
-    0x00000c30   0x00000050   Code   RO          758    i.main              demo3.o
-    0x00000c80   0x00000088   Code   RO            5    i.malloc            heap.o
-    0x00000d08   0x00000014   Code   RO          245    i.mutex_create      mutex.o
-    0x00000d1c   0x00000044   Code   RO          246    i.mutex_delete      mutex.o
-    0x00000d60   0x00000024   Code   RO          247    i.mutex_init        mutex.o
-    0x00000d84   0x000000cc   Code   RO          248    i.mutex_lock        mutex.o
-    0x00000e50   0x00000026   Code   RO          249    i.mutex_release_all  mutex.o
-    0x00000e76   0x00000002   PAD
-    0x00000e78   0x00000058   Code   RO          250    i.mutex_try_lock    mutex.o
-    0x00000ed0   0x000000cc   Code   RO          251    i.mutex_unlock      mutex.o
-    0x00000f9c   0x00000020   Code   RO          604    i.nokia5110_clear   nokia5110.o
-    0x00000fbc   0x00000158   Code   RO          605    i.nokia5110_init    nokia5110.o
-    0x00001114   0x0000003c   Code   RO          606    i.nokia5110_send    nokia5110.o
-    0x00001150   0x00000064   Code   RO          607    i.nokia5110_send_char  nokia5110.o
-    0x000011b4   0x00000034   Code   RO          608    i.nokia5110_set_cursor  nokia5110.o
-    0x000011e8   0x000000a4   Code   RO          759    i.nokiaLCDTest      demo3.o
-    0x0000128c   0x00000024   Code   RO          434    i.nvic_clear_pending  nvic.o
-    0x000012b0   0x00000024   Code   RO          435    i.nvic_disable_irq  nvic.o
-    0x000012d4   0x00000028   Code   RO          436    i.nvic_enable_irq   nvic.o
-    0x000012fc   0x00000024   Code   RO          437    i.nvic_get_priority  nvic.o
-    0x00001320   0x00000010   Code   RO          438    i.nvic_irq_prio_check  nvic.o
-    0x00001330   0x00000024   Code   RO          439    i.nvic_read_active  nvic.o
-    0x00001354   0x00000024   Code   RO          440    i.nvic_set_pending  nvic.o
-    0x00001378   0x00000028   Code   RO          441    i.nvic_set_priority  nvic.o
-    0x000013a0   0x0000005c   Code   RO          105    i.os_init           os.o
-    0x000013fc   0x00000074   Code   RO          106    i.os_start          os.o
-    0x00001470   0x00000048   Code   RO          151    i.scheduler_init    scheduler.o
-    0x000014b8   0x00000088   Code   RO          152    i.scheduler_run     scheduler.o
-    0x00001540   0x00000054   Code   RO          153    i.scheduler_wake_tasks  scheduler.o
-    0x00001594   0x00000038   Code   RO          348    i.stats_init        stats.o
-    0x000015cc   0x000003c0   Code   RO          349    i.stats_task        stats.o
-    0x0000198c   0x000000cc   Code   RO          488    i.system_clock_config  time.o
-    0x00001a58   0x00000028   Code   RO          489    i.systick_config    time.o
-    0x00001a80   0x0000005a   Code   RO          154    i.task_add          scheduler.o
-    0x00001ada   0x00000004   Code   RO          155    i.task_complete_handler  scheduler.o
-    0x00001ade   0x00000070   Code   RO          156    i.task_create_dynamic  scheduler.o
-    0x00001b4e   0x00000048   Code   RO          157    i.task_create_static  scheduler.o
-    0x00001b96   0x00000002   PAD
-    0x00001b98   0x00000068   Code   RO          158    i.task_delete       scheduler.o
-    0x00001c00   0x000000b8   Code   RO          159    i.task_init         scheduler.o
-    0x00001cb8   0x00000038   Code   RO          160    i.task_remove       scheduler.o
-    0x00001cf0   0x000000c0   Code   RO          161    i.task_sleep        scheduler.o
-    0x00001db0   0x00000114   Code   RO          542    i.uart_init         uart.o
-    0x00001ec4   0x00000018   Code   RO          543    i.uart_send_char    uart.o
-    0x00001edc   0x0000000a   Code   RO          962    x$fpl$fpinit        fz_wm.l(fpinit.o)
-    0x00001ee6   0x000001e0   Data   RO          609    .constdata          nokia5110.o
-    0x000020c6   0x00000002   PAD
-    0x000020c8   0x000000a4   Data   RO          352    .conststring        stats.o
-    0x0000216c   0x00000020   Data   RO          995    Region$$Table       anon$$obj.o
+    0x0000078c   0x00000008   Code   RO          982    .text               c_w.l(libspace.o)
+    0x00000794   0x00000028   Code   RO          855    i.ADC0SS3_Handler   light_sensor.o
+    0x000007bc   0x0000000c   Code   RO          320    i.KrisOS_sem_release_from_ISR  semaphore.o
+    0x000007c8   0x00000020   Code   RO          149    i.KrisOS_stack_usage_config  scheduler.o
+    0x000007e8   0x00000184   Code   RO          103    i.SVC_Handler_C     os.o
+    0x0000096c   0x00000080   Code   RO          104    i.SysTick_Handler   os.o
+    0x000009ec   0x00000028   Code   RO          709    i._sys_exit         retarget.o
+    0x00000a14   0x0000000e   Code   RO            1    i.align_byte_number  heap.o
+    0x00000a22   0x00000002   PAD
+    0x00000a24   0x00000060   Code   RO          856    i.buzzer_init       light_sensor.o
+    0x00000a84   0x00000008   Code   RO          711    i.ferror            retarget.o
+    0x00000a8c   0x0000002c   Code   RO          713    i.fputc             retarget.o
+    0x00000ab8   0x00000050   Code   RO            2    i.free              heap.o
+    0x00000b08   0x0000003c   Code   RO            3    i.heap_init         heap.o
+    0x00000b44   0x0000001c   Code   RO            4    i.heap_insert_free_block  heap.o
+    0x00000b60   0x000000a0   Code   RO          772    i.i2c_init          i2c.o
+    0x00000c00   0x00000060   Code   RO          773    i.i2c_read          i2c.o
+    0x00000c60   0x0000000c   Code   RO          774    i.i2c_slave_addr    i2c.o
+    0x00000c6c   0x00000064   Code   RO          775    i.i2c_write         i2c.o
+    0x00000cd0   0x00000006   Code   RO          150    i.idle_task         scheduler.o
+    0x00000cd6   0x00000002   PAD
+    0x00000cd8   0x00000090   Code   RO          805    i.lightSensor       demo3.o
+    0x00000d68   0x00000128   Code   RO          857    i.light_sensor_init  light_sensor.o
+    0x00000e90   0x00000054   Code   RO          806    i.main              demo3.o
+    0x00000ee4   0x00000088   Code   RO            5    i.malloc            heap.o
+    0x00000f6c   0x00000014   Code   RO          245    i.mutex_create      mutex.o
+    0x00000f80   0x00000044   Code   RO          246    i.mutex_delete      mutex.o
+    0x00000fc4   0x00000024   Code   RO          247    i.mutex_init        mutex.o
+    0x00000fe8   0x000000cc   Code   RO          248    i.mutex_lock        mutex.o
+    0x000010b4   0x00000026   Code   RO          249    i.mutex_release_all  mutex.o
+    0x000010da   0x00000002   PAD
+    0x000010dc   0x00000058   Code   RO          250    i.mutex_try_lock    mutex.o
+    0x00001134   0x000000cc   Code   RO          251    i.mutex_unlock      mutex.o
+    0x00001200   0x00000020   Code   RO          652    i.nokia5110_clear   nokia5110.o
+    0x00001220   0x00000158   Code   RO          653    i.nokia5110_init    nokia5110.o
+    0x00001378   0x0000003c   Code   RO          654    i.nokia5110_send    nokia5110.o
+    0x000013b4   0x00000064   Code   RO          655    i.nokia5110_send_char  nokia5110.o
+    0x00001418   0x00000034   Code   RO          656    i.nokia5110_set_cursor  nokia5110.o
+    0x0000144c   0x0000002c   Code   RO          807    i.nokiaLCDSetup     demo3.o
+    0x00001478   0x00000024   Code   RO          482    i.nvic_clear_pending  nvic.o
+    0x0000149c   0x00000024   Code   RO          483    i.nvic_disable_irq  nvic.o
+    0x000014c0   0x00000028   Code   RO          484    i.nvic_enable_irq   nvic.o
+    0x000014e8   0x00000024   Code   RO          485    i.nvic_get_priority  nvic.o
+    0x0000150c   0x00000010   Code   RO          486    i.nvic_irq_prio_check  nvic.o
+    0x0000151c   0x00000024   Code   RO          487    i.nvic_read_active  nvic.o
+    0x00001540   0x00000024   Code   RO          488    i.nvic_set_pending  nvic.o
+    0x00001564   0x00000028   Code   RO          489    i.nvic_set_priority  nvic.o
+    0x0000158c   0x0000005c   Code   RO          105    i.os_init           os.o
+    0x000015e8   0x00000074   Code   RO          106    i.os_start          os.o
+    0x0000165c   0x00000048   Code   RO          151    i.scheduler_init    scheduler.o
+    0x000016a4   0x00000088   Code   RO          152    i.scheduler_run     scheduler.o
+    0x0000172c   0x00000068   Code   RO          153    i.scheduler_wake_tasks  scheduler.o
+    0x00001794   0x00000058   Code   RO          321    i.sem_acquire       semaphore.o
+    0x000017ec   0x00000018   Code   RO          322    i.sem_create        semaphore.o
+    0x00001804   0x00000030   Code   RO          323    i.sem_delete        semaphore.o
+    0x00001834   0x00000028   Code   RO          324    i.sem_init          semaphore.o
+    0x0000185c   0x00000044   Code   RO          325    i.sem_release       semaphore.o
+    0x000018a0   0x00000028   Code   RO          326    i.sem_try_acquire   semaphore.o
+    0x000018c8   0x0000003c   Code   RO          396    i.stats_init        stats.o
+    0x00001904   0x000003e8   Code   RO          397    i.stats_task        stats.o
+    0x00001cec   0x000000cc   Code   RO          536    i.system_clock_config  time.o
+    0x00001db8   0x00000028   Code   RO          537    i.systick_config    time.o
+    0x00001de0   0x0000005a   Code   RO          154    i.task_add          scheduler.o
+    0x00001e3a   0x00000004   Code   RO          155    i.task_complete_handler  scheduler.o
+    0x00001e3e   0x00000070   Code   RO          156    i.task_create_dynamic  scheduler.o
+    0x00001eae   0x00000048   Code   RO          157    i.task_create_static  scheduler.o
+    0x00001ef6   0x00000002   PAD
+    0x00001ef8   0x00000068   Code   RO          158    i.task_delete       scheduler.o
+    0x00001f60   0x000000b8   Code   RO          159    i.task_init         scheduler.o
+    0x00002018   0x00000038   Code   RO          160    i.task_remove       scheduler.o
+    0x00002050   0x000000c0   Code   RO          161    i.task_sleep        scheduler.o
+    0x00002110   0x00000058   Code   RO          808    i.thermometer       demo3.o
+    0x00002168   0x00000114   Code   RO          590    i.uart_init         uart.o
+    0x0000227c   0x00000018   Code   RO          591    i.uart_send_char    uart.o
+    0x00002294   0x0000000a   Code   RO         1058    x$fpl$fpinit        fz_wm.l(fpinit.o)
+    0x0000229e   0x000001e0   Data   RO          657    .constdata          nokia5110.o
+    0x0000247e   0x00000002   PAD
+    0x00002480   0x000000a4   Data   RO          400    .conststring        stats.o
+    0x00002524   0x00000020   Data   RO         1091    Region$$Table       anon$$obj.o
 
 
-    Execution Region ER_RW (Base: 0x20000000, Size: 0x00000014, Max: 0xffffffff, ABSOLUTE)
+    Execution Region ER_RW (Base: 0x20000000, Size: 0x0000001c, Max: 0xffffffff, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
     0x20000000   0x00000004   Data   RW          108    .data               os.o
-    0x20000004   0x00000004   Data   RW          490    .data               time.o
-    0x20000008   0x00000004   Data   RW          545    .data               uart.o
-    0x2000000c   0x00000008   Data   RW          610    .data               nokia5110.o
+    0x20000004   0x00000004   Data   RW          538    .data               time.o
+    0x20000008   0x00000004   Data   RW          593    .data               uart.o
+    0x2000000c   0x00000008   Data   RW          658    .data               nokia5110.o
+    0x20000014   0x00000008   Data   RW          858    .data               light_sensor.o
 
 
-    Execution Region ER_ZI (Base: 0x20000014, Size: 0x00001594, Max: 0xffffffff, ABSOLUTE)
+    Execution Region ER_ZI (Base: 0x2000001c, Size: 0x0000119c, Max: 0xffffffff, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x20000014   0x00000004   PAD
-    0x20000018   0x000007f8   Zero   RW            6    .bss                heap.o
-    0x20000810   0x00000018   Zero   RW          107    .bss                os.o
-    0x20000828   0x0000011c   Zero   RW          162    .bss                scheduler.o
-    0x20000944   0x00000004   PAD
-    0x20000948   0x000001d0   Zero   RW          350    .bss                stats.o
-    0x20000b18   0x00000010   Zero   RW          544    .bss                uart.o
-    0x20000b28   0x000003a0   Zero   RW          760    .bss                demo3.o
-    0x20000ec8   0x00000060   Zero   RW          887    .bss                c_w.l(libspace.o)
-    0x20000f28   0x00000080   Zero   RW          598    HEAP                startup.o
-    0x20000fa8   0x00000600   Zero   RW          597    STACK               startup.o
+    0x2000001c   0x00000004   PAD
+    0x20000020   0x000007f8   Zero   RW            6    .bss                heap.o
+    0x20000818   0x00000020   Zero   RW          107    .bss                os.o
+    0x20000838   0x0000011c   Zero   RW          162    .bss                scheduler.o
+    0x20000954   0x00000004   PAD
+    0x20000958   0x000001d0   Zero   RW          398    .bss                stats.o
+    0x20000b28   0x00000010   Zero   RW          592    .bss                uart.o
+    0x20000b38   0x00000220   Zero   RW          809    .bss                demo3.o
+    0x20000d58   0x00000060   Zero   RW          983    .bss                c_w.l(libspace.o)
+    0x20000db8   0x00000100   Zero   RW          646    HEAP                startup.o
+    0x20000eb8   0x00000300   Zero   RW          645    STACK               startup.o
 
 
 ==============================================================================
@@ -1108,24 +1190,26 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       308        146          0          0        928       2386   demo3.o
-         0          0          0          0          0      10168   fifo.o
-       318         26          0          0       2040      15169   heap.o
+       360        114          0          0        544       5327   demo3.o
+         0          0          0          0          0      12564   fifo.o
+       318         26          0          0       2040      15241   heap.o
        368         42          0          0          0       2751   i2c.o
-       658         32          0          0          0       6657   mutex.o
-       588         64        480          8          0       6365   nokia5110.o
+       432         42          0          8          0       1873   light_sensor.o
+       658         32          0          0          0       6729   mutex.o
+       588         64        480          8          0       6441   nokia5110.o
        276         38          0          0          0       4318   nvic.o
-       640         52          0          4         24       3274   os.o
-        92         38          0          0          0       5029   retarget.o
-      1144         64          0          0        284      10046   scheduler.o
+       724         60          0          4         32       3354   os.o
+        92         38          0          0          0       5105   retarget.o
+      1164         64          0          0        284      10090   scheduler.o
+       320         24          0          0          0       6838   semaphore.o
        116          4          0          0          0        968   special_reg_access.o
-       180         34        620          0       1664        912   startup.o
-      1016        434        164          0        464       2130   stats.o
+       180         34        620          0       1024        912   startup.o
+      1060        464        164          0        464       2130   stats.o
        244         24          0          4          0       1379   time.o
-       300         32          0          4         16       3824   uart.o
+       300         32          0          4         16       3896   uart.o
 
     ----------------------------------------------------------------------
-      6256       1030       1298         20       5428      75376   Object Totals
+      7208       1102       1298         28       4412      89916   Object Totals
          0          0         32          0          0          0   (incl. Generated)
          8          0          2          0          8          0   (incl. Padding)
 
@@ -1184,15 +1268,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-      7290       1068       1298         20       5524      70764   Grand Totals
-      7290       1068       1298         20       5524      70764   ELF Image Totals
-      7290       1068       1298         20          0          0   ROM Totals
+      8242       1140       1298         28       4508      84204   Grand Totals
+      8242       1140       1298         28       4508      84204   ELF Image Totals
+      8242       1140       1298         28          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                 8588 (   8.39kB)
-    Total RW  Size (RW Data + ZI Data)              5544 (   5.41kB)
-    Total ROM Size (Code + RO Data + RW Data)       8608 (   8.41kB)
+    Total RO  Size (Code + RO Data)                 9540 (   9.32kB)
+    Total RW  Size (RW Data + ZI Data)              4536 (   4.43kB)
+    Total ROM Size (Code + RO Data + RW Data)       9568 (   9.34kB)
 
 ==============================================================================
 

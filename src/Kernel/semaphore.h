@@ -79,7 +79,7 @@ uint32_t sem_acquire(Semaphore* toAcquire, uint32_t timout);
 * Function:    	sem_release
 * Purpose:    	Release the semaphore specified
 * Arguments:	
-*		toRelease - mutex to unlock
+*		toRelease - semaphore to release
 * Returns: 		
 *		exit status (if lock already acquired - EXIT_FAILURE)
 --------------------------------------------------------------------------------*/

@@ -25,13 +25,13 @@ ARM Macro Assembler    Page 1
    15 00000000         ; Stack Configuration, double stacking in use
    16 00000000         ;-------------------------------------------------------
                        ------------------------
-   17 00000000 00000100 
+   17 00000000 00000200 
                        Handler_Stack_Size
-                               EQU              0x00000100  ; Stack size for ha
+                               EQU              0x00000200  ; Stack size for ha
                                                             ndler mode (MSP)
-   18 00000000 00000500 
+   18 00000000 00000100 
                        Thread_Stack_Size
-                               EQU              0x00000500  ; Stack size for th
+                               EQU              0x00000100  ; Stack size for th
                                                             read mode (PSP)
    19 00000000         
    20 00000000         ; Stack memory area - RAM, uninitialised with 8-byte ali
@@ -41,26 +41,26 @@ ARM Macro Assembler    Page 1
    22 00000000         
    23 00000000         Handler_Stack
                                SPACE            Handler_Stack_Size
-   24 00000100         __initial_handler_sp
-   25 00000100         
-   26 00000100         Thread_Stack
+   24 00000200         __initial_handler_sp
+   25 00000200         
+   26 00000200         Thread_Stack
                                SPACE            Thread_Stack_Size
-   27 00000600         __initial_sp
-   28 00000600         
-   29 00000600         
-   30 00000600         ;-------------------------------------------------------
+   27 00000300         __initial_sp
+   28 00000300         
+   29 00000300         
+   30 00000300         ;-------------------------------------------------------
                        ------------------------
-   31 00000600         ; Heap Configuration
-   32 00000600         ;-------------------------------------------------------
+   31 00000300         ; Heap Configuration
+   32 00000300         ;-------------------------------------------------------
                        ------------------------
-   33 00000600                 EXPORT           Heap_Size
-   34 00000600 00000080 
+   33 00000300                 EXPORT           Heap_Size
+   34 00000300 00000100 
                        Heap_Size
-                               EQU              0x00000080
-   35 00000600         
-   36 00000600         ; HEAP memory area - RAM, uninitialised with 8-byte alig
+                               EQU              0x00000100
+   35 00000300         
+   36 00000300         ; HEAP memory area - RAM, uninitialised with 8-byte alig
                        nment (requirement of AAPCS)
-   37 00000600                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
+   37 00000300                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
 3
    38 00000000         Heap_Mem
 
@@ -70,20 +70,20 @@ ARM Macro Assembler    Page 2
 
 
                                SPACE            Heap_Size
-   39 00000080         __heap_limit
-   40 00000080         
-   41 00000080         
-   42 00000080         ;-------------------------------------------------------
+   39 00000100         __heap_limit
+   40 00000100         
+   41 00000100         
+   42 00000100         ;-------------------------------------------------------
                        ------------------------
-   43 00000080         ; Vector Table Mapped to Address 0 at Reset
-   44 00000080         ;-------------------------------------------------------
+   43 00000100         ; Vector Table Mapped to Address 0 at Reset
+   44 00000100         ;-------------------------------------------------------
                        ------------------------
-   45 00000080                 PRESERVE8                    ; Preserve eight-by
+   45 00000100                 PRESERVE8                    ; Preserve eight-by
                                                             te alignment of the
                                                              stack
-   46 00000080                 THUMB                        ; Use Thumb instruc
+   46 00000100                 THUMB                        ; Use Thumb instruc
                                                             tion set
-   47 00000080                 AREA             RESET, DATA, READONLY ; Data to
+   47 00000100                 AREA             RESET, DATA, READONLY ; Data to
                                                              be placed in ROM a
                                                             t address 0x0 
    48 00000000         
@@ -923,8 +923,8 @@ ARM Macro Assembler    Page 15
               00000000 
               00000000 
               00000000 
+              00000200 
               00000100 
-              00000080 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\startup.d -o.\objects\startup.o -I"C:\Users\Krzysztof
@@ -955,7 +955,7 @@ Symbol: STACK
    Uses
       None
 Comment: STACK unused
-Thread_Stack 00000100
+Thread_Stack 00000200
 
 Symbol: Thread_Stack
    Definitions
@@ -963,7 +963,7 @@ Symbol: Thread_Stack
    Uses
       None
 Comment: Thread_Stack unused
-__initial_handler_sp 00000100
+__initial_handler_sp 00000200
 
 Symbol: __initial_handler_sp
    Definitions
@@ -971,7 +971,7 @@ Symbol: __initial_handler_sp
    Uses
       At line 218 in file src\HAL
 Comment: __initial_handler_sp used once
-__initial_sp 00000600
+__initial_sp 00000300
 
 Symbol: __initial_sp
    Definitions
@@ -1003,7 +1003,7 @@ Symbol: Heap_Mem
       At line 602 in file src\HAL
       At line 604 in file src\HAL
 
-__heap_limit 00000080
+__heap_limit 00000100
 
 Symbol: __heap_limit
    Definitions
@@ -2241,7 +2241,7 @@ Comment: __user_initial_stackheap used once
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 Absolute symbols
 
-Handler_Stack_Size 00000100
+Handler_Stack_Size 00000200
 
 Symbol: Handler_Stack_Size
    Definitions
@@ -2250,7 +2250,7 @@ Symbol: Handler_Stack_Size
       At line 23 in file src\HAL
       At line 603 in file src\HAL
 
-Heap_Size 00000080
+Heap_Size 00000100
 
 Symbol: Heap_Size
    Definitions
@@ -2260,7 +2260,7 @@ Symbol: Heap_Size
       At line 38 in file src\HAL
       At line 604 in file src\HAL
 
-Thread_Stack_Size 00000500
+Thread_Stack_Size 00000100
 
 Symbol: Thread_Stack_Size
    Definitions
