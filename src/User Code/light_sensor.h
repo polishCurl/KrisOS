@@ -43,11 +43,34 @@ void light_sensor_init(uint32_t threshold);
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_init
-* Purpose:    	Initialise the piezo buzzer at GPIO PB1 for generating beeps 
+* Purpose:    	Initialise the piezo buzzer at GPIO PB6 for generating beeps using
+*				Pulse Width Modulator.
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void buzzer_init(void);
 
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	buzzer_tone
+* Purpose:    	Beep the buzzer. Emit a sound of given frequency for the duration
+*				of time specified.
+* Arguments:	
+*		frequency - output sound frequency in Hz
+*		duration - beep sound duration in OS 'ticks'
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+void buzzer_tone(uint32_t frequency);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	buzzer_off
+* Purpose:    	Switch off the buzzer
+* Arguments:	-
+* Returns: 		-	
+--------------------------------------------------------------------------------*/
+void buzzer_off(void);
 
 

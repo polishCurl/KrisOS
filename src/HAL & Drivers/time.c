@@ -45,7 +45,7 @@ typedef enum {
 
 
 /*-------------------------------------------------------------------------------
-* System clock speed, two variables, one for system, the other for user
+* System clock speed
 *------------------------------------------------------------------------------*/
 uint32_t SYSTEM_CLOCK_FREQ;
 
@@ -62,22 +62,33 @@ uint32_t SYSTEM_CLOCK_FREQ;
 --------------------------------------------------------------------------------*/
 void system_clock_config(uint32_t oscSrc, uint32_t divider) {
 		
-	SYSCTL->RCC2 &= ~(1U << USERCC2); 	// use RCC (not RCC2)
-	SYSCTL->RCC |= (1 << RCC_BYPASS); 		// bypass the PLL for the configuration time
-	SYSCTL->RCC &= ~(0x1F << RCC_XTAL);		// Clear the XTAL bits
-	SYSCTL->RCC |= (0x15 << RCC_XTAL);		// Set the freqency of the oscilator used						   
-	SYSCTL->RCC &= ~(0x3 << RCC_OSCSRC);	// Clear the OSCSRC bits
-	SYSCTL->RCC |= (oscSrc << RCC_OSCSRC); 	// Set the oscilator source	
+	// Yse RCC (not RCC2) and bypass the PLL for the configuration time
+	SYSCTL->RCC2 &= ~(1U << USERCC2);
+	SYSCTL->RCC |= (1 << RCC_BYPASS);
+	
+	// Clear the XTAL bits, set the freqency of the oscilator used and the oscilator 
+	// source
+	SYSCTL->RCC &= ~(0x1F << RCC_XTAL);		
+	SYSCTL->RCC |= (0x15 << RCC_XTAL);							   
+	SYSCTL->RCC &= ~(0x3 << RCC_OSCSRC);	
+	SYSCTL->RCC |= (oscSrc << RCC_OSCSRC); 	 	
 	
 	if (divider > 0) {
-		SYSCTL->RCC &= ~(1 << RCC_PWRDN); 	// Power up the PLL
-		SYSCTL->RCC |= (1 << RCC_USESYSDIV);// Use the system clock divider
-		SYSCTL->RCC &= ~(0xF << RCC_SYSDIV);// Set the clock divider
+		// Power up the PLL
+		SYSCTL->RCC &= ~(1 << RCC_PWRDN); 
+
+		// Set the clock divider		
+		SYSCTL->RCC |= (1 << RCC_USESYSDIV);
+		SYSCTL->RCC &= ~(0xF << RCC_SYSDIV);
 		SYSCTL->RCC |= ((divider - 1) << RCC_SYSDIV);
-		while ((SYSCTL->RIS & (1 << PLLRIS)) == 0); // wait for PLL to stabilise
-		SYSCTL->RCC &= ~(1 << RCC_BYPASS); 	// Clear the PLL BYPASS bit
+		
+		// Wait for PLL to stabilise and clear the PLL BYPASS bit
+		while ((SYSCTL->RIS & (1 << PLLRIS)) == 0); 
+		SYSCTL->RCC &= ~(1 << RCC_BYPASS);
 	}				   
 	
+	// Derive the system clock frequency from the settings used. This is used
+	// later for deriving other clocks from the system clock
 	if (oscSrc == MAIN_OSC || oscSrc == INT_OSC_16MHz) 
 		if (divider == 0) 
 			SYSTEM_CLOCK_FREQ = 16000000;
@@ -92,20 +103,27 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	systick_config
-* Purpose:    	Set periodic interrupts every 'ticks' clock cycles using SysTick
+* Purpose:    	Configure the KrisOS clock
 * Arguments: 	
-*		cycles - number of clock cycles between system timer interrupts (24 bits)
+*		cycles - number of systen clock cycles between OS timer interrupts (24 bits)
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void systick_config(uint32_t cycles) {
 	
-	SYSTICK->CTRL = 0; 				// Disable SysTick for the time of configuration
-	SYSTICK->RELOAD = cycles - 1; 	// Set reload value, counts down to 0, so decrement needed
-	SYSTICK->CURRENT = 0; 			// Clear the current counter value
+	// Disable SysTick for the time of configuration. Set the reload value and 
+	// reset the SysTick counter
+	SYSTICK->CTRL = 0; 				
+	SYSTICK->RELOAD = cycles - 1; 
+	SYSTICK->CURRENT = 0; 			
 	
-	// Main clock as source, SysTick enabled with IRQs
-	SYSTICK->CTRL |= (1 << CLK_SRC) | (1 << INTEN) | (1 << ENABLE);			
+	// Main clock as source, SysTick enabled with IRQs. Reset the OS 'ticks' counter
+	SYSTICK->CTRL |= (1 << CTRL_CLK_SRC) | (1 << CTRL_INTEN) | (1 << CTRL_ENABLE);			
 	KrisOS.ticks = 0;
+	
+	// OS clock ticks are the most important events in the KrisOS operating system. So,
+	// they have maximum priority
+	nvic_set_priority(SysTick_IRQn, 0);
+
 }
 
 

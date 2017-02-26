@@ -136,11 +136,10 @@ const uint8_t font_5x7[] = {
 
 
 
-/*-----------------------------------------------------------------------------
-* Screen dimensions (frame buffer)
-------------------------------------------------------------------------------*/
-#define NOKIA5110_WIDTH 84
-#define NOKIA5110_HEIGHT 6
+/*-------------------------------------------------------------------------------
+* Nokia 5110 LCD screen mutual exclusion lock
+--------------------------------------------------------------------------------*/
+Mutex* nokiaMtx;
 
 
 
@@ -158,9 +157,27 @@ __FILE nokia5110;
 
 
 
+/*******************************************************************************
+* Task: 	nokiaLCDSetup
+* Purpose: 	One-off LCD screen setup task run first and then removed from memory
+*			(allocated on heap)
+*******************************************************************************/
+void nokiaLCDSetup(void) {
+
+	// Initialise the screen together with a mutex on it
+	nokiaMtx = (Mutex*) KrisOS_mutex_create();
+	nokia5110_init();
+	
+	// 'Say my name baby'
+	nokia5110_set_cursor(25, 5);
+	fprintf(&nokia5110, "KrisOS"); 	
+}
+
+
+
 /*-------------------------------------------------------------------------------
 * Function:    	nokia5110_init
-* Purpose:    	Initialisation of the SSI interface for communication with the 
+* Purpose:    	Initialise the SSI interface for communication with the 
 *				controller on the Nokia 5110 LCD screen.
 * Arguments:	-
 * Returns: 		-	
@@ -326,5 +343,3 @@ void nokia5110_send_char(uint8_t toSend) {
 		nokia5110_send(DATA, 0x00);
 	}
 }
-
-

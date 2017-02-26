@@ -26,7 +26,6 @@
 .\objects\mutex.o: .\src\Common\common.h
 .\objects\mutex.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\mutex.o: .\src\Common\common.h
-.\objects\mutex.o: src\Kernel\stats.h
 .\objects\mutex.o: .\src\HAL & Drivers\system.h
 .\objects\mutex.o: .\src\HAL & Drivers\uart.h
 .\objects\mutex.o: .\src\Kernel\KrisOS.h
@@ -42,7 +41,4 @@
 .\objects\mutex.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\mutex.o: .\src\Common\common.h
 .\objects\mutex.o: .\src\HAL & Drivers\tm4c123gh6pm.h
-.\objects\mutex.o: .\src\Common\common.h
-.\objects\mutex.o: .\src\HAL & Drivers\fifo.h
-.\objects\mutex.o: .\src\HAL & Drivers\special_reg_access.h
 .\objects\mutex.o: .\src\Common\common.h

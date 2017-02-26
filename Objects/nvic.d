@@ -18,6 +18,3 @@
 .\objects\nvic.o: .\src\Common\common.h
 .\objects\nvic.o: src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\nvic.o: .\src\Common\common.h
-.\objects\nvic.o: src\HAL & Drivers\fifo.h
-.\objects\nvic.o: src\HAL & Drivers\special_reg_access.h
-.\objects\nvic.o: .\src\Common\common.h

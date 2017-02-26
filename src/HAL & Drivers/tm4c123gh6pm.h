@@ -388,6 +388,10 @@ typedef struct {                          // SYSCTL Structure
 #define RCGC_ADC0 0
 #define RCGC_ADC1 1
 
+// RCGCPWM Pulse Width Modulator Run mode clock gating control
+#define RCGC_PWM0 0
+#define RCGC_PWM1 1
+
 // RCGCGPIO register 
 #define RCGCGPIO_PORTA 0
 #define RCGCGPIO_PORTB 1
@@ -462,10 +466,10 @@ typedef struct
 #define SYSTICK ((SYSTICK_Type*) SYSTICK_Base)
 
 // CTRL register 
-#define COUNT 16
-#define CLK_SRC 2
-#define INTEN 1
-#define ENABLE 0
+#define CTRL_COUNT 16
+#define CTRL_CLK_SRC 2
+#define CTRL_INTEN 1
+#define CTRL_ENABLE 0
 
 
 
@@ -944,6 +948,145 @@ typedef struct {                                    // ADC0 Structure
 #define DCISC_DCINT5 5
 #define DCISC_DCINT6 6
 #define DCISC_DCINT7 7
+
+
+
+/*-------------------------------------------------------------------------------
+* PWM registers 
+*------------------------------------------------------------------------------*/
+typedef struct {                                    // PWM0 Structure    
+  __IO uint32_t  CTL;                               // PWM Master Control                                                    
+  __IO uint32_t  SYNC;                              // PWM Time Base Sync
+  __IO uint32_t  ENABLE;                            // PWM Output Enable                                                     
+  __IO uint32_t  INVERT;                            // PWM Output Inversion                                                  
+  __IO uint32_t  FAULT;                             // PWM Output Fault                                                      
+  __IO uint32_t  INTEN;                             // PWM Interrupt Enable                                                  
+  __IO uint32_t  RIS;                               // PWM Raw Interrupt Status                                              
+  __IO uint32_t  ISC;                               // PWM Interrupt Status and Clear                                        
+  __IO uint32_t  STATUS;                            // PWM Status                                                            
+  __IO uint32_t  FAULTVAL;                          // PWM Fault Condition Value                                             
+  __IO uint32_t  ENUPD;                             // PWM Enable Update                                                     
+  __I  uint32_t  RESERVED[5];
+  __IO uint32_t  _0_CTL;                            // PWM0 Control                                                          
+  __IO uint32_t  _0_INTEN;                          // PWM0 Interrupt and Trigger Enable                                     
+  __IO uint32_t  _0_RIS;                            // PWM0 Raw Interrupt Status                                             
+  __IO uint32_t  _0_ISC;                            // PWM0 Interrupt Status and Clear                                       
+  __IO uint32_t  _0_LOAD;                           // PWM0 Load                                                             
+  __IO uint32_t  _0_COUNT;                          // PWM0 Counter                                                          
+  __IO uint32_t  _0_CMPA;                           // PWM0 Compare A                                                        
+  __IO uint32_t  _0_CMPB;                           // PWM0 Compare B                                                        
+  __IO uint32_t  _0_GENA;                           // PWM0 Generator A Control                                              
+  __IO uint32_t  _0_GENB;                           // PWM0 Generator B Control                                              
+  __IO uint32_t  _0_DBCTL;                          // PWM0 Dead-Band Control                                                
+  __IO uint32_t  _0_DBRISE;                         // PWM0 Dead-Band Rising-Edge Delay                                      
+  __IO uint32_t  _0_DBFALL;                         // PWM0 Dead-Band Falling-Edge-Delay                                     
+  __IO uint32_t  _0_FLTSRC0;                        // PWM0 Fault Source 0                                                   
+  __IO uint32_t  _0_FLTSRC1;                        // PWM0 Fault Source 1                                                   
+  __IO uint32_t  _0_MINFLTPER;                      // PWM0 Minimum Fault Period                                             
+  __IO uint32_t  _1_CTL;                            // PWM1 Control                                                          
+  __IO uint32_t  _1_INTEN;                          // PWM1 Interrupt and Trigger Enable                                     
+  __IO uint32_t  _1_RIS;                            // PWM1 Raw Interrupt Status                                             
+  __IO uint32_t  _1_ISC;                            // PWM1 Interrupt Status and Clear                                       
+  __IO uint32_t  _1_LOAD;                           // PWM1 Load                                                             
+  __IO uint32_t  _1_COUNT;                          // PWM1 Counter                                                          
+  __IO uint32_t  _1_CMPA;                           // PWM1 Compare A                                                        
+  __IO uint32_t  _1_CMPB;                           // PWM1 Compare B                                                        
+  __IO uint32_t  _1_GENA;                           // PWM1 Generator A Control                                              
+  __IO uint32_t  _1_GENB;                           // PWM1 Generator B Control                                              
+  __IO uint32_t  _1_DBCTL;                          // PWM1 Dead-Band Control                                                
+  __IO uint32_t  _1_DBRISE;                         // PWM1 Dead-Band Rising-Edge Delay                                      
+  __IO uint32_t  _1_DBFALL;                         // PWM1 Dead-Band Falling-Edge-Delay                                     
+  __IO uint32_t  _1_FLTSRC0;                        // PWM1 Fault Source 0                                                   
+  __IO uint32_t  _1_FLTSRC1;                        // PWM1 Fault Source 1                                                   
+  __IO uint32_t  _1_MINFLTPER;                      // PWM1 Minimum Fault Period                                             
+  __IO uint32_t  _2_CTL;                            // PWM2 Control                                                          
+  __IO uint32_t  _2_INTEN;                          // PWM2 Interrupt and Trigger Enable                                     
+  __IO uint32_t  _2_RIS;                            // PWM2 Raw Interrupt Status                                             
+  __IO uint32_t  _2_ISC;                            // PWM2 Interrupt Status and Clear                                       
+  __IO uint32_t  _2_LOAD;                           // PWM2 Load                                                             
+  __IO uint32_t  _2_COUNT;                          // PWM2 Counter                                                          
+  __IO uint32_t  _2_CMPA;                           // PWM2 Compare A                                                        
+  __IO uint32_t  _2_CMPB;                           // PWM2 Compare B                                                        
+  __IO uint32_t  _2_GENA;                           // PWM2 Generator A Control                                              
+  __IO uint32_t  _2_GENB;                           // PWM2 Generator B Control                                              
+  __IO uint32_t  _2_DBCTL;                          // PWM2 Dead-Band Control                                                
+  __IO uint32_t  _2_DBRISE;                         // PWM2 Dead-Band Rising-Edge Delay                                      
+  __IO uint32_t  _2_DBFALL;                         // PWM2 Dead-Band Falling-Edge-Delay                                     
+  __IO uint32_t  _2_FLTSRC0;                        // PWM2 Fault Source 0                                                   
+  __IO uint32_t  _2_FLTSRC1;                        // PWM2 Fault Source 1                                                   
+  __IO uint32_t  _2_MINFLTPER;                      // PWM2 Minimum Fault Period                                             
+  __IO uint32_t  _3_CTL;                            // PWM3 Control                                                          
+  __IO uint32_t  _3_INTEN;                          // PWM3 Interrupt and Trigger Enable                                     
+  __IO uint32_t  _3_RIS;                            // PWM3 Raw Interrupt Status                                             
+  __IO uint32_t  _3_ISC;                            // PWM3 Interrupt Status and Clear                                       
+  __IO uint32_t  _3_LOAD;                           // PWM3 Load                                                             
+  __IO uint32_t  _3_COUNT;                          // PWM3 Counter                                                          
+  __IO uint32_t  _3_CMPA;                           // PWM3 Compare A                                                        
+  __IO uint32_t  _3_CMPB;                           // PWM3 Compare B                                                        
+  __IO uint32_t  _3_GENA;                           // PWM3 Generator A Control                                              
+  __IO uint32_t  _3_GENB;                           // PWM3 Generator B Control                                              
+  __IO uint32_t  _3_DBCTL;                          // PWM3 Dead-Band Control                                                
+  __IO uint32_t  _3_DBRISE;                         // PWM3 Dead-Band Rising-Edge Delay                                      
+  __IO uint32_t  _3_DBFALL;                         // PWM3 Dead-Band Falling-Edge-Delay                                     
+  __IO uint32_t  _3_FLTSRC0;                        // PWM3 Fault Source 0                                                   
+  __IO uint32_t  _3_FLTSRC1;                        // PWM3 Fault Source 1                                                   
+  __IO uint32_t  _3_MINFLTPER;                      // PWM3 Minimum Fault Period                                             
+  __I  uint32_t  RESERVED1[432];
+  __IO uint32_t  _0_FLTSEN;                         // PWM0 Fault Pin Logic Sense                                            
+  __I  uint32_t  _0_FLTSTAT0;                       // PWM0 Fault Status 0                                                   
+  __I  uint32_t  _0_FLTSTAT1;                       // PWM0 Fault Status 1                                                   
+  __I  uint32_t  RESERVED2[29];
+  __IO uint32_t  _1_FLTSEN;                         // PWM1 Fault Pin Logic Sense                                            
+  __I  uint32_t  _1_FLTSTAT0;                       // PWM1 Fault Status 0                                                   
+  __I  uint32_t  _1_FLTSTAT1;                       // PWM1 Fault Status 1                                                   
+  __I  uint32_t  RESERVED3[30];
+  __I  uint32_t  _2_FLTSTAT0;                       // PWM2 Fault Status 0                                                   
+  __I  uint32_t  _2_FLTSTAT1;                       // PWM2 Fault Status 1                                                   
+  __I  uint32_t  RESERVED4[30];
+  __I  uint32_t  _3_FLTSTAT0;                       // PWM3 Fault Status 0                                                   
+  __I  uint32_t  _3_FLTSTAT1;                       // PWM3 Fault Status 1                                                   
+  __I  uint32_t  RESERVED5[397];
+  __IO uint32_t  PP;                                // PWM Peripheral Properties                                             
+} PWM_Type;
+
+#define PWM0_BASE 0x40028000UL
+#define PWM1_BASE 0x40029000UL
+#define PWM0 ((PWM_Type*) PWM0_BASE)
+#define PWM1 ((PWM_Type*) PWM1_BASE)
+
+// PWM Control Register
+#define PWMCTL_ENABLE 0
+#define PWMCTL_MODE 1
+#define PWMCTL_DEBUG 2
+#define PWMCTL_LOADUPD 3
+#define PWMCTL_CMPAUPD 4
+#define PWMCTL_CMPBUPD 5
+#define PWMCTL_GENAUPD 6
+#define PWMCTL_GENBUPD 8
+#define PWMCTL_DBCTLUPD 10
+#define PWMCTL_DBRISEUPD 12
+#define PWMCTL_DBFALLUPD 14
+#define PWMCTL_FLTSRC 16
+#define PWMCTL_MINFLTPER 17
+#define PWMCTL_LATCH 18
+
+// PWM Generator Control Register
+#define PWMGEN_ACTZERO 0
+#define PWMGEN_ACTLOAD 2
+#define PWMGEN_ACTCMPAU 4
+#define PWMGEN_ACTCMPAD 6
+#define PWMGEN_ACTCMPBU 8
+#define PWMGEN_ACTCMPBD 10
+
+// PWM Output Enable Register
+#define PWMENABLE_PWM0EN 0
+#define PWMENABLE_PWM1EN 1
+#define PWMENABLE_PWM2EN 2
+#define PWMENABLE_PWM3EN 3
+#define PWMENABLE_PWM4EN 4
+#define PWMENABLE_PWM5EN 5
+#define PWMENABLE_PWM6EN 6
+#define PWMENABLE_PWM7EN 7
 
 
 

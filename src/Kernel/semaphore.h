@@ -68,7 +68,7 @@ uint32_t sem_try_acquire(Semaphore* toAcquire);
 * 				of 'timout' milliseconds
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* 		timout - semaphore timeout
+* 		timout - semaphore timeout (timeout = 0 causes infinite wait on semaphore)
 * Returns: -
 --------------------------------------------------------------------------------*/
 uint32_t sem_acquire(Semaphore* toAcquire, uint32_t timout);

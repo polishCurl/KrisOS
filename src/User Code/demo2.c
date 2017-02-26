@@ -14,7 +14,6 @@
 *******************************************************************************/
 #include "KrisOS.h"
 
-Mutex testMutex;
 
 
 /*-------------------------------------------------------------------------------
@@ -64,7 +63,7 @@ void primes(void) {
 			
 			++low;
 		}
-		KrisOS_task_sleep(15000);
+		KrisOS_task_sleep(150000);
 	}		
 }
 	
@@ -81,7 +80,7 @@ void secondTimer(void) {
 
 	uint32_t secondsElapsed = 0;
 	while(1) {
-		KrisOS_task_sleep(1000);
+		KrisOS_task_sleep(10000);
 		KrisOS_mutex_lock(&uartMtx);
 		fprintf(&uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
 		KrisOS_mutex_unlock(&uartMtx);
@@ -113,8 +112,6 @@ int main(void) {
 	
 	// Initialise the operating system
 	KrisOS_init();
-	
-	KrisOS_mutex_init(&testMutex);
 	
 	// Create (on heap) and register the spawning task
 	initiatorTask = (Task*) KrisOS_task_create(initiator, 200, 0);

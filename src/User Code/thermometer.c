@@ -1,21 +1,66 @@
 /*******************************************************************************
-* File:     	i2c.c
-* Brief:    	I2C serial protocol driver
+* File:     	thermometer.c
+* Brief:    	Digital thermometer user program
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	15/02/2017
-* Last mod: 	21/02/2017
+* Last mod: 	25/02/2017
 *
 * Note: 
+*	Digital thermometer tasks that periodically reads the TC74 digital temperature
+*	sensor using the I2C protocol. The temperature reading is then displayed on the 
+*	nokia 5110 LCD screen.
+*
+*	I2C module driver Tiva C pin usage:
+*		PB2 - SCL
+* 		PB3 - SDA
+*
+* 	Both SDA and SCL are pulled high using external 4.7kOhm resistors.
 *******************************************************************************/
 #include "KrisOS.h"
-#include "i2c.h"
+#include "thermometer.h"
+#include "nokia5110.h"
+
+
+
+/*******************************************************************************
+* Task: 	thermometer
+* Purpose: 	Thermometer task that periodically reads the temperature from TC74
+*			digital resistor and displays it on nokia LCD screen
+*******************************************************************************/
+void thermometer(void) {
+	
+	// Current temperature
+	int8_t temperature;
+	
+	// Initialise the I2C module for communicating with the temperature sensor
+	i2c_init();
+	i2c_slave_addr(0x48);
+	
+	while(1) {
+		
+		// Request the temperature reading
+		i2c_write(0x00, START, STOP);
+		temperature = i2c_read(START, STOP);
+		
+		// Display the current temperature
+		KrisOS_mutex_lock(nokiaMtx);
+		nokia5110_set_cursor(0, 0);
+		fprintf(&nokia5110, "Temp: %3dC", temperature);
+		KrisOS_mutex_unlock(nokiaMtx);
+		
+		// Wait for some time
+		KrisOS_task_sleep(5000);
+	}
+}
+
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	i2c_init
-* Purpose:    	Configure the I2C Module as Master with 100kb/s transmission rate.
+* Purpose:    	Configure the I2C Module as Master with 100kb/s transmission rate
+*				at pins PB2 and PB3.
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/

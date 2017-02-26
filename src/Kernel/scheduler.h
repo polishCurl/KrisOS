@@ -42,28 +42,22 @@
 										// MSP and execution uses MSP after return.
 #define	EXC_RETURN_5  0xFFFFFFEDU 		// Return to Thread mode, exception return uses floating-point state from
 										// PSP and execution uses PSP after return.
-										
-// Store the value of exception return for SVC calls
-extern uint32_t svc_exc_return;
 
 
 
 /*-------------------------------------------------------------------------------
 * Scheduler
 *------------------------------------------------------------------------------*/
-// Time sliced preemption enable bit in scheduler status field. If 1, time-slice 
-// preemption should be performed at the end of the time slice.
-#define TIME_PREEMPT 0 					
-
 // Scheduler definition
 typedef struct {
 	Task* runPtr; 							// Task currently running
 	Task* topPrioTask; 						// Current top priority task
+	uint32_t svcExcReturn;					// SVC call exception return value
 	Task* ready; 							// Ready queue 
 	Task* blocked; 							// Blocked tasks queue
 	int32_t lastIDUsed; 					// Last task ID assigned
-	uint32_t status; 						// Scheduler status bits
-#ifdef SHOW_DIAGNOSTIC_DATA
+	uint8_t preemptFlag; 					// Time sliced preemption flag. 1 if 
+#ifdef SHOW_DIAGNOSTIC_DATA 				// preemption should be performed.
 	uint32_t idleTime; 						// Idle time counter (ms)
 	uint32_t contextSwitchNo; 				// Context switch counter
 	uint32_t totalTaskNo; 					// Total number of tasks declared

@@ -18,9 +18,6 @@
 .\objects\time.o: .\src\Common\common.h
 .\objects\time.o: src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\time.o: .\src\Common\common.h
-.\objects\time.o: src\HAL & Drivers\fifo.h
-.\objects\time.o: src\HAL & Drivers\special_reg_access.h
-.\objects\time.o: .\src\Common\common.h
 .\objects\time.o: .\src\Kernel\kernel.h
 .\objects\time.o: .\src\Kernel\heap.h
 .\objects\time.o: .\src\Kernel\mutex.h
@@ -45,4 +42,3 @@
 .\objects\time.o: .\src\Common\common.h
 .\objects\time.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\time.o: .\src\Common\common.h
-.\objects\time.o: .\src\Kernel\stats.h

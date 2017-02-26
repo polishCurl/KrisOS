@@ -1,7 +1,6 @@
 /*******************************************************************************
-* File:     	stats.c
-* Brief:    	Statistics task gathering usage statistics and displaying them
-* 				peridically
+* File:     	os_tasks.c
+* Brief:    	System (priviliged) tasks created by KrisOS
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	07/02/2017
@@ -14,46 +13,32 @@
 
 
 
-#ifdef SHOW_DIAGNOSTIC_DATA
-KrisOS_task_define(stats, 400, UINT8_MAX - 1)
-
-
-/*-------------------------------------------------------------------------------
-* Function:		stats_init
-* Purpose:    	Initialise the statistics task
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void stats_init(void) {
-	
-	// Reset the mutex counter
-	#ifdef USE_MUTEX
-		KrisOS.totalMutexNo = 0;
-	#endif
-
-	// Reset the semaphore counter
-	#ifdef USE_SEMAPHORE
-		KrisOS.totalSemNo = 0;
-	#endif
-	
-	// Initialise the stats task
-	KrisOS_stack_usage_config((uint32_t*) &statsStack[0], statsStackSize);
-	task_create_static(&statsTask, stats_task, &statsStack[statsStackSize], statsPriority, 1);
+/*******************************************************************************
+* Task: 	idle
+* Purpose: 	Idle task. Lowest priority task used for power saving when no other 
+*			task is currently ready.
+*******************************************************************************/
+void idle(void) {
+	while(1) __wfi();
 }
 
 
 
-/*-------------------------------------------------------------------------------
-* Function:		stats_task
-* Purpose:    	KrisOS performance statistics task. Displays diagnostic data. 
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void stats_task(void) {
+#ifdef SHOW_DIAGNOSTIC_DATA
+/*******************************************************************************
+* Task: 	stats
+* Purpose: 	KrisOS performance statistics task. Displays diagnostic data 
+*			periodically
+*******************************************************************************/
+void stats(void) {
 	
-	// Per-task CPU usage, the last time the statistics task was run and the current 
-	// value of OS timer
-	uint32_t cpuUsage;
+	// A Task's CPU usage both as a floating-point number and corresponding fixed
+	// point representation
+	uint32_t cpuUsageInt;
+	uint32_t cpuUsageFrac;
+	float32_t cpuUsage;
+	
+	// The last time the statistics task was run and the current value of OS timer
 	uint64_t lastRun;
 	uint64_t currentTime;
 	
@@ -92,21 +77,22 @@ void stats_task(void) {
 			// Display OS usage data
 			fprintf(&uart, "\n------------------------------------------------------------------------------\n");
 			fprintf(&uart, "Time running:\t\t%d days, %d hours, %d minutes, %d seconds\n", 
-				    (uint32_t) (currentTime / 86400000UL),
-				   (uint32_t) ((currentTime % 86400000UL)) / 3600000, 
-				   (uint32_t) ((currentTime % 3600000)) / 60000, 
-				   (uint32_t) ((currentTime % 60000)) / 1000);
-			fprintf(&uart, "Measurement period:\t%d ms\n", (uint32_t) (currentTime - lastRun));
+				    (uint32_t) (currentTime / (86400UL * OS_CLOCK_FREQ)),
+				   (uint32_t) ((currentTime % (86400UL * OS_CLOCK_FREQ)) / (3600UL * OS_CLOCK_FREQ)), 
+				   (uint32_t) ((currentTime % (3600UL * OS_CLOCK_FREQ)) / (60UL * OS_CLOCK_FREQ)), 
+				   (uint32_t) ((currentTime % (60UL * OS_CLOCK_FREQ))) / OS_CLOCK_FREQ);
+			fprintf(&uart, "Measurement period:\t%d ms\n", (uint32_t) (currentTime - lastRun) * 1000 / OS_CLOCK_FREQ);
+			fprintf(&uart, "MCU clock frequency:\t%d Hz\n", SYSTEM_CLOCK_FREQ);
+			fprintf(&uart, "KrisOS clock frequency:\t%d Hz\n", OS_CLOCK_FREQ);
 			fprintf(&uart, "Context switches:\t%d\n", scheduler.contextSwitchNo);
-			fprintf(&uart, "Total task number:\t%d\n", scheduler.totalTaskNo);
+			fprintf(&uart, "Tasks:\t\t\t%d\n", scheduler.totalTaskNo);
 			
 			#ifdef USE_MUTEX
-				fprintf(&uart, "Total mutex number:\t%d\n", KrisOS.totalMutexNo);
-				fprintf(&uart, "Max mutex lock time:\t%d ms\n", KrisOS.maxMtxCriticalSection);
+				fprintf(&uart, "Mutexes:\t\t%d\n", KrisOS.totalMutexNo);
 			#endif
 			
 			#ifdef USE_SEMAPHORE
-				fprintf(&uart, "Total semaphore number:\t%d\n", KrisOS.totalSemNo);
+				fprintf(&uart, "Semaphores:\t\t%d\n", KrisOS.totalSemNo);
 			#endif
 			
 			#ifdef USE_HEAP
@@ -114,16 +100,22 @@ void stats_task(void) {
 					    heap.heapBytesUsed * 100 / HEAP_SIZE);
 			#endif
 			
+			#ifdef USE_MUTEX
+				fprintf(&uart, "Max mutex lock time:\t%d 'ticks'\n", KrisOS.maxMtxCriticalSection);
+			#endif
+
 			// Display the task manager (per-task statistics)
 			fprintf(&uart, "\nTID\tCPU usage\tStack usage\tPriority\tStatus\t\tMemory\n");
 			for (index = 0; index < scheduler.totalTaskNo; index++) {
 				iterator = scheduler.taskRegistry[index];
 				
-				// Compute the CPU usage as the proportion of the OS ticks spend executing the task
+				// Compute the CPU usage as the proportion of the OS ticks spent executing the task
 				// to the total number of OS ticks since the last time the statistics task was run
-				cpuUsage = iterator->cpuUsage * 100 / (currentTime - lastRun);
+				cpuUsage = (float32_t) iterator->cpuUsage * 100.f / (currentTime - lastRun);
+				cpuUsageInt = (uint32_t) cpuUsage;
+				cpuUsageFrac = (uint32_t) ((cpuUsage - cpuUsageInt) * 100.0f);
 				
-				// Calculate the stack usage by calculating the offset from the stack base to the first
+				// Estimate the stack usage by calculating the offset from the stack base to the first
 				// memory location that hasn't been modified
 				stackUsageHelper = (uint32_t*) iterator->sp;
 				while (*stackUsageHelper-- != 0xDEADBEEF);
@@ -132,7 +124,9 @@ void stats_task(void) {
 				else 
 					stackUsage = (iterator->stackBase - stackUsageHelper) << 2;
 					
-				fprintf(&uart, "%d\t%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsage, stackUsage, iterator->priority);
+				// Display the per-task stats and reset the CPU usage counter
+				fprintf(&uart, "%d\t%d.%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsageInt, cpuUsageFrac,
+					    stackUsage, iterator->priority);
 				iterator->cpuUsage = 0;
 				
 				// Display the current task status 

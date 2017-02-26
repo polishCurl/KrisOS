@@ -31,9 +31,6 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 // System clock divider (Derived frequency = (200MHz / SYSCLOCK_DIVIDER)
 #define SYSCLOCK_DIVIDER 5 	
 
-// OS clock frequency (in Hz)
-#define OS_CLOCK_FREQ 1000
-
 
 
 /*-------------------------------------------------------------------------------
@@ -63,9 +60,9 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider);
 
 /*-------------------------------------------------------------------------------
 * Function:    	systick_config
-* Purpose:    	Set periodic interrupts every 'cycles' clock cycles using SysTick
+* Purpose:    	Configure the KrisOS clock
 * Arguments: 	
-*		cycles - number of clock cycles between system timer interrupts (24 bits)
+*		cycles - number of systen clock cycles between OS timer interrupts (24 bits)
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void systick_config(uint32_t cycles);

@@ -22,13 +22,6 @@ Kernel KrisOS;
 
 
 /*-------------------------------------------------------------------------------
-* Value of exception return for SVC calls
---------------------------------------------------------------------------------*/
-uint32_t svc_exc_return;
-
-
-
-/*-------------------------------------------------------------------------------
 * Function:    	os_init
 * Purpose:    	KrisOS initialisation method
 * Arguments:	-
@@ -45,13 +38,18 @@ void os_init(void) {
 		// Set up the system clock
 		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);
 		
+		// Reset the mutex and semaphore counters
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			#ifdef USE_MUTEX
+				KrisOS.totalMutexNo = 0;
+			#endif
+			#ifdef USE_SEMAPHORE
+				KrisOS.totalSemNo = 0;
+			#endif
+		#endif
+		
 		// Initialse the scheduler
 		scheduler_init();
-		
-		// Initialise the OS usage statistics task
-		#ifdef SHOW_DIAGNOSTIC_DATA
-			stats_init();
-		#endif
 			
 		// Initialise the heap
 		#ifdef USE_HEAP
@@ -63,11 +61,9 @@ void os_init(void) {
 			uart_init(UART_BAUD_RATE, UART_WORD_LEN, UART_D0_PARITY_CHECK, UART_PARITY, UART_STOP_BITS); 
 		#endif
 		
-		// Set the IRQ priority of Interrupts for task scheduling 
-		// 1. SysTick (highest possible)
-		// 2. SVC and PendSV (lowest possible) IRQs
-		nvic_set_priority(SysTick_IRQn, 0);
-		nvic_set_priority(PendSV_IRQn, 7);
+		// SVC calls (software interrupts) are used for interaction between the user and 
+		// the operating system. Handling external interrupts should be carried out first, 
+		// so they have the lowest priority possible
 		nvic_set_priority(SVCall_IRQn, 7);
 	}
 	__enable_irqs();	
@@ -91,18 +87,18 @@ void os_start(void) {
 	scheduler.runPtr = scheduler.topPrioTask;
 	scheduler.topPrioTask->status = READY;
 	
-	// Set the initial value of svc_exc_return, CONTROL register as well as PSP.
+	// Set the initial value of svcExcReturn, CONTROL register as well as PSP.
 	// PSP should be pointing to the position of PC in the stack frame of the first task
 	// to run.
 	__set_psp(scheduler.runPtr->sp + (STACK_FRAME_R0 << WORD_ACCESS_SHIFT)); 
 	taskFramePtr = (uint32_t*) (scheduler.runPtr->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));
 	__set_control(*taskFramePtr);
 	taskFramePtr = (uint32_t*) scheduler.runPtr->sp;
-	svc_exc_return = *taskFramePtr;
+	scheduler.svcExcReturn = *taskFramePtr;
 	
-	// Initially it is assumed that the first task will run until it's time preempted
-	// (will use its time slice completely)
-	scheduler.status |= (1 << TIME_PREEMPT);
+	// It is assumed that the first task will use up its timeslice completely so
+	// the preemption flag should be raised
+	scheduler.preemptFlag = 1;
 	
 	// Set up periodic interrupts
 	systick_config(SYSTEM_CLOCK_FREQ / OS_CLOCK_FREQ);	
@@ -136,10 +132,10 @@ void SysTick_Handler(void) {
 	// If the currently running task has used up its entire time slice, then
 	// it should be preempted.
 	if (KrisOS.ticks % TIME_SLICE == 0) {
-		if (scheduler.status & (1 << TIME_PREEMPT))
+		if (scheduler.preemptFlag)
 			scheduler_run();
 		else
-			scheduler.status |= (1 << TIME_PREEMPT);
+			scheduler.preemptFlag = 1;
 	}
 }
 

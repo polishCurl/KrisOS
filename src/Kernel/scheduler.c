@@ -14,24 +14,20 @@
 
 
 
+/*-----------------------------------------------------------------------------
+* Declare the user tasks
+------------------------------------------------------------------------------*/
+KrisOS_task_static_template(idle, 100, UINT8_MAX)
+#ifdef SHOW_DIAGNOSTIC_DATA
+	KrisOS_task_static_template(stats, 512, DIAG_DATA_PRIO)
+#endif
+
+
+
 /*-------------------------------------------------------------------------------
 * Scheduler declaration
 --------------------------------------------------------------------------------*/
 Scheduler scheduler;
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:		idle_task
-* Purpose:    	Idle task. Lowest priority task used for power saving.
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void idle_task(void) {
-	while(1) __wfi();
-}
-
-KrisOS_task_define(idle, 100, UINT8_MAX)
 
 
 
@@ -50,19 +46,30 @@ void scheduler_init(void) {
 	// IDs and user tasks have positive IDs
 	scheduler.lastIDUsed = 1;
 	
-	// Initialise the status bits
-	scheduler.status = 0;
-	
-	// Reset the task counter and
+	// Reset the task counter and preprocess the idle task's stack memory for
+	// stack usage estimation. 
 	#ifdef SHOW_DIAGNOSTIC_DATA
 		scheduler.totalTaskNo = 0;
-		KrisOS_stack_usage_config((uint32_t*) &idleStack[0], idleStackSize);
+		KrisOS_task_stack_usage((uint32_t*) &idleStack[0], idleStackSize);
+		
 	#endif	
 	
-	task_create_static(&idleTask, idle_task, &idleStack[idleStackSize], idlePriority, 1);
+	// Create the idle task
+	task_create_static(&idleTask, idle, &idleStack[idleStackSize], idlePriority, 1);
+	
+	// Create the KrisOS usage monitor task 
+	#ifdef SHOW_DIAGNOSTIC_DATA
+		KrisOS_task_stack_usage((uint32_t*) &statsStack[0], statsStackSize);
+		task_create_static(&statsTask, stats, &statsStack[statsStackSize], 
+						   statsPriority, 1);
+	#endif
 		
 	// Set the runPtr to the idle task
 	scheduler.runPtr = &idleTask;
+	
+	// Context switching should give way to other events (interrupt handlers). Thus, 
+	// PendSV interrupts, where context switching occurs, should have the lowest priority
+	nvic_set_priority(PendSV_IRQn, 7);
 }
 
 
@@ -79,7 +86,7 @@ void scheduler_run(void) {
 	{
 		// Pick either the top priority ready task or (if the time-sliced preemption 
 		// flag is set) the task next in queue with respect to the currently running one
-		if (scheduler.status & (1 << TIME_PREEMPT) && scheduler.runPtr->next->priority == scheduler.runPtr->priority)
+		if (scheduler.preemptFlag && scheduler.runPtr->next->priority == scheduler.runPtr->priority)
 			scheduler.topPrioTask = scheduler.runPtr->next;
 		else
 			scheduler.topPrioTask = scheduler.ready;
@@ -97,7 +104,7 @@ void scheduler_run(void) {
 			
 			// The current time-slice will now be divided between more than one task so 
 			// time-sliced preemption is switched off until the next time slice is entered
-			scheduler.status &= ~(1 << TIME_PREEMPT);
+			scheduler.preemptFlag = 0;
 			
 			// Update the context switch counter
 			#ifdef SHOW_DIAGNOSTIC_DATA
@@ -197,7 +204,7 @@ Task* task_create_dynamic(void* startAddr, uint32_t stackSize, uint32_t priority
 		toCreate->stackSize = stackSize;
 	
 		// Preprocess the stack memory for debugging purpose (estimating stack usage)
-		KrisOS_stack_usage_config(toCreate->stackBase, stackSize);
+		KrisOS_task_stack_usage(toCreate->stackBase, stackSize);
 	#endif
 	
 	// Initialise the task's control block and stack frame
@@ -278,7 +285,7 @@ uint32_t task_sleep(uint64_t delay, TaskState state) {
 		toDelay->status = state;
 		scheduler_run();
 		
-		// Insert the task to the queue with delayed tasks. Insertion sort it 
+		// Insert the task to the queue with delayed tasks. Insertion sort is 
 		// performed in ascending delay value order.
 		toDelay->next = toDelay->previous = NULL;
 		
@@ -528,7 +535,7 @@ void task_complete_handler(void) {
 
 #ifdef SHOW_DIAGNOSTIC_DATA
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_stack_usage_config
+* Function:    	KrisOS_task_stack_usage
 * Purpose:    	Reset the stack memory given in order to extract stack usage data later
 * Arguments:	
 *		toPrepare - top of the stack memory to reset
@@ -536,7 +543,7 @@ void task_complete_handler(void) {
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_stack_usage_config(uint32_t* toPrepare, uint32_t size) {
+uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, uint32_t size) {
 	
 	uint32_t* iterator;
 	uint32_t* endAddress;

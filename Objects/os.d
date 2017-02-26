@@ -26,7 +26,6 @@
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\os.o: .\src\Common\common.h
-.\objects\os.o: src\Kernel\stats.h
 .\objects\os.o: .\src\HAL & Drivers\system.h
 .\objects\os.o: .\src\HAL & Drivers\uart.h
 .\objects\os.o: .\src\Kernel\KrisOS.h
@@ -42,9 +41,6 @@
 .\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
-.\objects\os.o: .\src\Common\common.h
-.\objects\os.o: .\src\HAL & Drivers\fifo.h
-.\objects\os.o: .\src\HAL & Drivers\special_reg_access.h
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: src\Kernel\KrisOS.h
 .\objects\os.o: .\src\Common\common.h

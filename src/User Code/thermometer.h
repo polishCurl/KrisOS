@@ -1,17 +1,13 @@
 /*******************************************************************************
-* File:     	i2c.h
-* Brief:    	Header file for i2c.c
+* File:     	thermometer.h
+* Brief:    	Header file for thermometer.c
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	15/02/2017
-* Last mod: 	15/02/2017
+* Last mod: 	25/02/2017
 *
 * Note: 
-*	I2C module driver Tiva C pin usage:
-*		PB2 - SCL
-* 		PB3 - SDA
 *
-* 	Both SDA and SCL are pulled high using external 4.7kOhm resistors.
 *******************************************************************************/
 #include "KrisOS.h"
 

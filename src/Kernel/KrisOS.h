@@ -32,58 +32,106 @@
 typedef struct Task Task;			// Task Control Block
 typedef struct Mutex Mutex; 		// Mutex
 typedef struct Semaphore Semaphore; // Semaphore
+typedef struct __FILE __FILE;		// File definition (for redirecting output stream)
 
 
 
 /*******************************************************************************
-* System timing setup
+* CONFIGURATION
 *******************************************************************************/
-// Time quantum size for multitasking (in ms)
-#define TIME_SLICE 50
+
+/*-----------------------------------------------------------------------------
+* System timing setup
+------------------------------------------------------------------------------*/
+// OS clock frequency (in Hz)
+#define OS_CLOCK_FREQ 10000
 
 // Definition of infinity (for pernamently suspending tasks)
 #define TIME_INFINITY 0
 
-// Diagnostic data refresh rate (in ms). How frequently the KrisOS stats task is run
-// This is just a rough estimate due to the low priority of the task.
-#define DIAG_DATA_RATE 5000
-
-// Allows users to check the system clock frequency
+// System clock frequency
 extern uint32_t SYSTEM_CLOCK_FREQ;
 
 
-/*******************************************************************************
-* Mutex definiton
-*******************************************************************************/
+/*-----------------------------------------------------------------------------
+* Scheduler setup
+------------------------------------------------------------------------------*/
+// Time quantum size for preemptive scheduling (in OS clock 'ticks')
+#define TIME_SLICE 500
+
+// Size of the task registry for keeping track of all the tasks (without linked-list)
+#define TASK_REGISTRY_SIZE 20
+
+
+/*-----------------------------------------------------------------------------
+* Heap Manager setup
+------------------------------------------------------------------------------*/
+// Heap size (in bytes)
+#define HEAP_SIZE 1000		
+
+// Minimum heap free block size that can still be divided into smaller ones
+#define MIN_BLOCK_SIZE (4 * sizeof(HeapBlock))
+
+
+/*-----------------------------------------------------------------------------
+* Serial Monitor setup 
+------------------------------------------------------------------------------*/
+// UART0 baud rate
+#define UART_BAUD_RATE 115200
+
+/* UART0 word length
+	0 - 5bits
+	1 - 6bits
+	2 - 7bits
+	3 - 8bits	*/
+#define UART_WORD_LEN 3	
+
+/* UART0 parity checking
+ 	0 - no parity checking
+ 	1 - parity bit added (even or odd) 	*/
+#define UART_D0_PARITY_CHECK 0	
+
+/* UART0 parity
+ 	0 - odd
+ 	1 - even	*/
+#define UART_PARITY 0	
+
+/* UART0 number of stop bits
+ 	0 - one stop bit
+ 	1 - two stop bits	*/
+#define UART_STOP_BITS 0	
+
+// For redirecting output stream in stdio library to UART0
+extern __FILE uart;
+
+// Mutual exclusion lock on UART
+#ifdef USE_UART 
 #ifdef USE_MUTEX
-typedef struct Mutex {
-	Task* owner; 					// Task owning the mutex
-	Task* waitingQueue; 			// Queue of tasks waiting for the mutex
-#ifdef SHOW_DIAGNOSTIC_DATA 		// Last time mutex was taken (for critical
-	uint64_t timeTaken; 			// section length calculation)
+extern Mutex uartMtx;
 #endif
-} Mutex;
+#endif
 
-#endif
+
+/*-----------------------------------------------------------------------------
+* Usage statistics task setup
+------------------------------------------------------------------------------*/
+// Diagnostic data refresh rate (in OS clock 'ticks'). How frequently the KrisOS 
+// usage data task is run.
+#define DIAG_DATA_RATE 50000
+
+// Statistics task'S priority
+#define DIAG_DATA_PRIO (UINT8_MAX - 1)
 
 
 
 /*******************************************************************************
-* Semaphore definiton
+* KrisOS data structures
 *******************************************************************************/
-#ifdef USE_SEMAPHORE
-typedef struct Semaphore {
-	uint32_t counter; 				// Semaphore counter value
-	Task* waitingQueue; 			// Queue of tasks waiting for the semaphore
-} Semaphore;
-#endif
 
-
-
-/*******************************************************************************
-* Task definition
-*******************************************************************************/
-// Possible task states
+/*-----------------------------------------------------------------------------
+* Task
+------------------------------------------------------------------------------*/
+// Task states
 typedef enum {
 	RUNNING,
 	READY,
@@ -121,73 +169,39 @@ typedef struct Task {
 #endif
 } Task;
 
-// Size of the task registry for keeping track of all the tasks (without linked-list)
-#define TASK_REGISTRY_SIZE 20
+
+/*-----------------------------------------------------------------------------
+* Mutex definiton
+------------------------------------------------------------------------------*/
+#ifdef USE_MUTEX
+typedef struct Mutex {
+	Task* owner; 					// Task owning the mutex
+	Task* waitingQueue; 			// Queue of tasks waiting for the mutex
+#ifdef SHOW_DIAGNOSTIC_DATA 		// Last time mutex was taken (for critical
+	uint64_t timeTaken; 			// section length calculation)
+#endif
+} Mutex;
+
+#endif
 
 
+/*-----------------------------------------------------------------------------
+* Semaphore
+------------------------------------------------------------------------------*/
+#ifdef USE_SEMAPHORE
+typedef struct Semaphore {
+	uint32_t counter; 				// Semaphore counter value
+	Task* waitingQueue; 			// Queue of tasks waiting for the semaphore
+} Semaphore;
+#endif
 
-/*******************************************************************************
-* Heap Manager setup
-*******************************************************************************/
-// Heap size (in bytes)
-#define HEAP_SIZE 2000		
 
-// Minimum heap free block size that can still be divided into smaller ones
-#define MIN_BLOCK_SIZE (4 * sizeof(HeapBlock))
-
-
-
-/*******************************************************************************
-* Serial Monitor setup (UART0 used)
-*******************************************************************************/
-/* UART0 interface type
-	0 - polling-based
-	1 - Interrupt based with software FIFOs */
-#define UART_INTERFACE_TYPE 0
-
-// UART0 baud rate
-#define UART_BAUD_RATE 115200
-
-/* UART0 word length
-	0 - 5bits
-	1 - 6bits
-	2 - 7bits
-	3 - 8bits	*/
-#define UART_WORD_LEN 3	
-
-/* UART0 parity checking
- 	0 - no parity checking
- 	1 - parity bit added (even or odd) 	*/
-#define UART_D0_PARITY_CHECK 0	
-
-/* UART0 parity
- 	0 - odd
- 	1 - even	*/
-#define UART_PARITY 0	
-
-/* UART0 number of stop bits
- 	0 - one stop bit
- 	1 - two stop bits	*/
-#define UART_STOP_BITS 0	
-
-// UART receiver and trasmitter software FIFO size (in bytes/characters)
-#define UART_FIFO_SIZE 250
-
-// UART as file
-#ifdef USE_UART
+/*-----------------------------------------------------------------------------
+* File (input/output stream)
+------------------------------------------------------------------------------*/
 typedef struct __FILE { 
 	int handle;
 } __FILE;
-
-extern __FILE uart;
-#endif
-
-// Mutex lock on UART for avoiding mixing output from different tasks
-#ifdef USE_UART 
-#ifdef USE_MUTEX
-extern Mutex uartMtx;
-#endif
-#endif
 
 
 
@@ -612,7 +626,7 @@ void KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire);
 
 #ifdef SHOW_DIAGNOSTIC_DATA
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_stack_usage_config
+* Function:    	KrisOS_task_stack_usage
 * Purpose:    	Reset the stack memory given in order to extract stack usage data later
 * Arguments:	
 *		toPrepare - top of the stack memory to reset
@@ -620,34 +634,54 @@ void KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire);
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_stack_usage_config(uint32_t* toPrepare, uint32_t size);
+uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, uint32_t size);
 #endif
 
 
 
 /*-------------------------------------------------------------------------------
-* Macro:    	KrisOS_task_define
+* Macro:    	KrisOS_task_static_template
 * Purpose:    	MACRO speeding up static task declaration by automatically declaring 
 *				and initialising variables and constants to be passed to 
 *				KrisOS_task_create_static.
 * Arguments:	
 *		NAME - unique name of the task and prefix to the task description variable names.
 *			   1. task function name - void <NAME>(void)
-*			   2. task struct name prefix - Task <NAME>Task
+*			   2. task struct - Task <NAME>Task
 *			   3. task stack size - <NAME>StackSize = SIZE
 *			   4. task stack memory - <NAME>Stack['task stack size']
 * 			   5. task priority - <NAME>Priority
 *		STACK_SIZE - task private stack memory size
 * 		PRIORITY - task priority
-* Returns: 
-*		Creates the aforementioned variables at compile-time
 --------------------------------------------------------------------------------*/
-#define KrisOS_task_define(NAME, STACK_SIZE, PRIORITY) 						\
+#define KrisOS_task_static_template(NAME, STACK_SIZE, PRIORITY) 			\
 	void NAME ## (void);													\
 	Task NAME ## Task;											  			\
 	const size_t NAME ## StackSize = STACK_SIZE;							\
 	uint8_t NAME ## Stack[NAME ## StackSize];								\
 	const uint8_t NAME ## Priority = PRIORITY;
+	
+	
+	
+/*-------------------------------------------------------------------------------
+* Macro:    	KrisOS_task_dynamic_template
+* Purpose:    	MACRO speeding up dynamic task declaration by automatically declaring 
+*				and initialising variables and constants to be passed to 
+*				KrisOS_task_create.
+* Arguments:	
+*		NAME - unique name of the task and prefix to the task description variable names.
+*			   1. task function name - void <NAME>(void)
+*			   2. task struct pointer - Task* <NAME>Task
+*			   3. task stack size - <NAME>StackSize = SIZE
+* 			   5. task priority - <NAME>Priority
+*		STACK_SIZE - task private stack memory size
+* 		PRIORITY - task priority
+--------------------------------------------------------------------------------*/
+#define KrisOS_task_dynamic_template(NAME, STACK_SIZE, PRIORITY) 			\
+	void NAME ## (void);													\
+	Task* NAME ## TaskPtr;											  		\
+	const size_t NAME ## StackSize = STACK_SIZE;							\
+	const uint8_t NAME ## Priority = PRIORITY;	
 	
 	
 #endif

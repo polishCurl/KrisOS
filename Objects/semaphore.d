@@ -18,9 +18,6 @@
 .\objects\semaphore.o: .\src\Common\common.h
 .\objects\semaphore.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\semaphore.o: .\src\Common\common.h
-.\objects\semaphore.o: .\src\HAL & Drivers\fifo.h
-.\objects\semaphore.o: .\src\HAL & Drivers\special_reg_access.h
-.\objects\semaphore.o: .\src\Common\common.h
 .\objects\semaphore.o: src\Kernel\kernel.h
 .\objects\semaphore.o: src\Kernel\heap.h
 .\objects\semaphore.o: src\Kernel\mutex.h
@@ -45,4 +42,3 @@
 .\objects\semaphore.o: .\src\Common\common.h
 .\objects\semaphore.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\semaphore.o: .\src\Common\common.h
-.\objects\semaphore.o: src\Kernel\stats.h

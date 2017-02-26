@@ -259,17 +259,17 @@ UsageFault_Handler\
 ; Reset Handler
 ;-------------------------------------------------------------------------------					
 SVC_Handler     PROC
-				IMPORT 	svc_exc_return
+				IMPORT 	scheduler
 				IMPORT 	SVC_Handler_C
                 TST 	LR, #4
 				ITE		EQ					; determine which stack was used before 
 				MRSEQ	R0, MSP				; the SVC call
 				MRSNE	R0, PSP
-				LDR 	R1, =svc_exc_return	; save the EXC_RETURN
-				STR 	LR, [R1] 
+				LDR 	R1, =scheduler		; save the EXC_RETURN
+				STR 	LR, [R1, #8]
 				BL 		SVC_Handler_C
-				LDR 	R1, =svc_exc_return	; restore the EXC_RETURN
-				LDR		LR, [R1]
+				LDR 	R1, =scheduler		; restore the EXC_RETURN
+				LDR		LR, [R1, #8]
 				BX 		LR
                 ENDP
 					

@@ -403,9 +403,9 @@
               <FilePath>.\src\Kernel\semaphore.c</FilePath>
             </File>
             <File>
-              <FileName>stats.c</FileName>
+              <FileName>os_tasks.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\Kernel\stats.c</FilePath>
+              <FilePath>.\src\Kernel\os_tasks.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -413,14 +413,14 @@
           <GroupName>HAL &amp; Drivers</GroupName>
           <Files>
             <File>
-              <FileName>fifo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\HAL &amp; Drivers\fifo.c</FilePath>
-            </File>
-            <File>
               <FileName>nvic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\HAL &amp; Drivers\nvic.c</FilePath>
+            </File>
+            <File>
+              <FileName>special_reg_access.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\src\HAL &amp; Drivers\special_reg_access.s</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
@@ -431,11 +431,6 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\HAL &amp; Drivers\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>special_reg_access.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\src\HAL &amp; Drivers\special_reg_access.s</FilePath>
             </File>
             <File>
               <FileName>startup.s</FileName>
@@ -458,19 +453,24 @@
               <FilePath>.\src\User Code\retarget.c</FilePath>
             </File>
             <File>
-              <FileName>i2c.c</FileName>
+              <FileName>light_sensor.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\User Code\i2c.c</FilePath>
+              <FilePath>.\src\User Code\light_sensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>thermometer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\thermometer.c</FilePath>
+            </File>
+            <File>
+              <FileName>nokia5110_backlight.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\nokia5110_backlight.c</FilePath>
             </File>
             <File>
               <FileName>demo3.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
-            </File>
-            <File>
-              <FileName>light_sensor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\User Code\light_sensor.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -873,9 +873,9 @@
               <FilePath>.\src\Kernel\semaphore.c</FilePath>
             </File>
             <File>
-              <FileName>stats.c</FileName>
+              <FileName>os_tasks.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\Kernel\stats.c</FilePath>
+              <FilePath>.\src\Kernel\os_tasks.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -883,14 +883,14 @@
           <GroupName>HAL &amp; Drivers</GroupName>
           <Files>
             <File>
-              <FileName>fifo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\HAL &amp; Drivers\fifo.c</FilePath>
-            </File>
-            <File>
               <FileName>nvic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\HAL &amp; Drivers\nvic.c</FilePath>
+            </File>
+            <File>
+              <FileName>special_reg_access.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\src\HAL &amp; Drivers\special_reg_access.s</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
@@ -901,11 +901,6 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\HAL &amp; Drivers\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>special_reg_access.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\src\HAL &amp; Drivers\special_reg_access.s</FilePath>
             </File>
             <File>
               <FileName>startup.s</FileName>
@@ -928,19 +923,24 @@
               <FilePath>.\src\User Code\retarget.c</FilePath>
             </File>
             <File>
-              <FileName>i2c.c</FileName>
+              <FileName>light_sensor.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\User Code\i2c.c</FilePath>
+              <FilePath>.\src\User Code\light_sensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>thermometer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\thermometer.c</FilePath>
+            </File>
+            <File>
+              <FileName>nokia5110_backlight.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\nokia5110_backlight.c</FilePath>
             </File>
             <File>
               <FileName>demo3.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
-            </File>
-            <File>
-              <FileName>light_sensor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\User Code\light_sensor.c</FilePath>
             </File>
           </Files>
         </Group>

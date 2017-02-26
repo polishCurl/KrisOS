@@ -306,10 +306,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>DLGTARM</Key>
           <Name>(1010=75,104,495,661,0)(1007=-1,-1,-1,-1,0)(1008=90,121,466,357,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)</Name>
         </SetRegEntry>
@@ -351,7 +347,7 @@
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>uartMtx</ItemText>
+          <ItemText>KrisOS,0x10</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>
@@ -473,8 +469,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\Kernel\stats.c</PathWithFileName>
-      <FilenameWithoutPath>stats.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\Kernel\os_tasks.c</PathWithFileName>
+      <FilenameWithoutPath>os_tasks.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -493,20 +489,20 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\HAL &amp; Drivers\fifo.c</PathWithFileName>
-      <FilenameWithoutPath>fifo.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\HAL &amp; Drivers\nvic.c</PathWithFileName>
+      <FilenameWithoutPath>nvic.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
       <GroupNumber>2</GroupNumber>
       <FileNumber>8</FileNumber>
-      <FileType>1</FileType>
+      <FileType>2</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\HAL &amp; Drivers\nvic.c</PathWithFileName>
-      <FilenameWithoutPath>nvic.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\HAL &amp; Drivers\special_reg_access.s</PathWithFileName>
+      <FilenameWithoutPath>special_reg_access.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -541,18 +537,6 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\HAL &amp; Drivers\special_reg_access.s</PathWithFileName>
-      <FilenameWithoutPath>special_reg_access.s</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>12</FileNumber>
-      <FileType>2</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
       <PathWithFileName>.\src\HAL &amp; Drivers\startup.s</PathWithFileName>
       <FilenameWithoutPath>startup.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
@@ -568,7 +552,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>3</GroupNumber>
-      <FileNumber>13</FileNumber>
+      <FileNumber>12</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -580,7 +564,7 @@
     </File>
     <File>
       <GroupNumber>3</GroupNumber>
-      <FileNumber>14</FileNumber>
+      <FileNumber>13</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -592,13 +576,25 @@
     </File>
     <File>
       <GroupNumber>3</GroupNumber>
+      <FileNumber>14</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\src\User Code\light_sensor.c</PathWithFileName>
+      <FilenameWithoutPath>light_sensor.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>3</GroupNumber>
       <FileNumber>15</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\User Code\i2c.c</PathWithFileName>
-      <FilenameWithoutPath>i2c.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\User Code\thermometer.c</PathWithFileName>
+      <FilenameWithoutPath>thermometer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -609,8 +605,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\User Code\demo3.c</PathWithFileName>
-      <FilenameWithoutPath>demo3.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\User Code\nokia5110_backlight.c</PathWithFileName>
+      <FilenameWithoutPath>nokia5110_backlight.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -621,8 +617,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\User Code\light_sensor.c</PathWithFileName>
-      <FilenameWithoutPath>light_sensor.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\User Code\demo3.c</PathWithFileName>
+      <FilenameWithoutPath>demo3.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

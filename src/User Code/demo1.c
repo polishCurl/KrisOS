@@ -15,13 +15,18 @@
 
 
 
-/*-------------------------------------------------------------------------------
+/*-----------------------------------------------------------------------------
+* Declare the user tasks
+------------------------------------------------------------------------------*/
+KrisOS_task_static_template(primes, 400, 7)
+KrisOS_task_static_template(secondTimer, 200, 5)
+
+
+
+/*******************************************************************************
 * Task: 	Primes
 * Purpose: 	Compute and display all prime numbers between low and high
---------------------------------------------------------------------------------*/
-KrisOS_task_define(primes, 400, 7)
-
-
+*******************************************************************************/
 void primes(void) {
 		
 	// Range of numbers from which the primes should be picked.
@@ -56,24 +61,21 @@ void primes(void) {
 			
 			++low;
 		}
-		KrisOS_task_sleep(10000);
+		KrisOS_task_sleep(100000);
 	}		
 }
 	
 
 
-/*-------------------------------------------------------------------------------
+/*******************************************************************************
 * Task: 	secondTimer
 * Purpose: 	Display the number of seconds elapsed since the start of this task
---------------------------------------------------------------------------------*/
-KrisOS_task_define(secondTimer, 200, 5)
-
-
+*******************************************************************************/
 void secondTimer(void) {
 
 	uint32_t secondsElapsed = 0;
 	while(1) {
-		KrisOS_task_sleep(1000);
+		KrisOS_task_sleep(10000);
 		fprintf(&uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
 	}
 }

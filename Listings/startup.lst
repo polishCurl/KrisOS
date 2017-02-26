@@ -485,7 +485,7 @@ ARM Macro Assembler    Page 8
                        ------------------------     
   261 0000001C         SVC_Handler
                                PROC
-  262 0000001C                 IMPORT           svc_exc_return
+  262 0000001C                 IMPORT           scheduler
   263 0000001C                 IMPORT           SVC_Handler_C
   264 0000001C F01E 0F04       TST              LR, #4
   265 00000020 BF0C            ITE              EQ          ; determine which s
@@ -493,13 +493,13 @@ ARM Macro Assembler    Page 8
                                                             e 
   266 00000022 F3EF 8008       MRSEQ            R0, MSP     ; the SVC call
   267 00000026 F3EF 8009       MRSNE            R0, PSP
-  268 0000002A 491C            LDR              R1, =svc_exc_return ; save the 
-                                                            EXC_RETURN
-  269 0000002C F8C1 E000       STR              LR, [R1]
+  268 0000002A 491C            LDR              R1, =scheduler ; save the EXC_R
+                                                            ETURN
+  269 0000002C F8C1 E008       STR              LR, [R1, #8]
   270 00000030 F7FF FFFE       BL               SVC_Handler_C
-  271 00000034 4919            LDR              R1, =svc_exc_return ; restore t
-                                                            he EXC_RETURN
-  272 00000036 F8D1 E000       LDR              LR, [R1]
+  271 00000034 4919            LDR              R1, =scheduler ; restore the EX
+                                                            C_RETURN
+  272 00000036 F8D1 E008       LDR              LR, [R1, #8]
   273 0000003A 4770            BX               LR
   274 0000003C                 ENDP
   275 0000003C         
@@ -589,7 +589,7 @@ ARM Macro Assembler    Page 9
 ARM Macro Assembler    Page 10 
 
 
-  332 00000058 4A11            LDR              R2, =scheduler ; save the PSP i
+  332 00000058 4A10            LDR              R2, =scheduler ; save the PSP i
                                                             nto current task's 
                                                             metadata
   333 0000005A 6811            LDR              R1, [R2]
@@ -902,11 +902,11 @@ ARM Macro Assembler    Page 14
   599 00000088                 EXPORT           __user_initial_stackheap
   601 00000088         __user_initial_stackheap
                                PROC
-  602 00000088 4806            LDR              R0, =  Heap_Mem
-  603 0000008A 4907            LDR              R1, = (Handler_Stack + Handler_
+  602 00000088 4805            LDR              R0, =  Heap_Mem
+  603 0000008A 4906            LDR              R1, = (Handler_Stack + Handler_
 Stack_Size)
-  604 0000008C 4A07            LDR              R2, = (Heap_Mem + Heap_Size)
-  605 0000008E 4B08            LDR              R3, = Handler_Stack
+  604 0000008C 4A06            LDR              R2, = (Heap_Mem + Heap_Size)
+  605 0000008E 4B07            LDR              R3, = Handler_Stack
   606 00000090 4770            BX               LR
 
 
@@ -918,7 +918,6 @@ ARM Macro Assembler    Page 15
   608 00000092         
   609 00000092 00 00           ALIGN
   610 00000094                 END
-              00000000 
               00000000 
               00000000 
               00000000 
@@ -2311,18 +2310,12 @@ scheduler 00000000
 
 Symbol: scheduler
    Definitions
-      At line 320 in file src\HAL
-   Uses
-      At line 332 in file src\HAL
-Comment: scheduler used once
-svc_exc_return 00000000
-
-Symbol: svc_exc_return
-   Definitions
       At line 262 in file src\HAL
+      At line 320 in file src\HAL
    Uses
       At line 268 in file src\HAL
       At line 271 in file src\HAL
-
-6 symbols
-476 symbols in table
+      At line 332 in file src\HAL
+Warning: scheduler multiply defined
+5 symbols
+475 symbols in table
