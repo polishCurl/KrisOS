@@ -36,31 +36,23 @@ extern Kernel KrisOS;
 
 /*-------------------------------------------------------------------------------
 * Function:    	os_init
-* Purpose:    	KrisOS initialisation method
+* Purpose:    	KrisOS initialisation routine
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status		
 --------------------------------------------------------------------------------*/
-void os_init(void);
+uint32_t os_init(void);
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	os_start
-* Purpose:    	Start the operating system
+* Purpose:    	Start the operating system by setting up the first task to run
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status	
 --------------------------------------------------------------------------------*/
-void os_start(void);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:		os_sleep
-* Purpose:    	Put the operating system into power-saving mode
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void os_sleep(void);
+uint32_t os_start(void);
 
 
 

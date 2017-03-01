@@ -31,9 +31,8 @@ int main(void) {
 	KrisOS_init();
 	
 	// Create the LCD screen setup task to be run first (high priority)
-	nokiaLCDSetupTaskPtr = (Task*) KrisOS_task_create(nokiaLCDSetup, 
-													  nokiaLCDSetupStackSize, 
-	                                                  nokiaLCDSetupPriority);
+	nokiaLCDSetupTaskPtr = KrisOS_task_create(nokiaLCDSetup, nokiaLCDSetupStackSize, 
+										      nokiaLCDSetupPriority);
 	
 	// Create the thermometer task
 	KrisOS_task_stack_usage((void*) &thermometerStack[0], thermometerStackSize);
@@ -48,10 +47,10 @@ int main(void) {
 	                          lightSensorPriority); 
 
 	// Create the LCD screen setup task to be run first (high priority)
-	nokiaLCDBacklightTaskPtr = (Task*) KrisOS_task_create(nokiaLCDBacklight, 
-													      nokiaLCDBacklightStackSize, 
-	                                                      nokiaLCDBacklightPriority);
-
+	nokiaLCDBacklightTaskPtr = KrisOS_task_create(nokiaLCDBacklight, 
+												  nokiaLCDBacklightStackSize, 
+												  nokiaLCDBacklightPriority);
+	
 	// Run the operating system
 	KrisOS_start();
 	

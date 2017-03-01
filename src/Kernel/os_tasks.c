@@ -125,8 +125,12 @@ void stats(void) {
 					stackUsage = (iterator->stackBase - stackUsageHelper) << 2;
 					
 				// Display the per-task stats and reset the CPU usage counter
-				fprintf(&uart, "%d\t%d.%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsageInt, cpuUsageFrac,
-					    stackUsage, iterator->priority);
+				if (iterator->id == -2) 
+					fprintf(&uart, "%d\tN/A\t\t%dB\t\t%d\t\t", iterator->id, stackUsage, 
+							iterator->priority);
+				else
+					fprintf(&uart, "%d\t%d.%d%%\t\t%dB\t\t%d\t\t", iterator->id, cpuUsageInt, 
+							cpuUsageFrac, stackUsage, iterator->priority);
 				iterator->cpuUsage = 0;
 				
 				// Display the current task status 

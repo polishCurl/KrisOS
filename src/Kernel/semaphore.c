@@ -194,13 +194,14 @@ uint32_t sem_release(Semaphore* toRelease) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_release_from_ISR
-* Purpose:    	Release the semaphore by an interrupt service routine
+* Purpose:    	Release the semaphore specified by an interrupt service routine
 * Arguments:	
 *		toRelease - semaphore to release		
-* Returns: 		-
+* Returns: 		
+*		exit status 
 --------------------------------------------------------------------------------*/
-void KrisOS_sem_release_from_ISR(Semaphore* toRelease) {
-	sem_release(toRelease);
+uint32_t KrisOS_sem_release_from_ISR(Semaphore* toRelease) {
+	return sem_release(toRelease);
 }
 
 
@@ -211,10 +212,11 @@ void KrisOS_sem_release_from_ISR(Semaphore* toRelease) {
 *				unsuccessful
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* Returns: 		-
+* Returns: 		
+*		exit status 
 --------------------------------------------------------------------------------*/
-void KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire) {
-	sem_try_acquire(toAcquire);
+uint32_t KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire) {
+	return sem_try_acquire(toAcquire);
 }
 
 

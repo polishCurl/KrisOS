@@ -18,9 +18,10 @@
 * Purpose:    	Enable interrupt source
 * Arguments: 	
 *		irq - interrupt source to enable
-* Returns: 		-	
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void nvic_enable_irq(IRQn_Type irq);
+uint32_t nvic_enable_irq(IRQn_Type irq);
 
 
 
@@ -29,9 +30,10 @@ void nvic_enable_irq(IRQn_Type irq);
 * Purpose:    	Disable interrupt source
 * Arguments: 	
 *		irq - interrupt source to disable
-* Returns: 		-	
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void nvic_disable_irq(IRQn_Type irq);
+uint32_t nvic_disable_irq(IRQn_Type irq);
 
 
 
@@ -40,9 +42,10 @@ void nvic_disable_irq(IRQn_Type irq);
 * Purpose:    	Set Pending Interrupt
 * Arguments: 	
 *		irq - interrupt source set pending
-* Returns: 		-	
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void nvic_set_pending(IRQn_Type irq);
+uint32_t nvic_set_pending(IRQn_Type irq);
 
 
 
@@ -51,9 +54,10 @@ void nvic_set_pending(IRQn_Type irq);
 * Purpose:    	Clear Pending Interrupt
 * Arguments: 	
 *		irq - interrupt source clear
-* Returns: 		-	
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void nvic_clear_pending(IRQn_Type irq);
+uint32_t nvic_clear_pending(IRQn_Type irq);
 
 
 
@@ -61,7 +65,7 @@ void nvic_clear_pending(IRQn_Type irq);
 * Function:    	nvic_read_active
 * Purpose:    	Check if given Interrupt is currently active
 * Arguments: 	
-*		irq - interrupt to have its status checked
+*		irq - interrupt number to have it status checked
 * Returns: 		
 *		0 if not active, 1 otherwise
 --------------------------------------------------------------------------------*/
@@ -75,9 +79,10 @@ uint32_t nvic_read_active(IRQn_Type irq);
 * Arguments: 	
 *		irq - interrupt number to set the priority of
 * 		priority - priority to set, from 0 (highest) to 7 (lowest)
-* Returns: 		-
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void nvic_set_priority(IRQn_Type irq, uint32_t priority);
+uint32_t nvic_set_priority(IRQn_Type irq, uint32_t priority);
 
 
 
@@ -90,16 +95,3 @@ void nvic_set_priority(IRQn_Type irq, uint32_t priority);
 *		priority of given IRQ (0 - highest, 7 - lowest)
 --------------------------------------------------------------------------------*/
 uint32_t nvic_get_priority(IRQn_Type irq);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	nvic_irq_prio_check
-* Purpose:    	Test if user-specified priority is a valid one
-* Arguments: 	
-*		priority - ptiority to check
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t nvic_irq_prio_check(uint32_t priority);
-

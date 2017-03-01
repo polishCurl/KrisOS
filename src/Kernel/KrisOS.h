@@ -247,9 +247,10 @@ typedef struct __FILE {
 * Function:    	KrisOS_init
 * Purpose:    	Initialise the operating system
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status		
 --------------------------------------------------------------------------------*/
-void __svc(SVC_OS_INIT) KrisOS_init(void);
+uint32_t __svc(SVC_OS_INIT) KrisOS_init(void);
 
 
 
@@ -257,9 +258,10 @@ void __svc(SVC_OS_INIT) KrisOS_init(void);
 * Function:    	KrisOS_start
 * Purpose:    	Start the operating system
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status		
 --------------------------------------------------------------------------------*/
-void __svc(SVC_OS_START) KrisOS_start(void);
+uint32_t __svc(SVC_OS_START) KrisOS_start(void);
 
 
 
@@ -360,7 +362,7 @@ uint32_t __svc(SVC_IRQ_GET_PRIO)  KrisOS_irq_get_prio(IRQn_Type irq);
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
 #ifdef USE_HEAP
-uint32_t __svc(SVC_TASK_NEW) KrisOS_task_create(void* startAddr, size_t stackSize, 
+Task* __svc(SVC_TASK_NEW) KrisOS_task_create(void* startAddr, size_t stackSize, 
 												uint32_t priority);
 #endif
 
@@ -399,9 +401,10 @@ uint32_t __svc(SVC_TASK_SLEEP) KrisOS_task_sleep(uint32_t ticks);
 * Function:    	KrisOS_task_yield
 * Purpose:    	Request a context switch to another task (cooperative scheduling)
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void __svc(SVC_TASK_YIELD) KrisOS_task_yield(void);
+uint32_t __svc(SVC_TASK_YIELD) KrisOS_task_yield(void);
 
 
 
@@ -409,9 +412,10 @@ void __svc(SVC_TASK_YIELD) KrisOS_task_yield(void);
 * Function:    	KrisOS_task_delete
 * Purpose:    	Permanently remove the calling task.
 * Arguments: 	-
-* Returns: 		-
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void __svc(SVC_TASK_DELETE) KrisOS_task_delete(void);
+uint32_t __svc(SVC_TASK_DELETE) KrisOS_task_delete(void);
 
 
 
@@ -432,9 +436,10 @@ void* __svc(SVC_HEAP_ALLOC) KrisOS_malloc(size_t bytesToAlloc);
 * Purpose:    	Free the allocated block of memory
 * Arguments:	
 *		toFree - block of heap memory to free
-* Returns: 		-
+* Returns: 		
+*		exit status
 --------------------------------------------------------------------------------*/
-void __svc(SVC_HEAP_FREE) KrisOS_free(void* toFree);
+uint32_t __svc(SVC_HEAP_FREE) KrisOS_free(void* toFree);
 
 
 
@@ -458,7 +463,7 @@ uint32_t __svc(SVC_MTX_INIT) KrisOS_mutex_init(Mutex* toInit);
 * Returns: 		
 *		Pointer to the mutex created
 --------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_MTX_CREATE) KrisOS_mutex_create(void);
+Mutex* __svc(SVC_MTX_CREATE) KrisOS_mutex_create(void);
 
 
 
@@ -482,7 +487,7 @@ uint32_t __svc(SVC_MTX_TRY_LOCK) KrisOS_mutex_try_lock(Mutex* toLock);
 * Arguments:	
 *		toLock - mutex to lock
 * Returns: 		
-*		exit status (if lock already acquired - EXIT_FAILURE)
+*		exit status 
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_MTX_LOCK) KrisOS_mutex_lock(Mutex* toLock);
 
@@ -494,7 +499,7 @@ uint32_t __svc(SVC_MTX_LOCK) KrisOS_mutex_lock(Mutex* toLock);
 * Arguments:	
 *		toUnlock - mutex to unlock
 * Returns: 		
-*		exit status (if lock already acquired - EXIT_FAILURE)
+*		exit status 
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_MTX_UNLOCK) KrisOS_mutex_unlock(Mutex* toUnlock);
 
@@ -535,7 +540,7 @@ uint32_t __svc(SVC_SEM_INIT) KrisOS_sem_init(Semaphore* toInit, uint32_t startVa
 * Returns: 		
 *		pointer to the semaphore created
 --------------------------------------------------------------------------------*/
-Semaphore*__svc(SVC_SEM_CREATE) KrisOS_sem_create(uint32_t startVal);
+Semaphore* __svc(SVC_SEM_CREATE) KrisOS_sem_create(uint32_t startVal);
 
 
 
@@ -568,7 +573,8 @@ uint32_t __svc(SVC_SEM_TRY_ACQUIRE) KrisOS_sem_try_acquire(Semaphore* toAcquire)
 * Purpose:    	Attempt to decrement the semaphore. Wait if unsuccessful.
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* Returns: -
+* Returns: 		
+*		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_ACQUIRE) KrisOS_sem_acquire(Semaphore* toAcquire);
 
@@ -581,7 +587,8 @@ uint32_t __svc(SVC_SEM_ACQUIRE) KrisOS_sem_acquire(Semaphore* toAcquire);
 * Arguments:	
 * 		toAcquire - semaphore to acquire
 * 		timout - semaphore timeout
-* Returns: -
+* Returns: 		
+*		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_ACQUIRE_TIME) KrisOS_sem_acquire_timeout(Semaphore* toAcquire,
 																uint32_t timout);
@@ -593,7 +600,7 @@ uint32_t __svc(SVC_SEM_ACQUIRE_TIME) KrisOS_sem_acquire_timeout(Semaphore* toAcq
 * Arguments:	
 *		toRelease - mutex to unlock
 * Returns: 		
-*		exit status (if lock already acquired - EXIT_FAILURE)
+*		exit status 
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 
@@ -604,9 +611,10 @@ uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 * Purpose:    	Release the semaphore specified by an interrupt service routine
 * Arguments:	
 *		toRelease - semaphore to release		
-* Returns: 		-
+* Returns: 		
+*		exit status 
 --------------------------------------------------------------------------------*/
-void KrisOS_sem_release_from_ISR(Semaphore* toRelease);
+uint32_t KrisOS_sem_release_from_ISR(Semaphore* toRelease);
 
 
 
@@ -616,9 +624,10 @@ void KrisOS_sem_release_from_ISR(Semaphore* toRelease);
 *				unsuccessful
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* Returns: 		-
+* Returns: 		
+*		exit status 
 --------------------------------------------------------------------------------*/
-void KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire);
+uint32_t KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire);
 
 #endif
 

@@ -81,11 +81,12 @@ void scheduler_init(void);
 
 /*-------------------------------------------------------------------------------
 * Function:    	scheduler_run
-* Purpose:    	Run the scheduler to determine the next task to run
+* Purpose:    	Run the scheduler to determine the next task to run.
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void scheduler_run(void);
+uint32_t scheduler_run(void);
 
 
 
@@ -152,9 +153,10 @@ uint32_t task_sleep(uint64_t delay, TaskState state);
 * Function:    	task_delete
 * Purpose:    	Permanently remove the calling task.
 * Arguments: 	-
-* Returns: 		-
+* Returns: 
+* 		exit status
 --------------------------------------------------------------------------------*/
-void task_delete(void);
+uint32_t task_delete(void);
 
 
 

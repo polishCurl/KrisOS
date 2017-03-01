@@ -18,8 +18,8 @@
 /*-----------------------------------------------------------------------------
 * Declare the user tasks
 ------------------------------------------------------------------------------*/
-KrisOS_task_static_template(primes, 400, 7)
-KrisOS_task_static_template(secondTimer, 200, 5)
+KrisOS_task_static_template(primes, 400, 42)
+KrisOS_task_static_template(secondTimer, 200, 23)
 
 
 
@@ -35,33 +35,29 @@ void primes(void) {
 	// Helper iterator and a flag raised when the currently considered
 	// number is divisible by more numbers than '1'.
 	int32_t i, flag;
-		
-	while(1) {
-		
-		// Initialise the range and output header message.
-		low = 2;
-		high = 20000;
-		fprintf(&uart, "\nPrime numbers between %d and %d are: \n", low, high);
-	
-		// Display all the prime numbers between high and low, go to sleep for 
-		// some time, then repeat.
-		while (low < high)
-		{	
-			// Test if the given 'low' is a prime and print it if so.
-			flag = 0;
-			for(i = 2; i <= low/2; ++i)
-				if(low % i == 0)
-				{
-					flag = 1;
-					break;
-				}
 
-			if (flag == 0) 
-				fprintf(&uart, "%d ", low);
-			
-			++low;
-		}
-		KrisOS_task_sleep(100000);
+	// Initialise the range and output header message.
+	low = 2;
+	high = 20000;
+	fprintf(&uart, "\nPrime numbers between %d and %d are: \n", low, high);
+
+	// Display all the prime numbers between high and low, go to sleep for 
+	// some time, then repeat.
+	while (low < high)
+	{	
+		// Test if the given 'low' is a prime and print it if so.
+		flag = 0;
+		for(i = 2; i <= low/2; ++i)
+			if(low % i == 0)
+			{
+				flag = 1;
+				break;
+			}
+
+		if (flag == 0) 
+			fprintf(&uart, "%d ", low);
+		
+		++low;
 	}		
 }
 	
@@ -75,7 +71,7 @@ void secondTimer(void) {
 
 	uint32_t secondsElapsed = 0;
 	while(1) {
-		KrisOS_task_sleep(10000);
+		KrisOS_task_sleep(100);
 		fprintf(&uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
 	}
 }

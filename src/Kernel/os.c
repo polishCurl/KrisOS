@@ -23,11 +23,12 @@ Kernel KrisOS;
 
 /*-------------------------------------------------------------------------------
 * Function:    	os_init
-* Purpose:    	KrisOS initialisation method
+* Purpose:    	KrisOS initialisation routine
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status		
 --------------------------------------------------------------------------------*/
-void os_init(void) {
+uint32_t os_init(void) {
 
 	__disable_irqs();	
 	{
@@ -67,6 +68,7 @@ void os_init(void) {
 		nvic_set_priority(SVCall_IRQn, 7);
 	}
 	__enable_irqs();	
+	return EXIT_SUCCESS;
 }
 
 
@@ -75,9 +77,10 @@ void os_init(void) {
 * Function:    	os_start
 * Purpose:    	Start the operating system by setting up the first task to run
 * Arguments:	-
-* Returns: 		-
+* Returns: 
+* 		exit status	
 --------------------------------------------------------------------------------*/
-void os_start(void) {
+uint32_t os_start(void) {
 	
 	// Helper pointer for specifying register address within the task's stack frame
 	uint32_t* taskFramePtr; 	
@@ -105,6 +108,7 @@ void os_start(void) {
 	
 	// OS is now running
 	KrisOS.isRunning = 1;
+	return EXIT_SUCCESS;
 }
 
 
@@ -154,51 +158,29 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 	// arguments saved on the stack
 	uint8_t svcNumber = ((uint8_t*) svcArgs[6])[-2];
 	switch(svcNumber) {
-// ---- OS initialisation and launch --------------------------------------------
-		case SVC_OS_INIT: os_init(); break;
-		case SVC_OS_START: os_start(); break;	
+// ---- OS initialisation and launch SVC calls  ---------------------------------
+		case SVC_OS_INIT: svcArgs[0] = os_init(); break;
+		case SVC_OS_START: svcArgs[0] = os_start(); break;	
 		
 // ---- Interrupt control SVC calls ---------------------------------------------
-		case SVC_IRQ_EN: 
-			nvic_enable_irq((IRQn_Type) svcArgs[0]);
-			svcArgs[0] = EXIT_SUCCESS;
-			break;
-		case SVC_IRQ_DIS: 
-			nvic_disable_irq((IRQn_Type) svcArgs[0]);
-			svcArgs[0] = EXIT_SUCCESS;
-			break;
-		case SVC_IRQ_SET_PEND: 
-			nvic_set_pending((IRQn_Type) svcArgs[0]);
-			svcArgs[0] = EXIT_SUCCESS;
-			break;
-		case SVC_IRQ_CLEAR_PEND: 
-			nvic_clear_pending((IRQn_Type) svcArgs[0]);
-			svcArgs[0] = EXIT_SUCCESS;
-			break;
-		case SVC_IRQ_READ_ACTIVE: svcArgs[0] = nvic_read_active((IRQn_Type) svcArgs[0]);
-			break;
-		case SVC_IRQ_SET_PRIO: 
-			if (nvic_irq_prio_check(svcArgs[1]))
-				svcArgs[0] = EXIT_FAILURE;
-			else {
-				nvic_set_priority((IRQn_Type) svcArgs[0], svcArgs[1]);
-				svcArgs[0] = EXIT_SUCCESS;
-			}
-			break;		
-		case SVC_IRQ_GET_PRIO: svcArgs[0] = nvic_get_priority((IRQn_Type) svcArgs[0]);
-			break;		
+		case SVC_IRQ_EN: svcArgs[0] = nvic_enable_irq((IRQn_Type) svcArgs[0]); break;
+		case SVC_IRQ_DIS: svcArgs[0] = nvic_disable_irq((IRQn_Type) svcArgs[0]); break;
+		case SVC_IRQ_SET_PEND: svcArgs[0] = nvic_set_pending((IRQn_Type) svcArgs[0]); break;
+		case SVC_IRQ_CLEAR_PEND: svcArgs[0] = nvic_clear_pending((IRQn_Type) svcArgs[0]); break;
+		case SVC_IRQ_READ_ACTIVE: svcArgs[0] = nvic_read_active((IRQn_Type) svcArgs[0]); break;
+		case SVC_IRQ_SET_PRIO: svcArgs[0] = nvic_set_priority((IRQn_Type) svcArgs[0], svcArgs[1]); break;
+		case SVC_IRQ_GET_PRIO: svcArgs[0] = nvic_get_priority((IRQn_Type) svcArgs[0]); break;		
 			
 // ---- Task scheduling SVC calls -----------------------------------------------
 		#ifdef USE_HEAP
-		case SVC_TASK_NEW: 	svcArgs[0] = (uint32_t) task_create_dynamic((void*) svcArgs[0], 
-																		svcArgs[1], svcArgs[2], 0); 
-							break;
+		case SVC_TASK_NEW: svcArgs[0] = (uint32_t) task_create_dynamic((void*) svcArgs[0], 
+			svcArgs[1], svcArgs[2], 0); break;
 		#endif
-		case SVC_TASK_NEW_S: svcArgs[0] = task_create_static((void*) svcArgs[0], (void*) svcArgs[1],  
-														     (void*) svcArgs[2], svcArgs[3], 0); break;
+		case SVC_TASK_NEW_S: svcArgs[0] = task_create_static((void*) svcArgs[0], 
+			(void*) svcArgs[1], (void*) svcArgs[2], svcArgs[3], 0); break;
 		case SVC_TASK_SLEEP: svcArgs[0] = task_sleep(svcArgs[0], SLEEPING);  break;
-		case SVC_TASK_YIELD: scheduler_run(); break;
-		case SVC_TASK_DELETE: task_delete(); break;
+		case SVC_TASK_YIELD: svcArgs[0] = scheduler_run(); break;
+		case SVC_TASK_DELETE: svcArgs[0] = task_delete(); break;
 		
 // ---- Heap management SVC calls -----------------------------------------------
 		#ifdef USE_HEAP	
