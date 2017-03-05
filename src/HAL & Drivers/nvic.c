@@ -9,21 +9,21 @@
 * Note: 		
 *******************************************************************************/
 #include "system.h"
+#include "kernel.h"
 
 
 
 /*-------------------------------------------------------------------------------
-* Interrupt controller setup
+* Minimum allowed IRQ priority at NVIC controller
 *------------------------------------------------------------------------------*/
-#define MAX_IRQ_PRIO 1
-#define MIN_IRQ_PRIO 6
+#define MIN_IRQ_PRIO 7
 
 
 
 /*-------------------------------------------------------------------------------
 * Bit masks and shift values	
 --------------------------------------------------------------------------------*/
-#define PRIO 5 				// LSB position of priority within given byte
+#define PRIO 5 					// LSB position of priority within given byte
 #define PRIO_Msk 0x7 			// Interrupt priority mask
 #define ACT_Msk 0x1 			// Interrupt-active mask
 #define EXCEPTION_No 15 		// Number of Cortex-M4 processor exceptions
@@ -138,6 +138,10 @@ uint32_t nvic_read_active(IRQn_Type irq) {
 * 		exit status
 --------------------------------------------------------------------------------*/
 uint32_t nvic_set_priority(IRQn_Type irq, uint32_t priority) {
+	
+	// Test if priority to set is a valid one
+	if (priority > MIN_IRQ_PRIO)
+		exit(EXIT_INVALID_IRQ_PRIO);
 	
 	// Priorities of exceptions and interrupts are set differently
 	if (irq >= 0)

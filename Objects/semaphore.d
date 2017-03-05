@@ -6,6 +6,7 @@
 .\objects\semaphore.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\semaphore.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\semaphore.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\semaphore.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\semaphore.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\semaphore.o: .\src\Common\common.h
 .\objects\semaphore.o: .\src\HAL & Drivers\time.h
@@ -42,3 +43,9 @@
 .\objects\semaphore.o: .\src\Common\common.h
 .\objects\semaphore.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\semaphore.o: .\src\Common\common.h
+.\objects\semaphore.o: src\Kernel\queue.h
+.\objects\semaphore.o: src\Kernel\KrisOS.h
+.\objects\semaphore.o: .\src\Common\common.h
+.\objects\semaphore.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\semaphore.o: .\src\Common\common.h
+.\objects\semaphore.o: src\Kernel\assertions.h

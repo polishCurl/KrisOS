@@ -56,7 +56,7 @@ uint32_t sem_delete(Semaphore* toDelete);
 * Arguments:	
 * 		toAcquire - semaphore to acquire
 * Returns: 		
-*		exit status
+*		exit status. If semaphore can't be taken exit status = EXIT_FAILURE
 --------------------------------------------------------------------------------*/
 uint32_t sem_try_acquire(Semaphore* toAcquire);
 
@@ -64,14 +64,13 @@ uint32_t sem_try_acquire(Semaphore* toAcquire);
 
 /*-------------------------------------------------------------------------------
 * Function:    	sem_acquire
-* Purpose:    	Attempt to decrement the semaphore. Wait if unsuccessful for maximum
-* 				of 'timout' milliseconds
+* Purpose:    	Decrement the semaphore. Wait on the semaphore if 
+*				unsuccessful.
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* 		timout - semaphore timeout (timeout = 0 causes infinite wait on semaphore)
 * Returns: -
 --------------------------------------------------------------------------------*/
-uint32_t sem_acquire(Semaphore* toAcquire, uint32_t timout);
+uint32_t sem_acquire(Semaphore* toAcquire);
 
 
 

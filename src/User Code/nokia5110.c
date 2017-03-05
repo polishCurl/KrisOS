@@ -163,6 +163,19 @@ __FILE nokia5110;
 *			(allocated on heap)
 *******************************************************************************/
 void nokiaLCDSetup(void) {
+	
+	int16_t a, b;
+	Queue* testQ = KrisOS_queue_create(5, sizeof(int16_t));
+	
+	for (a = 0; a < 6; a++)
+		KrisOS_queue_try_write(testQ, &a);
+	
+	for (a = 0; a < 6; a++)
+		KrisOS_queue_try_read(testQ, &b);
+	
+	a = 231;
+	KrisOS_queue_try_write(testQ, &a);	
+	KrisOS_queue_try_read(testQ, &a);	
 
 	// Initialise the screen together with a mutex on it
 	nokiaMtx = (Mutex*) KrisOS_mutex_create();

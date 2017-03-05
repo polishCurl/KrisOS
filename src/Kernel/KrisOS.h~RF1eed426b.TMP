@@ -139,8 +139,6 @@ typedef enum {
 	MTX_WAIT,
 	SEM_WAIT,
 	REMOVED,
-	QUEUE_WRITE_WAIT,
-	QUEUE_READ_WAIT,
 } TaskState;
 
 // Memory allocation type
@@ -256,11 +254,6 @@ typedef struct __FILE {
 #define SVC_SEM_RELEASE 27 			// Release a semaphore
 #define SVC_QUEUE_INIT 28 			// Initialise the queue given
 #define SVC_QUEUE_CREATE 29 		// Create a queue
-#define SVC_QUEUE_DELETE 30 		// Delete a queue
-#define SVC_QUEUE_TRY_WRITE 31 		// Attempt to write to a queue
-#define SVC_QUEUE_TRY_READ 32 		// Attempt to read from a queue
-#define SVC_QUEUE_WRITE 33 			// Write to a queue 
-#define SVC_QUEUE_READ 34 	 		// Read from a queue
 
 
 
@@ -618,19 +611,19 @@ uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_release_ISR
+* Function:    	KrisOS_sem_release_from_ISR
 * Purpose:    	Release the semaphore specified by an interrupt service routine
 * Arguments:	
 *		toRelease - semaphore to release		
 * Returns: 		
 *		exit status 
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_sem_release_ISR(Semaphore* toRelease);
+uint32_t KrisOS_sem_release_from_ISR(Semaphore* toRelease);
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_acquire_ISR
+* Function:    	KrisOS_sem_acquire_from_ISR
 * Purpose:    	Take the semaphore by an interrupt service routine. Don't wait if
 *				unsuccessful
 * Arguments:	
@@ -638,7 +631,7 @@ uint32_t KrisOS_sem_release_ISR(Semaphore* toRelease);
 * Returns: 		
 *		exit status 
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_sem_acquire_ISR(Semaphore* toAcquire);
+uint32_t KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire);
 
 #endif
 
@@ -671,100 +664,6 @@ uint32_t __svc(SVC_QUEUE_INIT) KrisOS_queue_init(Queue* toInit, void* bufferMemo
 *		exit status
 --------------------------------------------------------------------------------*/
 Queue* __svc(SVC_QUEUE_CREATE) KrisOS_queue_create(size_t capacity, size_t itemSize);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_delete
-* Purpose:    	Remove the queue given
-* Arguments:	
-* 		toDelete - queue to delete
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_DELETE) KrisOS_queue_delete(Queue* toDelete);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_try_write
-* Purpose:    	Put the item given in the queue specified. Don't wait if the queue
-*				is full.
-* Arguments:	
-* 		toWrite - queue to write to
-*		item - pointer to the item to be put in the queue
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_TRY_WRITE) KrisOS_queue_try_write(Queue* toWrite, const void* item);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_try_read
-* Purpose:    	Read the next item from the queue specified. Don't wait if the
-*				queue is empty.
-* Arguments:	
-* 		toRead - queue to read from
-*		item - item read from the queue
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_TRY_READ) KrisOS_queue_try_read(Queue* toRead, void* item);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_write
-* Purpose:    	Put the item given in the queue specified. Wait if the queue
-*				is full.
-* Arguments:	
-* 		toWrite - queue to write to
-*		item - pointer to the item to be put in the queue
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_WRITE) KrisOS_queue_write(Queue* toWrite, const void* item);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_read
-* Purpose:    	Read the next item from the queue specified. Wait if the
-*				queue is empty.
-* Arguments:	
-* 		toRead - queue to read from
-*		item - item read from the queue
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_READ) KrisOS_queue_read(Queue* toRead, void* item);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_write_ISR
-* Purpose:    	Put the item given in the queue specified while inside ISR (don't wait)
-* Arguments:	
-* 		toWrite - queue to write to
-*		item - pointer to the item to be put in the queue
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t KrisOS_queue_write_ISR(Queue* toWrite, const void* item);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	KrisOS_queue_read_ISR
-* Purpose:    	Read the next item from the queue specified while inside ISR (don't wait)
-* Arguments:	
-* 		toRead - queue to read from
-*		item - item read from the queue
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t KrisOS_queue_read_ISR(Queue* toRead, void* item);
 					
 #endif
 

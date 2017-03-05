@@ -15,6 +15,15 @@
 
 
 /*-------------------------------------------------------------------------------
+* Semihosting is not supported by MDK-ARM. Semihosting is a mechanism that enables 
+* code running on an ARM target to communicate and use the Input/Output facilities 
+* on a host computer that is running a debugger.
+--------------------------------------------------------------------------------*/
+#pragma import(__use_no_semihosting_swi)
+
+
+
+/*-------------------------------------------------------------------------------
 * Kernel status block
 --------------------------------------------------------------------------------*/
 Kernel KrisOS;
@@ -39,14 +48,17 @@ uint32_t os_init(void) {
 		// Set up the system clock
 		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);
 		
-		// Reset the mutex and semaphore counters
-		#ifdef SHOW_DIAGNOSTIC_DATA
-			#ifdef USE_MUTEX
-				KrisOS.totalMutexNo = 0;
-			#endif
-			#ifdef USE_SEMAPHORE
+		// Reset the mutex, semaphore and queue counters
+		#if defined SHOW_DIAGNOSTIC_DATA && defined USE_MUTEX
+			KrisOS.totalMutexNo = 0;
+		#endif
+			
+		#if defined SHOW_DIAGNOSTIC_DATA && defined USE_SEMAPHORE
 				KrisOS.totalSemNo = 0;
-			#endif
+		#endif
+		
+		#if defined SHOW_DIAGNOSTIC_DATA && defined USE_QUEUE
+				KrisOS.totalQueueNo = 0;
 		#endif
 		
 		// Initialse the scheduler
@@ -178,7 +190,7 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		#endif
 		case SVC_TASK_NEW_S: svcArgs[0] = task_create_static((void*) svcArgs[0], 
 			(void*) svcArgs[1], (void*) svcArgs[2], svcArgs[3], 0); break;
-		case SVC_TASK_SLEEP: svcArgs[0] = task_sleep(svcArgs[0], SLEEPING);  break;
+		case SVC_TASK_SLEEP: svcArgs[0] = task_sleep(svcArgs[0]);  break;
 		case SVC_TASK_YIELD: svcArgs[0] = scheduler_run(); break;
 		case SVC_TASK_DELETE: svcArgs[0] = task_delete(); break;
 		
@@ -204,11 +216,91 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_SEM_CREATE: svcArgs[0] = (uint32_t) sem_create(svcArgs[0]); break;
 		case SVC_SEM_DELETE: svcArgs[0] = sem_delete((void*) svcArgs[0]); break;
 		case SVC_SEM_TRY_ACQUIRE: svcArgs[0] = (uint32_t) sem_try_acquire((void*) svcArgs[0]); break;
-		case SVC_SEM_ACQUIRE: svcArgs[0] = sem_acquire((void*) svcArgs[0], TIME_INFINITY); break;
-		case SVC_SEM_ACQUIRE_TIME: svcArgs[0] = sem_acquire((void*) svcArgs[0], svcArgs[1]); break;
+		case SVC_SEM_ACQUIRE: svcArgs[0] = sem_acquire((void*) svcArgs[0]); break;
 		case SVC_SEM_RELEASE: svcArgs[0] = (uint32_t) sem_release((void*) svcArgs[0]); break;
 		#endif 
+		
+// ---- Inter-task queue management SVC calls -------------------------------------------
+		#ifdef USE_SEMAPHORE
+		case SVC_QUEUE_INIT: svcArgs[0] = queue_init((void*) svcArgs[0], (void*) svcArgs[1],
+			svcArgs[2], svcArgs[3]); break;
+		case SVC_QUEUE_CREATE: svcArgs[0] = (uint32_t) queue_create(svcArgs[0], svcArgs[1]); break;
+		case SVC_QUEUE_DELETE: svcArgs[0] = queue_delete((void*) svcArgs[0]); break;
+		case SVC_QUEUE_TRY_WRITE: svcArgs[0] = queue_try_write((void*) svcArgs[0], 
+			(const void*) svcArgs[1]); break;	
+		case SVC_QUEUE_TRY_READ: svcArgs[0] = queue_try_read((void*) svcArgs[0], 
+			(void*) svcArgs[1]); break;
+		case SVC_QUEUE_WRITE: svcArgs[0] = queue_write((void*) svcArgs[0], 
+			(const void*) svcArgs[1]); break;	
+		case SVC_QUEUE_READ: svcArgs[0] = queue_read((void*) svcArgs[0], (void*) svcArgs[1]); break;	
+
+		#endif 		
+		
 		default: break;
 	}
 	return;
 }
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	ferror
+* Purpose:    	Test the error indicator for the given stream
+* Arguments:	-
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+int ferror(FILE *file) {
+	return EOF;
+}
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	_ttywrch
+* Purpose:    	Write a character to the console.
+* Arguments:	
+*		character - character to write
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void _ttywrch(int character) {
+	#ifdef USE_UART
+		uart_send_char(character);
+	#endif
+}
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	_sys_exit
+* Purpose:    	KrisOS exit routine. Must not return. 
+* Arguments:	
+*		return_code - advisory
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void _sys_exit(int return_code) {
+	
+	// Display informative message specifying the cause of KrisOS termination
+	#if defined USE_UART && defined SHOW_DIAGNOSTIC_DATA
+		switch (return_code) {
+			case EXIT_SUCCESS: 
+				fprintf(&uart, "\nShutting down KrisOS. No errors..."); 
+				break;
+			case EXIT_NULL: 
+				fprintf(&uart, "\nInvalid reference! NULL pointer passed...");
+				break;
+			case EXIT_INVALID_IRQ_PRIO: 
+				fprintf(&uart, "\nInvalid interrupt priority specified! Greater than 7...");
+				break;
+			case EXIT_HEAP_TOO_SMALL: 
+				fprintf(&uart, "\nNo more heap space available! Increase the heap size...");
+				break;
+			default: break;
+		}
+
+		 fprintf(&uart, "\nTerminating...");
+	#endif
+		
+		
+	while(1);
+}
+

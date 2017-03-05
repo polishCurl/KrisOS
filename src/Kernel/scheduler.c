@@ -178,16 +178,17 @@ void scheduler_wake_tasks(void) {
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-Task* task_create_dynamic(void* startAddr, uint32_t stackSize, uint32_t priority,
-						  uint32_t isPrivileged) {
+Task* task_create_dynamic(void* startAddr, size_t stackSize, uint8_t priority,
+						  uint8_t isPrivileged) {
 	
 	// Pointer to the task to create
 	Task* toCreate;				 
 						 
 	// Test if the starting address of the task code is valid
 	TEST_NULL_POINTER(startAddr)
+	TEST_INVALID_SIZE(stackSize)
 	
-	// Adjust the stack size to comply with the stack alignment
+	// Adjust the stack size to comply with the double-word stack alignment
 	if (stackSize % STACK_ALIGNMENT)
 		stackSize = stackSize + (STACK_ALIGNMENT - stackSize % STACK_ALIGNMENT);
 	
@@ -232,7 +233,7 @@ Task* task_create_dynamic(void* startAddr, uint32_t stackSize, uint32_t priority
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase, 
-					        uint32_t priority, uint32_t isPrivileged) {
+					        uint8_t priority, uint8_t isPrivileged) {
 						 				 
 	// Test if input arguments are valid
 	TEST_NULL_POINTER(toDeclare)
@@ -261,11 +262,10 @@ uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase,
 * 				OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
-*		waitState - task state for the time it is temporarily suspended
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_sleep(uint64_t delay, TaskState state) {
+uint32_t task_sleep(uint64_t delay) {
 	
 	// Iterators trough the delayed queue and a pointer to the task to delay
 	Task *iterator, *previous, *toDelay;
@@ -278,13 +278,13 @@ uint32_t task_sleep(uint64_t delay, TaskState state) {
 		#endif		
 		
 		// Only the calling task (currently executing) can delay itself. Remove the
-		// running task from the queue it belongs to
+		// running task from the ready queue
 		toDelay = scheduler.runPtr;
 		task_remove(&scheduler.ready, toDelay);
 		
 		// Update the wait counter and reschedule tasks
 		toDelay->waitCounter = delay == TIME_INFINITY ? UINT64_MAX : KrisOS.ticks + delay;
-		toDelay->status = state;
+		toDelay->status = SLEEPING;
 		scheduler_run();
 		
 		// Insert the task to the queue with delayed tasks. Insertion sort is 
@@ -464,7 +464,7 @@ uint32_t task_remove(Task** queue, Task* toRemove) {
 * Returns: 
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_t priority) {
+uint32_t task_init(Task* toInit, void* startAddr, uint8_t isPrivileged, uint8_t priority) {
 	
 	// Helper pointer for specifying initial register values in the stack frame
 	uint32_t* taskFramePtr; 
@@ -532,6 +532,8 @@ uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void task_complete_handler(void) {
+	
+	// Self-deletion of completed (one-off) tasks 
 	KrisOS_task_delete();
 }
 
@@ -547,13 +549,17 @@ void task_complete_handler(void) {
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, uint32_t size) {
+uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, size_t size) {
 	
 	uint32_t* iterator;
 	uint32_t* endAddress;
 	
+	// Argument checks
+	TEST_NULL_POINTER(toPrepare)
+	TEST_INVALID_SIZE(size)
+	
 	// Iterate through each word in the given memory area and initialise it to some 
-	// known value. This is later useful for stack usage computation
+	// known value. This is later used for stack usage computation
 	iterator = toPrepare;
 	endAddress = toPrepare + size / 4;
 	while (iterator < endAddress)

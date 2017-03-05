@@ -28,6 +28,13 @@
 
 
 /*-------------------------------------------------------------------------------
+* Address shift for word access (1 word = 4 bytes)
+*------------------------------------------------------------------------------*/
+#define WORD_ACCESS_SHIFT 2
+
+
+
+/*-------------------------------------------------------------------------------
 * Exception return possible values
 *------------------------------------------------------------------------------*/
 #define	EXC_RETURN_0 0xFFFFFFF1U		// Return to Handler mode, exception return uses non-floating-point 
@@ -112,8 +119,8 @@ void scheduler_wake_tasks(void);
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
-						  uint32_t isPrivileged);
+Task* task_create_dynamic(void* startAddr, size_t stackSize, uint8_t priority,
+						  uint8_t isPrivileged);
 #endif
 
 
@@ -131,7 +138,7 @@ Task* task_create_dynamic(void* startAddr, size_t stackSize, uint32_t priority,
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase, 
-					        uint32_t priority, uint32_t isPrivileged);
+					        uint8_t priority, uint8_t isPrivileged);
 
 
 
@@ -141,11 +148,10 @@ uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase,
 * 				OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
-*		waitState - task state for the time it is temporarily suspended
 * Returns: 
 * 		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_sleep(uint64_t delay, TaskState state);
+uint32_t task_sleep(uint64_t delay);
 
 
 
@@ -198,7 +204,7 @@ uint32_t task_remove(Task** queue, Task* toRemove);
 * Returns: 
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_init(Task* toInit, void* startAddr, uint32_t isPrivileged, uint32_t priority);
+uint32_t task_init(Task* toInit, void* startAddr, uint8_t isPrivileged, uint8_t priority);
 
 
 

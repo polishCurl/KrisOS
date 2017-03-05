@@ -13,3 +13,5 @@
 #include "mutex.h"
 #include "os.h"
 #include "semaphore.h"
+#include "queue.h"
+#include "assertions.h"

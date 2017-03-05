@@ -150,6 +150,10 @@ void* malloc(size_t bytesToAlloc) {
 		#else
 			__end_critical();
 		#endif
+		
+		// Test if there is insufficient free heap memory left to serve this request
+		if (iterator == &heap.endBlock)
+			exit(EXIT_HEAP_TOO_SMALL);
 	}
 	return allocatedMemory;	
 }
@@ -169,32 +173,33 @@ void free(void* toFree) {
 	uint8_t* bytesToFree;
 	HeapBlock* blockToFree;
 	
+	// Validate the input argument
+	TEST_NULL_POINTER(toFree)
+	
 	// Test if pointer points to heap memory
 	if (toFree < (void*) &heap.heapMem[0] || toFree >= (void*) &heap.heapMem[ALIGNED_HEAP_SIZE])
 		return;
 	
-	// If the pointer is meaninful, then cast it into heap block that shall be
-	// added back to the list of free blocks. Updates the number of bytes used
-	if (toFree != NULL) {
-		bytesToFree = (uint8_t*) toFree;
-		bytesToFree -= sizeof(HeapBlock);
-		blockToFree = (HeapBlock*) bytesToFree;
-		
-		#ifdef USE_MUTEX
-			mutex_lock(&heap.heapMutex);
-		#else
-			__start_critical();
-		#endif
-		{
-			heap_insert_free_block(blockToFree);
-			heap.heapBytesUsed -= blockToFree->blockSize;
-		}
-		#ifdef USE_MUTEX
-			mutex_unlock(&heap.heapMutex);
-		#else
-			__end_critical();
-		#endif
+	// Create a new heap block from the memory area to freed and re-insert it to the
+	// list of free heap blocks
+	bytesToFree = (uint8_t*) toFree;
+	bytesToFree -= sizeof(HeapBlock);
+	blockToFree = (HeapBlock*) bytesToFree;
+	
+	#ifdef USE_MUTEX
+		mutex_lock(&heap.heapMutex);
+	#else
+		__start_critical();
+	#endif
+	{
+		heap_insert_free_block(blockToFree);
+		heap.heapBytesUsed -= blockToFree->blockSize;
 	}
+	#ifdef USE_MUTEX
+		mutex_unlock(&heap.heapMutex);
+	#else
+		__end_critical();
+	#endif
 }	
 
 

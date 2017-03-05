@@ -407,6 +407,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\Kernel\os_tasks.c</FilePath>
             </File>
+            <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Kernel\queue.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -876,6 +881,11 @@
               <FileName>os_tasks.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Kernel\os_tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Kernel\queue.c</FilePath>
             </File>
           </Files>
         </Group>

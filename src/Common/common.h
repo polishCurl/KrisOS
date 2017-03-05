@@ -1,45 +1,21 @@
 /*******************************************************************************
 * File:     	common.h
-* Brief:    	Common libraries to include and other definitions
+* Brief:    	Standard libraries and common definitions used across various
+*				files in KrisOS code.
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
-* Last mod: 	04/12/2016
+* Last mod: 	02/03/2017
 *
 * Note: 		
 *******************************************************************************/
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 
-/*-------------------------------------------------------------------------------
-* Shift value for word access
-*------------------------------------------------------------------------------*/
-#define WORD_ACCESS_SHIFT 2
-
-
-
-/*-------------------------------------------------------------------------------
-* Macro for expressing that an item wasn't found
-*------------------------------------------------------------------------------*/
-#define NOT_FOUND -1
-
-
-
-/*-------------------------------------------------------------------------------
-* Macro:    	TEST_NULL_POINTER
-* Purpose:    	Test if given pointer is a NULL one. if so, exit
-* Arguments:	
-*		ptr - pointer to test
-* Returns: 		-	
---------------------------------------------------------------------------------*/
-#define TEST_NULL_POINTER(PTR) 					\
-	if (PTR == NULL) 							\
-		exit(1); 								
 	
-	
-
 /*-------------------------------------------------------------------------------
 * Floating point data types defnition
 *------------------------------------------------------------------------------*/

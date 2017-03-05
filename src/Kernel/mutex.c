@@ -11,10 +11,9 @@
 #include "kernel.h"
 #include "system.h"
 
+
+
 #ifdef USE_MUTEX
-
-
-
 /*-------------------------------------------------------------------------------
 * Function:    	mutex_init
 * Purpose:    	Initialise the mutex given
@@ -67,6 +66,8 @@ Mutex* mutex_create(void) {
 uint32_t mutex_try_lock(Mutex* toLock) {
 	
 	uint32_t exitStatus;
+	
+	// Check if the argument is valid
 	TEST_NULL_POINTER(toLock)
 	
 	__start_critical();
@@ -113,6 +114,8 @@ uint32_t mutex_lock(Mutex* toLock) {
 	
 	// Mutex for which the current task is waiting
 	Mutex* mutexWaiting;
+	
+	// Check if the argument is valid
 	TEST_NULL_POINTER(toLock)
 	
 	// Avoid deadlocks by checking if the calling tasks already owns some other mutex
@@ -183,6 +186,7 @@ uint32_t mutex_lock(Mutex* toLock) {
 --------------------------------------------------------------------------------*/
 uint32_t mutex_unlock(Mutex* toUnlock) {
 	
+	// Check if the argument is valid
 	TEST_NULL_POINTER(toUnlock)
 	
 	// Test if the calling task actually owns the mutex and this is the most recent mutex
@@ -246,23 +250,24 @@ uint32_t mutex_unlock(Mutex* toUnlock) {
 --------------------------------------------------------------------------------*/
 uint32_t mutex_delete(Mutex* toDelete) {
 	
+	// Check if the argument is valid
 	TEST_NULL_POINTER(toDelete)
 	
 	__start_critical();
-	{	
-		// Update the total number of mutexes declared		
-		#ifdef SHOW_DIAGNOSTIC_DATA
-			KrisOS.totalMutexNo--;	
-		#endif				
-		
-		// Only remove mutexes that are not used and don't have tasks waiting on them
+	{			
+		// Only remove mutexes that are not taken by any task and don't have tasks waiting on them
 		if (toDelete->owner != NULL || toDelete->waitingQueue != NULL) {
 			__end_critical();
 			return EXIT_FAILURE;
 		}
 		
-		toDelete->owner = toDelete->waitingQueue = NULL;
+		// Release the heap memory this mutex occupies (if allocated dynamically)
 		free(toDelete);
+		
+		// Update the total number of mutexes declared		
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			KrisOS.totalMutexNo--;	
+		#endif		
 	}
 	__end_critical();
 	return EXIT_SUCCESS;

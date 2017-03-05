@@ -16,8 +16,8 @@
 * Declare the user tasks
 ------------------------------------------------------------------------------*/
 KrisOS_task_static_template(thermometer, 256, 20)
-KrisOS_task_static_template(lightSensor, 400, 2)
-KrisOS_task_dynamic_template(nokiaLCDSetup, 256, 1)
+KrisOS_task_static_template(lightSensor, 400, 1)
+KrisOS_task_dynamic_template(nokiaLCDSetup, 256, 2)
 KrisOS_task_dynamic_template(nokiaLCDBacklight, 256, 32)
 
 

@@ -7,6 +7,7 @@
 .\objects\mutex.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\mutex.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\mutex.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\mutex.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\mutex.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\mutex.o: .\src\Common\common.h
 .\objects\mutex.o: src\Kernel\scheduler.h
@@ -26,6 +27,12 @@
 .\objects\mutex.o: .\src\Common\common.h
 .\objects\mutex.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\mutex.o: .\src\Common\common.h
+.\objects\mutex.o: src\Kernel\queue.h
+.\objects\mutex.o: src\Kernel\KrisOS.h
+.\objects\mutex.o: .\src\Common\common.h
+.\objects\mutex.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\mutex.o: .\src\Common\common.h
+.\objects\mutex.o: src\Kernel\assertions.h
 .\objects\mutex.o: .\src\HAL & Drivers\system.h
 .\objects\mutex.o: .\src\HAL & Drivers\uart.h
 .\objects\mutex.o: .\src\Kernel\KrisOS.h

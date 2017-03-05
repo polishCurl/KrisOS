@@ -10,10 +10,10 @@
 *******************************************************************************/
 #include "system.h"
 #include "kernel.h"
+
+
+
 #ifdef USE_SEMAPHORE
-
-
-
 /*-------------------------------------------------------------------------------
 * Function:    	sem_init
 * Purpose:    	Initialise the semaphore given
@@ -25,7 +25,9 @@
 --------------------------------------------------------------------------------*/
 uint32_t sem_init(Semaphore* toInit, uint32_t startVal) {
 	
+	// Check if the Semaphore pointer is valid
 	TEST_NULL_POINTER(toInit)
+	
 	toInit->waitingQueue = NULL;
 	toInit->counter = startVal;
 	
@@ -66,18 +68,32 @@ Semaphore* sem_create(uint32_t startVal) {
 --------------------------------------------------------------------------------*/
 uint32_t sem_delete(Semaphore* toDelete) {
 	
-	// Reset the member variables to indicate that the semaphore is no longer in use
+	// Validate the input argument
 	TEST_NULL_POINTER(toDelete)
-	toDelete->counter = UINT32_MAX;
-	toDelete->waitingQueue = NULL;
 	
-	// Update the total number of semaphores declared		
-	#ifdef SHOW_DIAGNOSTIC_DATA
-		KrisOS.totalSemNo--;	
-	#endif		
+	__start_critical();
+	{
+		// Check if the semaphore isn't currently waited on
+		if (toDelete->waitingQueue != NULL) {
+			__end_critical();
+			return EXIT_FAILURE;
+		}
 	
-	// Free the heap memory occupied (if allocated on heap)
-	free(toDelete);
+		// Reset the semaphore counter to indicate that the semaphore is no 
+		// longer in use. This is useful for spotting 'deleted' statically 
+		// allocated data structures which can't actually be physically 
+		// removed from memory.
+		toDelete->counter = UINT32_MAX;
+		
+		// Update the total number of semaphores declared		
+		#ifdef SHOW_DIAGNOSTIC_DATA
+			KrisOS.totalSemNo--;	
+		#endif		
+		
+		// Free the heap memory occupied (if allocated on heap)
+		free(toDelete);
+	}
+	__end_critical();
 	return EXIT_SUCCESS;
 }
 
@@ -89,7 +105,7 @@ uint32_t sem_delete(Semaphore* toDelete) {
 * Arguments:	
 * 		toAcquire - semaphore to acquire
 * Returns: 		
-*		exit status
+*		exit status. If semaphore can't be taken exit status = EXIT_FAILURE
 --------------------------------------------------------------------------------*/
 uint32_t sem_try_acquire(Semaphore* toAcquire) {
 	
@@ -115,42 +131,32 @@ uint32_t sem_try_acquire(Semaphore* toAcquire) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	sem_acquire
-* Purpose:    	Attempt to decrement the semaphore. Wait if unsuccessful for maximum
-* 				of 'timout' milliseconds
+* Purpose:    	Decrement the semaphore. Wait on the semaphore if 
+*				unsuccessful.
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* 		timout - semaphore timeout (timeout = 0 causes infinite wait on semaphore)
 * Returns: -
 --------------------------------------------------------------------------------*/
-uint32_t sem_acquire(Semaphore* toAcquire, uint32_t timout) {
+uint32_t sem_acquire(Semaphore* toAcquire) {
 
+	// Validate the semaphore pointer
 	TEST_NULL_POINTER(toAcquire)
 	__start_critical();
-	{
-		Task* callingTask = scheduler.runPtr;
-		
+	{		
 		// Check if the semaphore can be acquired immidietaly, otherwise ...
 		if (sem_try_acquire(toAcquire) == EXIT_FAILURE) {
 			
 			// Link the semaphore with the calling task
-			callingTask->waitingObj = toAcquire;
+			scheduler.runPtr->waitingObj = toAcquire;
 			
-			// If valid timout is specified, then put the calling task to sleep for 
-			// the amount of time specified
-			if (timout != TIME_INFINITY) {
-				task_sleep(timout, SEM_WAIT);
-			}
-			// If there is no wait timout then simply remove the calling task from
-			// the ready ones and run the scheduler
-			else {
-				task_remove(&scheduler.ready, callingTask);
-				callingTask->status = SEM_WAIT;
-				scheduler_run();
-			}
+			// Remove the calling task from the ready ones and reschedule the
+			// remaining tasks
+			task_remove(&scheduler.ready, scheduler.runPtr);
+			scheduler.runPtr->status = SEM_WAIT;
+			scheduler_run();
 			
-			// Add the calling task to the semaphore waiting queue regardless of the
-			// timout
-			task_add(&toAcquire->waitingQueue, callingTask);
+			// Add the calling task to the semaphore waiting queue
+			task_add(&toAcquire->waitingQueue, scheduler.runPtr);
 		}	
 	}
 	__end_critical();
@@ -165,7 +171,7 @@ uint32_t sem_acquire(Semaphore* toAcquire, uint32_t timout) {
 * Arguments:	
 *		toRelease - semaphore to release
 * Returns: 		
-*		exit status (if lock already acquired - EXIT_FAILURE)
+*		exit status 
 --------------------------------------------------------------------------------*/
 uint32_t sem_release(Semaphore* toRelease) {
 	
@@ -174,7 +180,7 @@ uint32_t sem_release(Semaphore* toRelease) {
 	
 	__start_critical();
 	{	
-		// If there is at least one task waiting on the semaphore then ready it 
+		// If there is at least one task waiting on the semaphore then make it ready 
 		if (toRelease->waitingQueue != NULL) {
 			nextToAcquire = toRelease->waitingQueue;
 			task_remove(&toRelease->waitingQueue, nextToAcquire);
@@ -192,22 +198,23 @@ uint32_t sem_release(Semaphore* toRelease) {
 }
 
 
+
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_release_from_ISR
+* Function:    	KrisOS_sem_release_ISR
 * Purpose:    	Release the semaphore specified by an interrupt service routine
 * Arguments:	
 *		toRelease - semaphore to release		
 * Returns: 		
 *		exit status 
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_sem_release_from_ISR(Semaphore* toRelease) {
+uint32_t KrisOS_sem_release_ISR(Semaphore* toRelease) {
 	return sem_release(toRelease);
 }
 
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_acquire_from_ISR
+* Function:    	KrisOS_sem_acquire_ISR
 * Purpose:    	Take the semaphore by an interrupt service routine. Don't wait if
 *				unsuccessful
 * Arguments:	
@@ -215,7 +222,7 @@ uint32_t KrisOS_sem_release_from_ISR(Semaphore* toRelease) {
 * Returns: 		
 *		exit status 
 --------------------------------------------------------------------------------*/
-uint32_t KrisOS_sem_acquire_from_ISR(Semaphore* toAcquire) {
+uint32_t KrisOS_sem_acquire_ISR(Semaphore* toAcquire) {
 	return sem_try_acquire(toAcquire);
 }
 

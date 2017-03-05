@@ -236,7 +236,7 @@ void ADC0SS3_Handler(void) {
 	ADC0->ISC |= 1 << ISC_DCINSS3;
 	
 	// Notify the task responsible for handling the excessive light energy amount
-	KrisOS_sem_release_from_ISR(&lightSensorSem);
+	KrisOS_sem_release_ISR(&lightSensorSem);
 }
 
 

@@ -19,15 +19,16 @@
 typedef struct {
 	uint8_t isRunning; 					// Flag indicating if the OS is running
 	uint64_t ticks; 					// OS ticks, incremented on every timer interrupt
-#ifdef SHOW_DIAGNOSTIC_DATA
-#ifdef USE_MUTEX
+#if defined SHOW_DIAGNOSTIC_DATA && defined USE_MUTEX
 	uint32_t maxMtxCriticalSection; 	// Longest critical section implemented using mutexes
 	uint32_t totalMutexNo; 				// Total number of mutexes in use
 #endif
-#ifdef USE_SEMAPHORE
+#if defined SHOW_DIAGNOSTIC_DATA && defined USE_SEMAPHORE
 	uint32_t totalSemNo; 				// Total number of semaphores in use
 #endif
-#endif
+#if defined SHOW_DIAGNOSTIC_DATA && defined USE_QUEUE
+	uint32_t totalQueueNo;				// Total number of queues in use
+#endif	
 } Kernel; 
 
 extern Kernel KrisOS;

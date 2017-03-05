@@ -7,6 +7,7 @@
 .\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\os.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: src\Kernel\scheduler.h
@@ -26,6 +27,12 @@
 .\objects\os.o: .\src\Common\common.h
 .\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
 .\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\queue.h
+.\objects\os.o: src\Kernel\KrisOS.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: .\src\HAL & Drivers\tm4c123gh6pm.h
+.\objects\os.o: .\src\Common\common.h
+.\objects\os.o: src\Kernel\assertions.h
 .\objects\os.o: .\src\HAL & Drivers\system.h
 .\objects\os.o: .\src\HAL & Drivers\uart.h
 .\objects\os.o: .\src\Kernel\KrisOS.h

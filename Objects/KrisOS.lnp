@@ -5,6 +5,7 @@
 ".\objects\mutex.o"
 ".\objects\semaphore.o"
 ".\objects\os_tasks.o"
+".\objects\queue.o"
 ".\objects\nvic.o"
 ".\objects\special_reg_access.o"
 ".\objects\time.o"

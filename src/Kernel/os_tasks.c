@@ -65,7 +65,7 @@ void stats(void) {
 		// Take note of the time the task was last run and put it to sleep in order
 		// to take time to gather usage data
 		lastRun = KrisOS.ticks;
-		task_sleep(DIAG_DATA_RATE, SLEEPING);
+		task_sleep(DIAG_DATA_RATE);
 		
 		// Update the current time 
 		currentTime = KrisOS.ticks;
@@ -93,6 +93,10 @@ void stats(void) {
 			
 			#ifdef USE_SEMAPHORE
 				fprintf(&uart, "Semaphores:\t\t%d\n", KrisOS.totalSemNo);
+			#endif
+			
+			#ifdef USE_QUEUE
+				fprintf(&uart, "Queues:\t\t%d\n", KrisOS.totalQueueNo);
 			#endif
 			
 			#ifdef USE_HEAP
@@ -140,6 +144,9 @@ void stats(void) {
 					case SLEEPING: fprintf(&uart, "SLEEPING\t"); break;
 					case MTX_WAIT: fprintf(&uart, "MUTEX WAIT\t"); break;
 					case SEM_WAIT: fprintf(&uart, "SEM WAIT\t"); break;
+					case REMOVED: fprintf(&uart, "REMOVED\t"); break;
+					case QUEUE_WRITE_WAIT: fprintf(&uart, "QUEUE WRITE WAIT\t"); break;
+					case QUEUE_READ_WAIT: fprintf(&uart, "QUEUE READ WAIT\t"); break;
 					default: break;
 				}
 

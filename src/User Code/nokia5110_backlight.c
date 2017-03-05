@@ -101,7 +101,7 @@ void GPIOF_Handler(void) {
 	
 	// Release the semaphore for which nokiaLCDBacklight Task is waiting and clear
 	// the interrupt source
-	KrisOS_sem_release_from_ISR(backlightSem);
+	KrisOS_sem_release_ISR(backlightSem);
 	GPIOF->ICR |= 1 << PIN0;
 }
 
