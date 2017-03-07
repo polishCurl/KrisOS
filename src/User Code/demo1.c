@@ -28,13 +28,20 @@ KrisOS_task_static_template(secondTimer, 200, 23)
 * Purpose: 	Compute and display all prime numbers between low and high
 *******************************************************************************/
 void primes(void) {
+	
+	Queue* q;
 		
 	// Range of numbers from which the primes should be picked.
 	int32_t low, high;
 
+
+	
 	// Helper iterator and a flag raised when the currently considered
 	// number is divisible by more numbers than '1'.
 	int32_t i, flag;
+	
+	q = KrisOS_queue_create(23, 1);
+	KrisOS_queue_delete(q);
 
 	// Initialise the range and output header message.
 	low = 2;
@@ -68,7 +75,7 @@ void primes(void) {
 * Purpose: 	Display the number of seconds elapsed since the start of this task
 *******************************************************************************/
 void secondTimer(void) {
-
+	
 	uint32_t secondsElapsed = 0;
 	while(1) {
 		KrisOS_task_sleep(100);

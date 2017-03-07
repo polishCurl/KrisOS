@@ -17,7 +17,7 @@
 /*-----------------------------------------------------------------------------
 * Declare the user tasks
 ------------------------------------------------------------------------------*/
-KrisOS_task_static_template(idle, 100, UINT8_MAX)
+KrisOS_task_static_template(idle, 256, UINT8_MAX)
 #ifdef SHOW_DIAGNOSTIC_DATA
 	KrisOS_task_static_template(stats, 512, DIAG_DATA_PRIO)
 #endif
@@ -271,16 +271,16 @@ uint32_t task_sleep(uint64_t delay) {
 	Task *iterator, *previous, *toDelay;
 	
 	__start_critical();
-	{	
-		// Release any locks the calling tasks has		
-		#ifdef USE_MUTEX 	
-			mutex_release_all(scheduler.runPtr);
-		#endif		
-		
+	{			
 		// Only the calling task (currently executing) can delay itself. Remove the
 		// running task from the ready queue
 		toDelay = scheduler.runPtr;
 		task_remove(&scheduler.ready, toDelay);
+		
+		// Release any locks the calling tasks has		
+		#ifdef USE_MUTEX 	
+			mutex_unlock(toDelay->mutexHeld);
+		#endif		
 		
 		// Update the wait counter and reschedule tasks
 		toDelay->waitCounter = delay == TIME_INFINITY ? UINT64_MAX : KrisOS.ticks + delay;
@@ -349,13 +349,12 @@ uint32_t task_delete(void) {
 		#ifdef SHOW_DIAGNOSTIC_DATA	
 			while (index < scheduler.totalTaskNo && scheduler.taskRegistry[index] != toDelete)
 				index++;
-			
 			scheduler.taskRegistry[index] = scheduler.taskRegistry[--scheduler.totalTaskNo];
 		#endif
 		
 		// Release any locks the calling tasks has		
 		#ifdef USE_MUTEX 	
-			mutex_release_all(toDelete);
+			mutex_unlock(toDelete->mutexHeld);
 		#endif	
 		
 		// Free the heap memory the task occupies (if any)

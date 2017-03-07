@@ -96,7 +96,7 @@ void stats(void) {
 			#endif
 			
 			#ifdef USE_QUEUE
-				fprintf(&uart, "Queues:\t\t%d\n", KrisOS.totalQueueNo);
+				fprintf(&uart, "Queues:\t\t\t%d\n", KrisOS.totalQueueNo);
 			#endif
 			
 			#ifdef USE_HEAP
@@ -145,8 +145,6 @@ void stats(void) {
 					case MTX_WAIT: fprintf(&uart, "MUTEX WAIT\t"); break;
 					case SEM_WAIT: fprintf(&uart, "SEM WAIT\t"); break;
 					case REMOVED: fprintf(&uart, "REMOVED\t"); break;
-					case QUEUE_WRITE_WAIT: fprintf(&uart, "QUEUE WRITE WAIT\t"); break;
-					case QUEUE_READ_WAIT: fprintf(&uart, "QUEUE READ WAIT\t"); break;
 					default: break;
 				}
 

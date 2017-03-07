@@ -26,6 +26,7 @@ uint32_t sem_init(Semaphore* toInit, uint32_t startVal);
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	sem_create
 * Purpose:    	Create a semaphore using heap and initialise it
@@ -35,6 +36,7 @@ uint32_t sem_init(Semaphore* toInit, uint32_t startVal);
 *		pointer to the semaphore created
 --------------------------------------------------------------------------------*/
 Semaphore* sem_create(uint32_t startVal);
+#endif
 
 
 

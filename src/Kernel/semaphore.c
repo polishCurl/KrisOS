@@ -41,6 +41,7 @@ uint32_t sem_init(Semaphore* toInit, uint32_t startVal) {
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	sem_create
 * Purpose:    	Create a semaphore using heap and initialise it
@@ -55,6 +56,7 @@ Semaphore* sem_create(uint32_t startVal) {
 	sem_init(semCreated, startVal);
 	return semCreated;
 }
+#endif
 
 
 
@@ -78,12 +80,6 @@ uint32_t sem_delete(Semaphore* toDelete) {
 			__end_critical();
 			return EXIT_FAILURE;
 		}
-	
-		// Reset the semaphore counter to indicate that the semaphore is no 
-		// longer in use. This is useful for spotting 'deleted' statically 
-		// allocated data structures which can't actually be physically 
-		// removed from memory.
-		toDelete->counter = UINT32_MAX;
 		
 		// Update the total number of semaphores declared		
 		#ifdef SHOW_DIAGNOSTIC_DATA
@@ -91,7 +87,9 @@ uint32_t sem_delete(Semaphore* toDelete) {
 		#endif		
 		
 		// Free the heap memory occupied (if allocated on heap)
-		free(toDelete);
+		#ifdef USE_HEAP
+			free(toDelete);
+		#endif
 	}
 	__end_critical();
 	return EXIT_SUCCESS;

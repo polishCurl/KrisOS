@@ -203,7 +203,9 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 // ---- Mutual exclusion lock management SVC calls ------------------------------
 		#ifdef USE_MUTEX
 		case SVC_MTX_INIT: svcArgs[0] = mutex_init((void*) svcArgs[0]); break;
-		case SVC_MTX_CREATE: svcArgs[0] = (uint32_t) mutex_create(); break;
+		#ifdef USE_HEAP
+			case SVC_MTX_CREATE: svcArgs[0] = (uint32_t) mutex_create(); break;
+		#endif
 		case SVC_MTX_TRY_LOCK: svcArgs[0] = mutex_try_lock((void*) svcArgs[0]); break;
 		case SVC_MTX_LOCK: svcArgs[0] = (uint32_t) mutex_lock((void*) svcArgs[0]); break;
 		case SVC_MTX_UNLOCK: svcArgs[0] = mutex_unlock((void*) svcArgs[0]); break;
@@ -213,7 +215,9 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 // ---- Semaphore management SVC calls -------------------------------------------
 		#ifdef USE_SEMAPHORE
 		case SVC_SEM_INIT: svcArgs[0] = sem_init((void*) svcArgs[0], svcArgs[1]); break;
-		case SVC_SEM_CREATE: svcArgs[0] = (uint32_t) sem_create(svcArgs[0]); break;
+		#ifdef USE_HEAP
+			case SVC_SEM_CREATE: svcArgs[0] = (uint32_t) sem_create(svcArgs[0]); break;
+		#endif
 		case SVC_SEM_DELETE: svcArgs[0] = sem_delete((void*) svcArgs[0]); break;
 		case SVC_SEM_TRY_ACQUIRE: svcArgs[0] = (uint32_t) sem_try_acquire((void*) svcArgs[0]); break;
 		case SVC_SEM_ACQUIRE: svcArgs[0] = sem_acquire((void*) svcArgs[0]); break;
@@ -221,18 +225,21 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		#endif 
 		
 // ---- Inter-task queue management SVC calls -------------------------------------------
-		#ifdef USE_SEMAPHORE
+		#ifdef USE_QUEUE
 		case SVC_QUEUE_INIT: svcArgs[0] = queue_init((void*) svcArgs[0], (void*) svcArgs[1],
 			svcArgs[2], svcArgs[3]); break;
-		case SVC_QUEUE_CREATE: svcArgs[0] = (uint32_t) queue_create(svcArgs[0], svcArgs[1]); break;
+		#ifdef USE_HEAP
+			case SVC_QUEUE_CREATE: svcArgs[0] = (uint32_t) queue_create(svcArgs[0], 
+				svcArgs[1]); break;
+		#endif
 		case SVC_QUEUE_DELETE: svcArgs[0] = queue_delete((void*) svcArgs[0]); break;
 		case SVC_QUEUE_TRY_WRITE: svcArgs[0] = queue_try_write((void*) svcArgs[0], 
 			(const void*) svcArgs[1]); break;	
 		case SVC_QUEUE_TRY_READ: svcArgs[0] = queue_try_read((void*) svcArgs[0], 
 			(void*) svcArgs[1]); break;
-		case SVC_QUEUE_WRITE: svcArgs[0] = queue_write((void*) svcArgs[0], 
+		case SVC_QUEUE_ENQUEUE: svcArgs[0] = queue_enqueue((void*) svcArgs[0], 
 			(const void*) svcArgs[1]); break;	
-		case SVC_QUEUE_READ: svcArgs[0] = queue_read((void*) svcArgs[0], (void*) svcArgs[1]); break;	
+		case SVC_QUEUE_DEQUEUE: svcArgs[0] = queue_dequeue((void*) svcArgs[0], (void*) svcArgs[1]); break;	
 
 		#endif 		
 		

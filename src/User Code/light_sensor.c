@@ -58,15 +58,15 @@ void lightSensor(void) {
 		
 		// Generate the 'beep' alert
 		buzzer_tone(700);
-		KrisOS_task_sleep(1000);
+		KrisOS_task_sleep(100);
 		buzzer_tone(500);
-		KrisOS_task_sleep(1000);
+		KrisOS_task_sleep(100);
 		buzzer_tone(1000);
-		KrisOS_task_sleep(1000);
+		KrisOS_task_sleep(100);
 		buzzer_off();
 		
 		// Clear the warning message
-		KrisOS_task_sleep(5000);
+		KrisOS_task_sleep(500);
 		KrisOS_mutex_lock(nokiaMtx);
 		nokia5110_set_cursor(0, 1);
 		for (cursor = 0; cursor < 3 * NOKIA5110_WIDTH; cursor++)

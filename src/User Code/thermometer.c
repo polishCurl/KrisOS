@@ -23,15 +23,27 @@
 
 
 
+/*-------------------------------------------------------------------------------
+* Queue for sending temperature reading between the 'thermometerWriter' task
+* and 
+--------------------------------------------------------------------------------*/
+Queue* thermometerQueue;
+
+
+
 /*******************************************************************************
-* Task: 	thermometer
+* Task: 	thermometerWriter
 * Purpose: 	Thermometer task that periodically reads the temperature from TC74
-*			digital resistor and displays it on nokia LCD screen
+*			digital resistor passes the measurements to the thermometerReader
+*			task via queue.
 *******************************************************************************/
-void thermometer(void) {
+void thermometerWriter(void) {
 	
 	// Current temperature
 	int8_t temperature;
+	
+	// Initialise the inter-task queue
+	thermometerQueue = KrisOS_queue_create(THERMOMETER_QUEUE_SIZE, sizeof(int8_t));
 	
 	// Initialise the I2C module for communicating with the temperature sensor
 	i2c_init();
@@ -39,21 +51,51 @@ void thermometer(void) {
 	
 	while(1) {
 		
-		// Request the temperature reading
+		// Read the temperature from TC74
 		i2c_write(0x00, START, STOP);
 		temperature = i2c_read(START, STOP);
 		
-		// Display the current temperature
-		KrisOS_mutex_lock(nokiaMtx);
-		nokia5110_set_cursor(0, 0);
-		fprintf(&nokia5110, "Temp: %3dC", temperature);
-		KrisOS_mutex_unlock(nokiaMtx);
-		
-		// Wait for some time
-		KrisOS_task_sleep(5000);
+		// Write to the queue
+		KrisOS_queue_write(thermometerQueue, &temperature);
+			
+		// The standard temperature converstion rate for TC74 is 8 samples/s
+		KrisOS_task_sleep(125);
 	}
 }
 
+
+
+/*******************************************************************************
+* Task: 	thermometerReader
+* Purpose: 	Read a predefined number of samples from the thermometer queue and
+*			display their average on the LCD screen
+*******************************************************************************/
+void thermometerReader(void) {
+	
+	// Current temperature and the average temperature
+	int8_t temperatureRead;
+	int32_t temperatureAverage;
+	
+	// Sample number, in a sequence, for averaging temperature
+	uint32_t sampleNo;
+	
+	while(1) {
+		
+		// Accumulate the temperature readings and compute their average
+		temperatureAverage = 0;
+		for (sampleNo = 0; sampleNo < TEMP_AVERAG_SAMPLE_NO; sampleNo++) {
+			KrisOS_queue_read(thermometerQueue, &temperatureRead);
+			temperatureAverage += temperatureRead;
+		}
+		temperatureAverage /= TEMP_AVERAG_SAMPLE_NO;
+		
+		// Display the temperature on the LCD screen
+		KrisOS_mutex_lock(nokiaMtx);
+		nokia5110_set_cursor(0, 0);
+		fprintf(&nokia5110, "Temp: %3dC", temperatureAverage);
+		KrisOS_mutex_unlock(nokiaMtx);
+	}
+}
 
 
 

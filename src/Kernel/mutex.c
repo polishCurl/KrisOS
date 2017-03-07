@@ -37,6 +37,7 @@ uint32_t mutex_init(Mutex* toInit) {
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	mutex_create
 * Purpose:    	Create a mutex using dynamic memory
@@ -51,6 +52,7 @@ Mutex* mutex_create(void) {
 	mutex_init(toCreate);	
 	return toCreate;
 }
+#endif
 
 
 
@@ -112,8 +114,11 @@ uint32_t mutex_lock(Mutex* toLock) {
 	// which in turn, wait for other locks
 	Task* iterator;
 	
-	// Mutex for which the current task is waiting
+	// Objects for which the iterator task can be waiting (see later)
 	Mutex* mutexWaiting;
+	#ifdef USE_SEMAPHORE
+		Semaphore* semWaiting;
+	#endif
 	
 	// Check if the argument is valid
 	TEST_NULL_POINTER(toLock)
@@ -151,12 +156,15 @@ uint32_t mutex_lock(Mutex* toLock) {
 						iterator = mutexWaiting->owner;
 						break;
 					
-					// The task owning mutex is waiting for another mutex
+					// The task owning mutex is waiting on a semaphore
+					#ifdef USE_SEMAPHORE
 					case SEM_WAIT:
-						mutexWaiting = iterator->waitingObj;
-						task_remove(&mutexWaiting->waitingQueue, iterator);
-						task_add(&mutexWaiting->waitingQueue, iterator);
+						semWaiting = iterator->waitingObj;
+						task_remove(&semWaiting->waitingQueue, iterator);
+						task_add(&semWaiting->waitingQueue, iterator);
 						break;
+					#endif
+					
 					default: break;
 				}
 			}
@@ -186,12 +194,9 @@ uint32_t mutex_lock(Mutex* toLock) {
 --------------------------------------------------------------------------------*/
 uint32_t mutex_unlock(Mutex* toUnlock) {
 	
-	// Check if the argument is valid
-	TEST_NULL_POINTER(toUnlock)
-	
 	// Test if the calling task actually owns the mutex and this is the most recent mutex
 	// it has acquired
-	if (toUnlock->owner != scheduler.runPtr)
+	if (toUnlock == NULL || toUnlock->owner != scheduler.runPtr)
 		return EXIT_FAILURE;
 	
 	__start_critical();
@@ -261,41 +266,20 @@ uint32_t mutex_delete(Mutex* toDelete) {
 			return EXIT_FAILURE;
 		}
 		
-		// Release the heap memory this mutex occupies (if allocated dynamically)
-		free(toDelete);
-		
 		// Update the total number of mutexes declared		
 		#ifdef SHOW_DIAGNOSTIC_DATA
 			KrisOS.totalMutexNo--;	
 		#endif		
+		
+		// Release the heap memory this mutex occupies (if allocated dynamically)
+		#ifdef USE_HEAP
+			free(toDelete);
+		#endif
 	}
 	__end_critical();
 	return EXIT_SUCCESS;
 }
 
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	mutex_release_all
-* Purpose:    	Release all the locks that the given task has.
-* Arguments:	
-*		muxOwner - task owning muxes which we want to unlock
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t mutex_release_all(Task* muxOwner) {
-	
-	TEST_NULL_POINTER(muxOwner)
-	
-	__start_critical();
-	{
-		while (muxOwner->mutexHeld != NULL) 
-			mutex_unlock(muxOwner->mutexHeld);
-	}
-	__end_critical();
-	
-	return EXIT_SUCCESS;
-}
 
 
 #endif

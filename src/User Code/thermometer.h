@@ -38,6 +38,21 @@ typedef enum {
 
 
 /*-------------------------------------------------------------------------------
+* Number of temperature values to average before displaying the temperature on
+* the LCD screen
+--------------------------------------------------------------------------------*/
+#define TEMP_AVERAG_SAMPLE_NO 20
+
+
+
+/*-------------------------------------------------------------------------------
+* Number of temperature readings the intertask queue can fit
+--------------------------------------------------------------------------------*/
+#define THERMOMETER_QUEUE_SIZE 5
+
+
+
+/*-------------------------------------------------------------------------------
 * Function:    	i2c_init
 * Purpose:    	Configure the I2C Module as Master with 100kb/s transmission rate.
 * Arguments:	-

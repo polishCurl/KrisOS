@@ -5,7 +5,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	25/02/2017
-* Last mod: 	25/02/2017
+* Last mod: 	05/03/2017
 *
 * Note: 
 *******************************************************************************/
@@ -23,7 +23,7 @@
 
 /*-------------------------------------------------------------------------------
 * Semaphore to be used between the GPIOF IRQ handler and nokiaLCDBacklight task
-* for controling the operation of nokia 5110 backlight
+* for controling the operation of nokia 5110 backlight.
 --------------------------------------------------------------------------------*/
 Semaphore* backlightSem;
 
@@ -31,16 +31,20 @@ Semaphore* backlightSem;
 
 /*******************************************************************************
 * Task: 	nokiaLCDBacklight
-* Purpose: 	Task for 
+* Purpose: 	Controller task for the LED backlight inside the nokia 5110 LCD screen
 *******************************************************************************/
 void nokiaLCDBacklight(void) {
 	
+	// Flag indicating whether the backlight is switched off
 	uint32_t lightIsOff = 1;
 	
+	// Setup the controller push button and the GPIO output pin for the backlight
 	backlightSem = KrisOS_sem_create(0);
 	nokia5110_backlight_switch_init();
 	nokia5110_backlight_control_pin_init();
 	
+	// Wait on a semaphore until the button is pressed then switch the backlight 
+	// state
 	while(1) {
 		LIGHT = lightIsOff;
 		KrisOS_sem_acquire(backlightSem);
@@ -99,7 +103,7 @@ void nokia5110_backlight_switch_init(void) {
 --------------------------------------------------------------------------------*/
 void GPIOF_Handler(void) {
 	
-	// Release the semaphore for which nokiaLCDBacklight Task is waiting and clear
+	// Release the semaphore for which nokiaLCDBacklight task is waiting and clear
 	// the interrupt source
 	KrisOS_sem_release_ISR(backlightSem);
 	GPIOF->ICR |= 1 << PIN0;

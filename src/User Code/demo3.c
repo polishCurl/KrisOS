@@ -15,10 +15,11 @@
 /*-----------------------------------------------------------------------------
 * Declare the user tasks
 ------------------------------------------------------------------------------*/
-KrisOS_task_static_template(thermometer, 256, 20)
-KrisOS_task_static_template(lightSensor, 400, 1)
-KrisOS_task_dynamic_template(nokiaLCDSetup, 256, 2)
-KrisOS_task_dynamic_template(nokiaLCDBacklight, 256, 32)
+KrisOS_task_static_template(thermometerWriter, 256, 20)
+KrisOS_task_static_template(thermometerReader, 256, 53)
+KrisOS_task_static_template(lightSensor, 400, 2)
+KrisOS_task_dynamic_template(nokiaLCDSetup, 256, 1)
+KrisOS_task_dynamic_template(nokiaLCDBacklight, 256, 5)
 
 
 
@@ -34,11 +35,17 @@ int main(void) {
 	nokiaLCDSetupTaskPtr = KrisOS_task_create(nokiaLCDSetup, nokiaLCDSetupStackSize, 
 										      nokiaLCDSetupPriority);
 	
-	// Create the thermometer task
-	KrisOS_task_stack_usage((void*) &thermometerStack[0], thermometerStackSize);
-	KrisOS_task_create_static(&thermometerTask, thermometer, 
-							  &thermometerStack[thermometerStackSize], 
-	                          thermometerPriority); 
+	// Create the thermometerWriter task
+	KrisOS_task_stack_usage((void*) &thermometerWriterStack[0], thermometerWriterStackSize);
+	KrisOS_task_create_static(&thermometerWriterTask, thermometerWriter, 
+							  &thermometerWriterStack[thermometerWriterStackSize], 
+	                          thermometerWriterPriority); 
+	
+	// Create the thermometerReader task
+	KrisOS_task_stack_usage((void*) &thermometerReaderStack[0], thermometerReaderStackSize);
+	KrisOS_task_create_static(&thermometerReaderTask, thermometerReader, 
+							  &thermometerReaderStack[thermometerReaderStackSize], 
+	                          thermometerReaderPriority); 
 	
 	// Create light monitor task
 	KrisOS_task_stack_usage((void*) &lightSensorStack[0], lightSensorStackSize);

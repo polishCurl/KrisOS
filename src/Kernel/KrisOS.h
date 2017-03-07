@@ -16,7 +16,7 @@
 
 
 /*******************************************************************************
-* OS features enable/disable (comment out to disable features)
+* KrisOS features enable/disable (comment out to disable features)
 *******************************************************************************/
 #define USE_MUTEX 					// Use mutexes
 #define USE_SEMAPHORE 				// Use semaphores
@@ -24,6 +24,22 @@
 #define USE_HEAP 					// Use dynamic memory
 #define USE_UART 					// Enable UART driver
 #define SHOW_DIAGNOSTIC_DATA		// Show OS usage statistics etc.
+
+
+
+/*******************************************************************************
+* Resolve KrisOS feature dependencies
+*******************************************************************************/
+// To display diagnostic data the UART interface via USB must be enabled
+#if defined SHOW_DIAGNOSTIC_DATA && !defined USE_UART
+	#define USE_UART
+#endif
+	
+// Queues use semaphores for keeping track of the number of elements and 
+// remaining capacity
+#if defined USE_QUEUE && !defined USE_SEMAPHORE
+	#define USE_SEMAPHORE
+#endif
 
 
 
@@ -46,7 +62,7 @@ typedef struct __FILE __FILE;		// File definition (for redirecting output stream
 * System timing setup
 ------------------------------------------------------------------------------*/
 // OS clock frequency (in Hz)
-#define OS_CLOCK_FREQ 10000
+#define OS_CLOCK_FREQ 1000
 
 // Definition of infinity (for pernamently suspending tasks)
 #define TIME_INFINITY 0
@@ -59,7 +75,7 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 * Scheduler setup
 ------------------------------------------------------------------------------*/
 // Time quantum size for preemptive scheduling (in OS clock 'ticks')
-#define TIME_SLICE 500
+#define TIME_SLICE 50
 
 // Size of the task registry for keeping track of all the tasks (without linked-list)
 #define TASK_REGISTRY_SIZE 20
@@ -117,7 +133,7 @@ extern Mutex uartMtx;
 ------------------------------------------------------------------------------*/
 // Diagnostic data refresh rate (in OS clock 'ticks'). How frequently the KrisOS 
 // usage data task is run.
-#define DIAG_DATA_RATE 50000
+#define DIAG_DATA_RATE 5000
 
 // Statistics task'S priority
 #define DIAG_DATA_PRIO (UINT8_MAX - 1)
@@ -139,8 +155,6 @@ typedef enum {
 	MTX_WAIT,
 	SEM_WAIT,
 	REMOVED,
-	QUEUE_WRITE_WAIT,
-	QUEUE_READ_WAIT,
 } TaskState;
 
 // Memory allocation type
@@ -206,10 +220,10 @@ typedef struct Queue {
 	uint8_t* buffer; 				// Buffer storing data placed in the queue
 	size_t bufferSize; 				// Buffer size in bytes
 	size_t itemSize; 				// Size (in bytes) of a single item stored
-	uint32_t head;					// Current values head and tail pointer
-	uint32_t tail;			
-	Task* waitingToWrite;			// List of producer tasks waiting to write 
-	Task* waitingToRead;			// List of consumer tasks waiting to read
+	uint8_t* head;						// Current values of the head and tail pointers
+	uint8_t* tail;			
+	Semaphore elementsStored;		// Number of elements currently in the queue 
+	Semaphore remainingCapacity;	// Remaining buffer capacity (in number of elements)
 } Queue;
 #endif
 
@@ -259,8 +273,8 @@ typedef struct __FILE {
 #define SVC_QUEUE_DELETE 30 		// Delete a queue
 #define SVC_QUEUE_TRY_WRITE 31 		// Attempt to write to a queue
 #define SVC_QUEUE_TRY_READ 32 		// Attempt to read from a queue
-#define SVC_QUEUE_WRITE 33 			// Write to a queue 
-#define SVC_QUEUE_READ 34 	 		// Read from a queue
+#define SVC_QUEUE_ENQUEUE 33 		// Place an item on a queue
+#define SVC_QUEUE_DEQUEUE 34 	 	// Take an item off a queue
 
 
 
@@ -375,6 +389,7 @@ uint32_t __svc(SVC_IRQ_GET_PRIO)  KrisOS_irq_get_prio(IRQn_Type irq);
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_task_create
 * Purpose:    	Create a task using heap and add it to the ready queue
@@ -385,7 +400,6 @@ uint32_t __svc(SVC_IRQ_GET_PRIO)  KrisOS_irq_get_prio(IRQn_Type irq);
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
-#ifdef USE_HEAP
 Task* __svc(SVC_TASK_NEW) KrisOS_task_create(void* startAddr, size_t stackSize, 
 											 uint8_t priority);
 #endif
@@ -480,6 +494,7 @@ uint32_t __svc(SVC_MTX_INIT) KrisOS_mutex_init(Mutex* toInit);
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_mutex_create
 * Purpose:    	Create a mutex using dynamic memory
@@ -488,6 +503,7 @@ uint32_t __svc(SVC_MTX_INIT) KrisOS_mutex_init(Mutex* toInit);
 *		Pointer to the mutex created
 --------------------------------------------------------------------------------*/
 Mutex* __svc(SVC_MTX_CREATE) KrisOS_mutex_create(void);
+#endif
 
 
 
@@ -556,6 +572,7 @@ uint32_t __svc(SVC_SEM_INIT) KrisOS_sem_init(Semaphore* toInit, uint32_t startVa
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_create
 * Purpose:    	Create a semaphore using heap and initialise it
@@ -565,6 +582,7 @@ uint32_t __svc(SVC_SEM_INIT) KrisOS_sem_init(Semaphore* toInit, uint32_t startVa
 *		pointer to the semaphore created
 --------------------------------------------------------------------------------*/
 Semaphore* __svc(SVC_SEM_CREATE) KrisOS_sem_create(uint32_t startVal);
+#endif
 
 
 
@@ -658,8 +676,9 @@ uint32_t KrisOS_sem_acquire_ISR(Semaphore* toAcquire);
 uint32_t __svc(SVC_QUEUE_INIT) KrisOS_queue_init(Queue* toInit, void* bufferMemory, 
 												  size_t capacity, size_t itemSize);
 					
-			
+		
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_queue_create
 * Purpose:    	Create and initialise a queue of given item size and capacity using
@@ -671,6 +690,7 @@ uint32_t __svc(SVC_QUEUE_INIT) KrisOS_queue_init(Queue* toInit, void* bufferMemo
 *		exit status
 --------------------------------------------------------------------------------*/
 Queue* __svc(SVC_QUEUE_CREATE) KrisOS_queue_create(size_t capacity, size_t itemSize);
+#endif
 
 
 
@@ -724,7 +744,7 @@ uint32_t __svc(SVC_QUEUE_TRY_READ) KrisOS_queue_try_read(Queue* toRead, void* it
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_WRITE) KrisOS_queue_write(Queue* toWrite, const void* item);
+uint32_t KrisOS_queue_write(Queue* toWrite, const void* item);
 
 
 
@@ -738,7 +758,7 @@ uint32_t __svc(SVC_QUEUE_WRITE) KrisOS_queue_write(Queue* toWrite, const void* i
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_QUEUE_READ) KrisOS_queue_read(Queue* toRead, void* item);
+uint32_t KrisOS_queue_read(Queue* toRead, void* item);
 
 
 

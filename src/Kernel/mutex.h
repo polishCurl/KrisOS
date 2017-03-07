@@ -25,6 +25,7 @@ uint32_t mutex_init(Mutex* toInit);
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	mutex_create
 * Purpose:    	Create a mutex using dynamic memory
@@ -33,6 +34,7 @@ uint32_t mutex_init(Mutex* toInit);
 *		Pointer to the mutex created
 --------------------------------------------------------------------------------*/
 Mutex* mutex_create(void);
+#endif
 
 
 
@@ -84,16 +86,5 @@ uint32_t mutex_unlock(Mutex* toUnlock);
 --------------------------------------------------------------------------------*/
 uint32_t mutex_delete(Mutex* toDelete);
 
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	mutex_release_all
-* Purpose:    	Release all the locks that the given task has.
-* Arguments:	
-*		muxOwner - task owning muxes which we want to unlock
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t mutex_release_all(Task* muxOwner);
 
 #endif
