@@ -1,14 +1,15 @@
 /*******************************************************************************
 * File:     	retarget.c
-* Brief:    	File specifying redirection of output and input streams. Can be 
+* Brief:    	File for redirection of output and input streams. Can be 
 *				modified by the user.
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	06/10/2016
-* Last mod: 	02/03/2017
+* Last mod: 	09/03/2017
 *
 * Note: 		
 *******************************************************************************/
+// Include the header files for input/output streams implemented
 #include "uart.h"
 #include "nokia5110.h"
 
@@ -25,12 +26,14 @@
 --------------------------------------------------------------------------------*/
 int fputc(int character, FILE *file) {
 	
+	// Write to UART0 (serial monitor on the computer connected via USB)
 	#ifdef USE_UART
 		if (file == &uart)
 			uart_send_char(character); 
 	#endif	
 
 	// ---- ADD USER-DEFINED OUTPUT STREAMS BELOW: ---
+	// Write to the nokia LCD screen
 	if (file == &nokia5110)
 		nokia5110_send_char(character);
 	
@@ -49,6 +52,7 @@ int fputc(int character, FILE *file) {
 --------------------------------------------------------------------------------*/
 int fgetc(FILE *file) {
 	
+	// Read the character sent over UART0
 	#ifdef USE_UART
 		if (file == &uart)
 			return uart_get_char();

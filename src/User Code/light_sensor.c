@@ -1,12 +1,24 @@
 /*******************************************************************************
 * File:     	light_sensor.c
-* Brief:    	Illumination level monitor driver
+* Brief:    	Illumination level monitor user program
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	20/02/2017
-* Last mod: 	21W/02/2017
+* Last mod: 	09/03/2017
 *
 * Note: 
+*	Program which warns the user when the illumination level around has exceeded
+*	the limit. An ADC is used with a digital comparator and an ADC0SS3 interrupt is 
+*	triggered when the converted sample from ADC connected to a photoresistor 
+*	exceeds the maximum allowable value. The interrupt handler then increments
+*	the semaphore, on which the task to handle the excessive illumination is 
+* 	waiting. The task then generates an alert sound and error message on the 
+*	nokia LCD screen.
+*
+*	Tiva C launchpad pin usage:
+*		1. PB6 - piezo buzzer PWM output pin
+*		2. PB4 - photoresistor ADC input pin
+*
 *******************************************************************************/
 #include "KrisOS.h"
 #include "light_sensor.h"
@@ -16,7 +28,7 @@
 
 /*-------------------------------------------------------------------------------
 * Semaphore for synchronisation between the digital comparator interrupt handler
-* and the task for reacting to
+* and the task for reacting to excessive amount of light.
 --------------------------------------------------------------------------------*/
 Semaphore lightSensorSem;
 
@@ -24,7 +36,7 @@ Semaphore lightSensorSem;
 
 /*******************************************************************************
 * Task: 	lightSensor
-* Purpose: 	The illumination level monitor task
+* Purpose: 	The illumination level monitor task.
 *******************************************************************************/
 void lightSensor(void) {
 	
@@ -34,19 +46,18 @@ void lightSensor(void) {
 	// Initialise the semaphore for interrupt-task synchronisation
 	KrisOS_sem_init(&lightSensorSem, 0);
 	
-	// Initialise the ADC module with digital comparator interrupts when the input
-	// value exceeds given threshold
-	light_sensor_init(3000);
+	// Initialise the ADC module to read voltage level at the photoresistor
+	light_sensor_init(LIGHT_THRES);
 	
 	// Initialise the buzzer
 	buzzer_init();
 
 	while(1) {
-		// Wait on the semaphore - wait untill ADC0SS3 IRQ is generated which 
+		// Wait on the semaphore - wait untill ADC0SS3 IRQ is generated, which 
 		// releases this semaphore
 		KrisOS_sem_acquire(&lightSensorSem);
 		
-		// Output the warning message
+		// Output the warning message on the LCD screen
 		KrisOS_mutex_lock(nokiaMtx);
 		nokia5110_set_cursor(0, 1);
 		for (cursor = 0; cursor < NOKIA5110_WIDTH; cursor++)
@@ -56,17 +67,17 @@ void lightSensor(void) {
 			nokia5110_send(DATA, 0x02);
 		KrisOS_mutex_unlock(nokiaMtx);
 		
-		// Generate the 'beep' alert
+		// Generate the sound alert
 		buzzer_tone(700);
-		KrisOS_task_sleep(100);
+		KrisOS_task_sleep(1000);
 		buzzer_tone(500);
-		KrisOS_task_sleep(100);
+		KrisOS_task_sleep(1000);
 		buzzer_tone(1000);
-		KrisOS_task_sleep(100);
+		KrisOS_task_sleep(1000);
 		buzzer_off();
 		
 		// Clear the warning message
-		KrisOS_task_sleep(500);
+		KrisOS_task_sleep(5000);
 		KrisOS_mutex_lock(nokiaMtx);
 		nokia5110_set_cursor(0, 1);
 		for (cursor = 0; cursor < 3 * NOKIA5110_WIDTH; cursor++)
@@ -110,16 +121,16 @@ void light_sensor_init(uint32_t threshold) {
 	// This gives more stable results
 	ADC0->SAC = 6;
 	
-	// Configure the digital comparator: set high band interrupt condition, 
-	// Enable comparator interrupts and generate interrupts only once when the 
-	// high-band region is entered.
+	// Configure the digital comparator: set high band and hysteresis once interrupt 
+	// condition. This means that the ADC0SS3 IRQ signal from the comparator is raised 
+	// only once when COMP1 register threshold is exceeded. Then a new interrupt can
+	// only be triggered then a sample value from sample sequencer 3 drops below COMP0
+	// value
 	ADC0->DCCTL0 |= 0x3 << DCCTL0_CIC;
 	ADC0->DCCTL0 |= 0x3 << DCCTL0_CIM;
 	ADC0->DCCTL0 |= 1 << DCCTL0_CIE;
-	
-	// Set the digital comparator threshold value
 	ADC0->DCCMP0 = 0;   
-	ADC0->DCCMP0 |= ((threshold - 1000) << DCCMP0_COMP0) | (threshold << DCCMP0_COMP1); 
+	ADC0->DCCMP0 |= ((threshold - 500) << DCCMP0_COMP0) | (threshold << DCCMP0_COMP1); 
 	
 	// Set continuous sampling on SS3 and specify that AIN10 is used for 
 	// analog-to-digital conversion
@@ -137,12 +148,12 @@ void light_sensor_init(uint32_t threshold) {
 	ADC0->SSOP3 = 1;
 	
 	// Disable raw interrupts, but enable the digital comparator on SS3.
-	// eenable the sequencer
+	// Reenable the sample sequencer 3
 	ADC0->IM &= ~(1 << IM_MASK3);
 	ADC0->IM |= (1 << IM_DCONSS3);
 	ADC0->ACTSS |= 1 << ACTSS_ASEN3;
 	
-	// Register the SS3 irqs at NVIC
+	// Register the SS3 IRQs at NVIC with a significant priority
 	KrisOS_irq_set_prio(ADC0SS3_IRQn, 1);
 	KrisOS_irq_enable(ADC0SS3_IRQn);	
 }
@@ -151,8 +162,8 @@ void light_sensor_init(uint32_t threshold) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_init
-* Purpose:    	Initialise the piezo buzzer at GPIO PB6 for generating beeps using
-*				Pulse Width Modulator.
+* Purpose:    	Initialise the piezo buzzer for generating sound alerts when the 
+*				amount of light falling on the photoresistor exceeds the limit.
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
@@ -162,7 +173,7 @@ void buzzer_init(void) {
 	SYSCTL->RCGCPWM |= 1 <<	RCGC_PWM0;	
 	SYSCTL->RCGCGPIO |= (1 << RCGCGPIO_PORTB); 
 	while ((SYSCTL->RCGCGPIO & (1 << RCGCGPIO_PORTB)) == 0);
-	
+
 	// Configure PB6 as M0PWM0 output
 	GPIOB->AFSEL |= 1 << PIN6;
 	GPIOB->PCTL &= ~(0xF << PCTL_PMC6);
@@ -184,11 +195,9 @@ void buzzer_init(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_tone
-* Purpose:    	Beep the buzzer. Emit a sound of given frequency for the duration
-*				of time specified.
+* Purpose:    	Beep the buzzer. Emit a sound of given frequency.
 * Arguments:	
 *		frequency - output sound frequency in Hz
-*		duration - beep sound duration in OS 'ticks'
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void buzzer_tone(uint32_t frequency) {
@@ -200,7 +209,7 @@ void buzzer_tone(uint32_t frequency) {
 	// Temporarily disable the PWM output on the GPIO pin
 	PWM0->ENABLE &= ~(1 << PWMENABLE_PWM0EN);	
 	
-	// Set the PWM frequency and 50% duty cycle
+	// Set the PWM frequency and 50% duty cycle (for max volume)
 	PWM0->_0_LOAD = (SYSTEM_CLOCK_FREQ / 64 / frequency) - 1;
 	PWM0->_0_CMPA = (SYSTEM_CLOCK_FREQ / 64 / frequency / 2) - 1;
 	
@@ -212,7 +221,7 @@ void buzzer_tone(uint32_t frequency) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_off
-* Purpose:    	Switch off the buzzer
+* Purpose:    	Switch off the buzzer. Finish the alert 'melody'
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/

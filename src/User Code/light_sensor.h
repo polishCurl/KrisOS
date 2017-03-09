@@ -4,10 +4,9 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	21/02/2017
-* Last mod: 	21/02/2017
+* Last mod: 	09/03/2017
 *
 * Note: 
-* 	
 *******************************************************************************/
 #include "KrisOS.h"
 
@@ -20,9 +19,16 @@
 
 
 
+/*-----------------------------------------------------------------------------
+* Light sensor threshold value
+------------------------------------------------------------------------------*/
+#define LIGHT_THRES 3500
+
+
+
 /*-------------------------------------------------------------------------------
 * Semaphore for synchronisation between the digital comparator interrupt handler
-* and the task for reacting to
+* and the task for reacting to excessive amount of light.
 --------------------------------------------------------------------------------*/
 extern Semaphore lightSensorSem;
 
@@ -32,7 +38,7 @@ extern Semaphore lightSensorSem;
 * Function:    	light_sensor_init
 * Purpose:    	Initialise illumination level monitor. Set the ADC to conitnuously 
 *				monitor the voltage level from the photoresistor and trigger an 
-*				interrupt if the illumionation level is too high.
+*				interrupt if the illumination level is too high.
 * Arguments:	
 *		threshold - maximum illumination level threshold
 * Returns: 		-	
@@ -43,8 +49,8 @@ void light_sensor_init(uint32_t threshold);
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_init
-* Purpose:    	Initialise the piezo buzzer at GPIO PB6 for generating beeps using
-*				Pulse Width Modulator.
+* Purpose:    	Initialise the piezo buzzer for generating sound alerts when the 
+*				amount of light falling on the photoresistor exceeds the limit.
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
@@ -54,11 +60,9 @@ void buzzer_init(void);
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_tone
-* Purpose:    	Beep the buzzer. Emit a sound of given frequency for the duration
-*				of time specified.
+* Purpose:    	Beep the buzzer. Emit a sound of given frequency.
 * Arguments:	
 *		frequency - output sound frequency in Hz
-*		duration - beep sound duration in OS 'ticks'
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void buzzer_tone(uint32_t frequency);
@@ -67,7 +71,7 @@ void buzzer_tone(uint32_t frequency);
 
 /*-------------------------------------------------------------------------------
 * Function:    	buzzer_off
-* Purpose:    	Switch off the buzzer
+* Purpose:    	Switch off the buzzer. Finish the alert 'melody'
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/

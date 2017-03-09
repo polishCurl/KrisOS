@@ -4,18 +4,27 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	15/02/2017
-* Last mod: 	25/02/2017
+* Last mod: 	09/03/2017
 *
 * Note: 
-*	Digital thermometer tasks that periodically reads the TC74 digital temperature
-*	sensor using the I2C protocol. The temperature reading is then displayed on the 
-*	nokia 5110 LCD screen.
+*	Digital thermometer program that periodically reads the TC74 digital temperature
+*	sensor and displays the average temperature over TEMP_AVERAG_SAMPLE_NO samples.
 *
-*	I2C module driver Tiva C pin usage:
+*	The program consists of 2 tasks.  
+*		1. The 'writer' task run once every 125ms that reads the current temperature
+*		and writes it to a queue. The 125ms delay is because the maximum conversion 
+*		rate for the TC74 is 8 samples/s.
+*		2. The 'reader' tasks which waits for TEMP_AVERAG_SAMPLE_NO to be read from
+*		the queue, averages them and displays on the nokia LCD screen. The queue buffer
+*		size THERMOMETER_QUEUE_SIZE != TEMP_AVERAG_SAMPLE_NO as ussually the values 
+*		are read from the queue just after they've been written (low workload of the CPU)
+*
+* 	Tiva C pin usage for the I2C thermometer:
 *		PB2 - SCL
 * 		PB3 - SDA
 *
-* 	Both SDA and SCL are pulled high using external 4.7kOhm resistors.
+* 	Both SDA and SCL are pulled high using external 4.7kOhm resistors. The slave
+*	address of the digital temperature sensor is 0x48
 *******************************************************************************/
 #include "KrisOS.h"
 #include "thermometer.h"
@@ -24,8 +33,8 @@
 
 
 /*-------------------------------------------------------------------------------
-* Queue for sending temperature reading between the 'thermometerWriter' task
-* and 
+* Queue for sending temperature values between the 'thermometerWriter' and 
+* 'thermometerReader' tasks
 --------------------------------------------------------------------------------*/
 Queue* thermometerQueue;
 
@@ -34,8 +43,7 @@ Queue* thermometerQueue;
 /*******************************************************************************
 * Task: 	thermometerWriter
 * Purpose: 	Thermometer task that periodically reads the temperature from TC74
-*			digital resistor passes the measurements to the thermometerReader
-*			task via queue.
+*			and  passes the measurements to the thermometerQueue
 *******************************************************************************/
 void thermometerWriter(void) {
 	
@@ -58,8 +66,9 @@ void thermometerWriter(void) {
 		// Write to the queue
 		KrisOS_queue_write(thermometerQueue, &temperature);
 			
-		// The standard temperature converstion rate for TC74 is 8 samples/s
-		KrisOS_task_sleep(125);
+		// The standard temperature converstion rate for TC74 is 8 samples/s so
+		// a delay is necessary
+		KrisOS_task_sleep(TEMPERATURE_CONVERSION_DELAY);
 	}
 }
 
@@ -72,11 +81,12 @@ void thermometerWriter(void) {
 *******************************************************************************/
 void thermometerReader(void) {
 	
-	// Current temperature and the average temperature
+	// Current temperature and the average temperature over TEMP_AVERAG_SAMPLE_NO
+	// samples
 	int8_t temperatureRead;
 	int32_t temperatureAverage;
 	
-	// Sample number, in a sequence, for averaging temperature
+	// Sample sequence number, for averaging temperature to get more stable reading
 	uint32_t sampleNo;
 	
 	while(1) {
@@ -93,6 +103,7 @@ void thermometerReader(void) {
 		KrisOS_mutex_lock(nokiaMtx);
 		nokia5110_set_cursor(0, 0);
 		fprintf(&nokia5110, "Temp: %3dC", temperatureAverage);
+		nokia5110_set_cursor(0, 0);
 		KrisOS_mutex_unlock(nokiaMtx);
 	}
 }
@@ -101,8 +112,7 @@ void thermometerReader(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	i2c_init
-* Purpose:    	Configure the I2C Module as Master with 100kb/s transmission rate
-*				at pins PB2 and PB3.
+* Purpose:    	Configure the I2C Module as Master with 100kb/s transmission rate.
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
@@ -147,7 +157,7 @@ void i2c_slave_addr(uint8_t address) {
 * Function:    	i2c_write
 * Purpose:    	Send a byte of data to the current slave. 
 * Arguments:
-*		data - data to send
+*		data - data to send (1 byte)
 *		start - controls the generation of START condition
 *		stop - controls the generation of STOP condition
 * Returns: 
@@ -155,7 +165,7 @@ void i2c_slave_addr(uint8_t address) {
 --------------------------------------------------------------------------------*/
 uint32_t i2c_write(uint8_t data, StartCond start, StopCond stop) {
 	
-	// Used to set the value of Master control status register
+	// Helper variable to set the value of Master control status register at once
 	uint8_t config = 0;
 	
 	// Wait while the I2C module is busy.
@@ -220,7 +230,6 @@ uint8_t i2c_read(StartCond start, StopCond stop) {
 	// condition
 	while (I2C0->MCS & (1 << MCS_BUSY));
 	if (I2C0->MCS & (1 << MCS_ERROR)) {
-		//I2C0->MCS = 0x04;
 		return EXIT_FAILURE;
 	}
 	

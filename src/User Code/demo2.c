@@ -13,6 +13,7 @@
 * 	which deletes itself upon completion.
 *******************************************************************************/
 #include "KrisOS.h"
+#include "led_pulse.h"
 
 
 
@@ -20,8 +21,9 @@
 * Declare the user tasks
 ------------------------------------------------------------------------------*/
 KrisOS_task_dynamic_template(primes, 400, 61)
-KrisOS_task_dynamic_template(secondTimer, 200, 27)
-KrisOS_task_dynamic_template(initiator, 200, 1)
+KrisOS_task_dynamic_template(secondTimer, 256, 27)
+KrisOS_task_dynamic_template(initiator, 256, 1)
+KrisOS_task_dynamic_template(ledPWM, 256, 41)
 
 
 
@@ -78,7 +80,7 @@ void secondTimer(void) {
 
 	uint32_t secondsElapsed = 0;
 	while(1) {
-		KrisOS_task_sleep(1000);
+		KrisOS_task_sleep(10000);
 		KrisOS_mutex_lock(&uartMtx);
 		fprintf(&uart, "\n\t\t\t<%d seconds elapsed>\n", ++secondsElapsed);
 		KrisOS_mutex_unlock(&uartMtx);
@@ -93,9 +95,16 @@ void secondTimer(void) {
 * Purpose: 	Creates other tasks and registers them at the scheduler. Run first.
 *******************************************************************************/
 void initiator(void) {
+	
+	// Create the prime numbers task (using heap)
 	primesTaskPtr = KrisOS_task_create(primes, primesStackSize, primesPriority);
+	
+	// Create the second counter task (using heap)
 	secondTimerTaskPtr = KrisOS_task_create(secondTimer, secondTimerStackSize, 
 	                                        secondTimerPriority);
+	
+	// Create the RGB PWM LED task
+	ledPWMTaskPtr = KrisOS_task_create(ledPWM, ledPWMStackSize, ledPWMPriority);
 }
 
 
@@ -108,7 +117,7 @@ int main(void) {
 	// Initialise the operating system
 	KrisOS_init();
 	
-	// Create (on heap) and register the task spawning the remaining tasks
+	// Create the initiator task spawning the remaining tasks
 	initiatorTaskPtr = KrisOS_task_create(initiator, initiatorStackSize, 
 										  initiatorPriority);
 	

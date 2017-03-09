@@ -4,10 +4,9 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	25/02/2017
-* Last mod: 	25/02/2017
+* Last mod: 	09/03/2017
 *
 * Note: 
-*
 *******************************************************************************/
 #include "KrisOS.h"
 
@@ -23,7 +22,7 @@ extern Semaphore* backlightSem;
 
 /*-------------------------------------------------------------------------------
 * Function:    	nokia5110_backlight_switch_init
-* Purpose:    	Initialise the switch button SW2 (PF0) for the LED backlight control
+* Purpose:    	Initialise the switch button SW2 for the LED backlight control
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/

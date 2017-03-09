@@ -85,7 +85,7 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider) {
 		// Wait for PLL to stabilise and clear the PLL BYPASS bit
 		while ((SYSCTL->RIS & (1 << PLLRIS)) == 0); 
 		SYSCTL->RCC &= ~(1 << RCC_BYPASS);
-	}				   
+	}		
 	
 	// Derive the system clock frequency from the settings used. This is used
 	// later for deriving other clocks from the system clock

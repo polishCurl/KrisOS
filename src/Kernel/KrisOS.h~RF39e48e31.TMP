@@ -62,7 +62,7 @@ typedef struct __FILE __FILE;		// File definition (for redirecting output stream
 * System timing setup
 ------------------------------------------------------------------------------*/
 // OS clock frequency (in Hz)
-#define OS_CLOCK_FREQ 10000
+#define OS_CLOCK_FREQ 1000
 
 // Definition of infinity (for pernamently suspending tasks)
 #define TIME_INFINITY 0
@@ -75,7 +75,7 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 * Scheduler setup
 ------------------------------------------------------------------------------*/
 // Time quantum size for preemptive scheduling (in OS clock 'ticks')
-#define TIME_SLICE 500
+#define TIME_SLICE 50
 
 // Size of the task registry for keeping track of all the tasks (without linked-list)
 #define TASK_REGISTRY_SIZE 20
@@ -133,7 +133,7 @@ extern Mutex uartMtx;
 ------------------------------------------------------------------------------*/
 // Diagnostic data refresh rate (in OS clock 'ticks'). How frequently the KrisOS 
 // usage data task is run.
-#define DIAG_DATA_RATE 50000
+#define DIAG_DATA_RATE 5000
 
 // Statistics task'S priority
 #define DIAG_DATA_PRIO (UINT8_MAX - 1)

@@ -53,7 +53,7 @@ void stats(void) {
 	// Reset the CPU usage counters as some high priority task has already run 
 	// by the time this one starts
 	for (index = 0; index < scheduler.totalTaskNo; index++) 
-			scheduler.taskRegistry[index]->cpuUsage = 0;
+		scheduler.taskRegistry[index]->cpuUsage = 0;
 	
 	while(1) {
 		// Reset the usage data

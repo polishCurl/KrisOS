@@ -4,10 +4,9 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	15/02/2017
-* Last mod: 	25/02/2017
+* Last mod: 	09/03/2017
 *
 * Note: 
-*
 *******************************************************************************/
 #include "KrisOS.h"
 
@@ -28,7 +27,7 @@ typedef enum {
 /*-------------------------------------------------------------------------------
 * Stop conditions - they control whether the I2C STOP condition is 
 * generated for the current byte transmitted. Stop condition releases the SCL
-* then SDA. 
+* then SDA. (requires the use of pull-up resistors)
 --------------------------------------------------------------------------------*/
 typedef enum {
 	STOP,
@@ -49,6 +48,13 @@ typedef enum {
 * Number of temperature readings the intertask queue can fit
 --------------------------------------------------------------------------------*/
 #define THERMOMETER_QUEUE_SIZE 5
+
+
+
+/*-------------------------------------------------------------------------------
+* Temperature conversion delay
+--------------------------------------------------------------------------------*/
+#define TEMPERATURE_CONVERSION_DELAY 1250
 
 
 
@@ -77,7 +83,7 @@ void i2c_slave_addr(uint8_t address);
 * Function:    	i2c_write
 * Purpose:    	Send a byte of data to the current slave. 
 * Arguments:
-*		data - data to send
+*		data - data to send (1 byte)
 *		start - controls the generation of START condition
 *		stop - controls the generation of STOP condition
 * Returns: 

@@ -18,8 +18,9 @@
 KrisOS_task_static_template(thermometerWriter, 256, 20)
 KrisOS_task_static_template(thermometerReader, 256, 53)
 KrisOS_task_static_template(lightSensor, 400, 2)
-KrisOS_task_dynamic_template(nokiaLCDSetup, 256, 1)
+KrisOS_task_dynamic_template(nokiaLCDSetup, 400, 1)
 KrisOS_task_dynamic_template(nokiaLCDBacklight, 256, 5)
+KrisOS_task_dynamic_template(ledPWM, 256, 42)
 
 
 
@@ -35,28 +36,31 @@ int main(void) {
 	nokiaLCDSetupTaskPtr = KrisOS_task_create(nokiaLCDSetup, nokiaLCDSetupStackSize, 
 										      nokiaLCDSetupPriority);
 	
-	// Create the thermometerWriter task
+	// Create the thermometer temperature reading task
 	KrisOS_task_stack_usage((void*) &thermometerWriterStack[0], thermometerWriterStackSize);
 	KrisOS_task_create_static(&thermometerWriterTask, thermometerWriter, 
 							  &thermometerWriterStack[thermometerWriterStackSize], 
 	                          thermometerWriterPriority); 
 	
-	// Create the thermometerReader task
+	// Create the thermometer temperature averaging and displaying task
 	KrisOS_task_stack_usage((void*) &thermometerReaderStack[0], thermometerReaderStackSize);
 	KrisOS_task_create_static(&thermometerReaderTask, thermometerReader, 
 							  &thermometerReaderStack[thermometerReaderStackSize], 
 	                          thermometerReaderPriority); 
 	
-	// Create light monitor task
+	// Create the light monitor task
 	KrisOS_task_stack_usage((void*) &lightSensorStack[0], lightSensorStackSize);
 	KrisOS_task_create_static(&lightSensorTask, lightSensor, 
 		                      &lightSensorStack[lightSensorStackSize], 
 	                          lightSensorPriority); 
 
-	// Create the LCD screen setup task to be run first (high priority)
+	// Create the LCD screen backlight LED controlling task
 	nokiaLCDBacklightTaskPtr = KrisOS_task_create(nokiaLCDBacklight, 
 												  nokiaLCDBacklightStackSize, 
-												  nokiaLCDBacklightPriority);
+												  nokiaLCDBacklightPriority);	  
+												  
+	// Create the RGB LED colour transition task
+	ledPWMTaskPtr = KrisOS_task_create(ledPWM, ledPWMStackSize, ledPWMPriority);
 	
 	// Run the operating system
 	KrisOS_start();

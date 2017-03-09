@@ -477,6 +477,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
             </File>
+            <File>
+              <FileName>led_pulse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\led_pulse.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -951,6 +956,11 @@
               <FileName>demo3.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\User Code\demo3.c</FilePath>
+            </File>
+            <File>
+              <FileName>led_pulse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\User Code\led_pulse.c</FilePath>
             </File>
           </Files>
         </Group>

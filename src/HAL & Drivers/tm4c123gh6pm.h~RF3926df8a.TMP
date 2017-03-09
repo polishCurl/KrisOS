@@ -1,46 +1,26 @@
 /*******************************************************************************
 * File:     	tm4c123gh6pm.h
 * Brief:    	External register definitions for tm4c123gh6pm microcontroller 
-* Author: 		Krzysztof 
-* Version:		V1.
-* Date created:	30/09/
-* Last mod: 	09/03/
+* Author: 		Krzysztof Koch
+* Version:		V1.00
+* Date created:	30/09/2016
+* Last mod: 	04/12/2016
 *
 * Note: 		
-*	Essential register addresses and bit offsets for important on-chip modules 
-*	and external peripherals. Currently this file includes definitions which are
-*	used either by the KrisOS or the demo user programs:	
-*		1. Interrupt numbers 
-*		2. System Control Block and System 
-*		3. Nested Vectored Interrupt 
-*		4. SysTick 
-*		5. General Purpose Input/Output 
-*		6. Universal Asynchronous Receivers/
-*		7. Synchronous Serial Interface 
-*		8. Inter-Integrated Circuit interface 
-*		9. Analog-to-Digital 
-*		10. Pulse Width 
-*	
 *******************************************************************************/
 #include "common.h"
 #ifndef TM4C123GH6PM_H					// Include barrier
 #define TM4C123GH6PM_H
-
-
-
-/*-------------------------------------------------------------------------------
-* Allow anonymous unions 
-*------------------------------------------------------------------------------*/
 #pragma anon_unions
 
 
 
 /*-------------------------------------------------------------------------------
-* Register types in terms of read/write 
+* IO definitions (access restrictions to peripheral registers)
 *------------------------------------------------------------------------------*/
-#define __I volatile const 				// input, read-
-#define __O volatile 					// output, write-
-#define __IO volatile 					// input-output, read and write 
+#define __I volatile const 				// input, read-only
+#define __O volatile 					// output, write-only
+#define __IO volatile 					// input-output, read and write permissions
 	
 
 
@@ -1107,6 +1087,7 @@ typedef struct {                                    // PWM0 Structure
 #define PWMENABLE_PWM5EN 5
 #define PWMENABLE_PWM6EN 6
 #define PWMENABLE_PWM7EN 7
+
 
 
 #endif

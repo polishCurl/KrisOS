@@ -4,9 +4,29 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	11/02/2017
-* Last mod: 	11/02/2017
+* Last mod: 	09/03/2017
 *
 * Note: 
+*	All code necessary for handling the LCD screen with PCD8544 controller from
+*	Nokia 3310. The interface used is SSI with maximum allowed baud rate at 4Mb/s (4Mhz)
+*
+* 	The following Tiva C GPIO pins are used for connecting to the nokia 5110 LCD screen. 
+* 		PA2 - CLK
+* 		PA3 - CE
+* 		PA5 - DIN
+* 		PA6 - DC (Data/Command)
+* 		PA7 - RST
+*
+* 	A separate task for setting up the screen is used. There is also a set of methods
+*	for facilitating the use of the screen. Messages sent to the controller
+*	can be either COMMANDs or DATA which are distinguished by the value of DC pin during
+*	the write operation.
+*
+* 	The cursor is set to move horizontally. The display consists of 48 rows and 
+* 	84 columns. Each write affects the 8 pixels (1 byte) in a vertical line at the current
+* 	cursor position. The cursor position is updated automatically from left to right and
+* 	from top to bottom (unless stated otherwise explicitly, via set_cursor command) 
+*	A simple 5x7 font is used which allows 1 pixel spacing between rows.
 *******************************************************************************/
 #include "KrisOS.h"
 #include "nokia5110.h"
@@ -144,14 +164,15 @@ Mutex* nokiaMtx;
 
 
 /*-----------------------------------------------------------------------------
-* Current cursor Y coordinate
+* Current cursor Y coordinate, used for new cursor address computation when a 
+* special character such as '\t' or '\n' is encountered
 ------------------------------------------------------------------------------*/
 uint8_t cursorRow;
 
 
 
 /*-----------------------------------------------------------------------------
-* File pointer for redirecting output stream
+* File pointer to the LCD screen for redirecting output stream
 ------------------------------------------------------------------------------*/
 __FILE nokia5110;
 
@@ -159,18 +180,24 @@ __FILE nokia5110;
 
 /*******************************************************************************
 * Task: 	nokiaLCDSetup
-* Purpose: 	One-off LCD screen setup task run first and then removed from memory
-*			(allocated on heap)
+* Purpose: 	Nokia LCD screen setup task (run once)
 *******************************************************************************/
 void nokiaLCDSetup(void) {
 
-	// Initialise the screen together with a mutex on it
+	// Initialise the LCD screen mtx for blocking access to the screen from 
+	// multiple tasks
 	nokiaMtx = (Mutex*) KrisOS_mutex_create();
-	nokia5110_init();
 	
-	// 'Say my name baby'
-	nokia5110_set_cursor(25, 5);
-	fprintf(&nokia5110, "KrisOS"); 	
+	KrisOS_mutex_lock(nokiaMtx);
+	{
+		// Initialise the screen
+		nokia5110_init();
+		
+		// 'Say my name baby'
+		nokia5110_set_cursor(25, 5);
+		fprintf(&nokia5110, "KrisOS");
+	}
+	KrisOS_mutex_unlock(nokiaMtx);
 }
 
 
@@ -231,6 +258,7 @@ void nokia5110_init(void) {
 	for (delay = 0; delay < 10; delay++);
 	RST = RST_HIGH;
 	
+	// A set of setup commands send to the PCD8544 controller:
 	// Power up, set horizontal addressing and extended instruction set (for setup)
 	nokia5110_send(COMMAND, 0x21);
 	
@@ -264,10 +292,10 @@ void nokia5110_send(TransferType type, uint8_t data) {
 	DC = type == DATA ? DC_DATA : DC_COMMAND;
 	
 	// Wait until the TX FIFO is not full send the data
-	while ((SSI0->SR & (1 << SR_TFE)) == 0);
+	while ((SSI0->SR & (1 << SR_TNF)) == 0);
 	SSI0->DR = data;
 	
-	// Wait for acknowledge and remove it from the RX FIFO
+	// Wait for acknowledge and remove the acknowledge message from the receive FIFO
 	while ((SSI0->SR & (1 << SR_RNE)) == 0);
 	data = SSI0->DR;
 }
@@ -276,17 +304,17 @@ void nokia5110_send(TransferType type, uint8_t data) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	nokia5110_set_cursor
-* Purpose:    	Move the cursor to the new specified position
+* Purpose:    	Move the cursor to position specified
 * Arguments:	
-*		x - new X cursor position
-* 		y - new Y cursor position
+*		x - new X cursor position (1 of the 6 'byte rows')
+* 		y - new Y cursor position (1 of the 84 possible Y pixel positions)
 * Returns: 
 *		exit_status
 --------------------------------------------------------------------------------*/
 uint32_t nokia5110_set_cursor(uint8_t x, uint8_t y) {
 	
 	// Check if arguments are in allowed pixel address range
-	if (x >= NOKIA5110_WIDTH || y >= NOKIA5110_HEIGHT)
+	if (x >= NOKIA5110_WIDTH || y >= NOKIA5110_HEIGHT / 8)
 		return EXIT_FAILURE;
 
 	// Set the new X and Y coordinate
@@ -300,16 +328,19 @@ uint32_t nokia5110_set_cursor(uint8_t x, uint8_t y) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	nokia5110_clear
-* Purpose:    	Clear the screen 
+* Purpose:    	Clear the screen
 * Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void nokia5110_clear(void) {
 	
 	uint32_t i;
+	
+	// Write 0 to each byte address in the PCD8544 address space
 	for (i = 0; i < NOKIA5110_HEIGHT * NOKIA5110_WIDTH; i++)
 		nokia5110_send(DATA, 0x00);
 	
+	// Move the cursor to the top-left corner
 	nokia5110_set_cursor(0, 0);
 }
 

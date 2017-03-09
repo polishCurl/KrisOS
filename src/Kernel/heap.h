@@ -46,7 +46,7 @@ typedef struct HeapBlock {
 --------------------------------------------------------------------------------*/
 typedef struct HeapManager {
 	HeapBlock startBlock; 				// Beginning and the end of list of free blocks
-	HeapBlock endBlock;
+	HeapBlock* endBlock;
 	uint8_t heapMem[ALIGNED_HEAP_SIZE];	// Heap memory
 	uint32_t heapBytesUsed;				// Number of bytes already allocated on heap
 #ifdef USE_MUTEX

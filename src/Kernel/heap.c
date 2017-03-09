@@ -23,32 +23,6 @@ HeapManager heap;
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	heap_insert_free_block
-* Purpose:    	Insert a new block into the list of free blocks
-* Arguments:	
-*		toInsert - pointer to the block to insert
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void heap_insert_free_block(HeapBlock* toInsert) {
-	
-	// Iterator through the list of free blocks and the size of block to insert
-	HeapBlock* iterator;
-	size_t blockSize;
-	blockSize = toInsert->blockSize;
-	
-	// Iterate through the linked list of blocks until one that has bigger size
-	// is next
-	iterator = &heap.startBlock;
-	while (iterator->next->blockSize < blockSize) 
-		iterator = iterator->next;
-	
-	// Insert the block
-	toInsert->next = iterator->next;
-	iterator->next = toInsert;
-}
-
-
-/*-------------------------------------------------------------------------------
 * Function:    	heap_init
 * Purpose:    	Heap initialisation function 
 * Arguments:	- 	
@@ -56,29 +30,34 @@ void heap_insert_free_block(HeapBlock* toInsert) {
 --------------------------------------------------------------------------------*/
 void heap_init(void){
 
-	// Pointer to the first free block of data that can be used
+	// Pointer to the first free block of data that can be used and a helper pointer
+	// for end HeapBlock address computation
 	HeapBlock* firstBlock;
+	uint8_t* endBlockAdr;
 	
-	// Reset the counter
-	heap.heapBytesUsed = 0;					
+	// Reset the heap usage counter. The end block is contained within the heap memory
+	heap.heapBytesUsed = sizeof(HeapBlock);					
 	
 	// Initialise the two blocks used for management, the starting and ending ones
 	heap.startBlock.blockSize = 0;
-	heap.startBlock.next = (void*) &heap.heapMem[0];
-	heap.endBlock.blockSize = ALIGNED_HEAP_SIZE;
-	heap.endBlock.next = NULL;
+	heap.startBlock.next = (void*) heap.heapMem;
+	endBlockAdr = heap.heapMem + ALIGNED_HEAP_SIZE - sizeof(HeapBlock);
+	heap.endBlock = (void*) endBlockAdr;
+	heap.endBlock->blockSize = ALIGNED_HEAP_SIZE;
+	heap.endBlock->next = NULL;
 	
 	// First free block used is placed right at the beginning of heap memory area
 	// It occupies the whole heap memory and points to the endBlock
-	firstBlock = (void*) &heap.heapMem[0];
-	firstBlock->blockSize = ALIGNED_HEAP_SIZE;
-	firstBlock->next = &heap.endBlock;
+	firstBlock = (void*) heap.heapMem;
+	firstBlock->blockSize = ALIGNED_HEAP_SIZE - sizeof(HeapBlock);
+	firstBlock->next = heap.endBlock;
 	
 	// Initialise the heap mutex
 	#ifdef USE_MUTEX
 		mutex_init(&heap.heapMutex);
 	#endif
 }
+
 
 
 /*-------------------------------------------------------------------------------
@@ -129,7 +108,7 @@ void* malloc(size_t bytesToAlloc) {
 			}
 			
 			// If such block exists, join its neighbours and update the pointer
-			if (iterator != &heap.endBlock) {
+			if (iterator != heap.endBlock) {
 				allocatedMemory = (void*) (((uint8_t*) previousBlock->next) + sizeof(HeapBlock));
 				previousBlock->next = iterator->next;
 				
@@ -152,7 +131,7 @@ void* malloc(size_t bytesToAlloc) {
 		#endif
 		
 		// Test if there is insufficient free heap memory left to serve this request
-		if (iterator == &heap.endBlock)
+		if (iterator == heap.endBlock)
 			exit(EXIT_HEAP_TOO_SMALL);
 	}
 	return allocatedMemory;	
@@ -192,8 +171,8 @@ void free(void* toFree) {
 		__start_critical();
 	#endif
 	{
-		heap_insert_free_block(blockToFree);
 		heap.heapBytesUsed -= blockToFree->blockSize;
+		heap_insert_free_block(blockToFree);	
 	}
 	#ifdef USE_MUTEX
 		mutex_unlock(&heap.heapMutex);
@@ -201,6 +180,61 @@ void free(void* toFree) {
 		__end_critical();
 	#endif
 }	
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	heap_insert_free_block
+* Purpose:    	Insert a new block into the list of free blocks
+* Arguments:	
+*		toInsert - pointer to the block to insert
+* Returns: 		-
+--------------------------------------------------------------------------------*/
+void heap_insert_free_block(HeapBlock* toInsert) {
+	
+	// Iterator through the list of free blocks and helper pointer for finding 
+	// neighbouring free heap blocks
+	HeapBlock* iterator;
+	uint8_t* neighbourLocator; 
+	
+	// Iterate through the linked list of blocks until one with higher address is found
+	iterator = &heap.startBlock;
+	while (iterator->next < toInsert) 
+		iterator = iterator->next;
+	
+	// Test if the block preceding the one to insert is adjacent (they form contiguous
+	// block of memory). If so, merge them.
+	neighbourLocator = (uint8_t*) iterator;
+	if (neighbourLocator + iterator->blockSize == (uint8_t*) toInsert) {
+		iterator->blockSize += toInsert->blockSize ;
+		toInsert = iterator;
+	}
+	
+	// Test if the block following the one to insert is adjacent (they form contiguous
+	// block of memory). If so, merge them.
+	neighbourLocator = (uint8_t*) toInsert;
+	if (neighbourLocator + toInsert->blockSize == (uint8_t*) iterator->next) {
+		
+		// The block is inserted right at the end of heap memory area
+		if (iterator->next == heap.endBlock) {
+			toInsert->next = heap.endBlock;
+		}
+		// Remaining cases
+		else {
+			toInsert->blockSize += iterator->next->blockSize;
+			toInsert->next = iterator->next->next;
+		}
+	}
+	else {
+		toInsert->next = iterator->next;
+	}
+	
+	// If both the preceding and following blocks were adjacent to the one to insert
+	// then the next pointer needs to be corrected
+	if (iterator != toInsert)
+		iterator->next = toInsert;
+
+}
 
 
 
