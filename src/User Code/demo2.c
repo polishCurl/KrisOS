@@ -20,10 +20,10 @@
 ------------------------------------------------------------------------------*/
 KrisOS_task_static_template(thermometerWriter, 256, 20)
 KrisOS_task_static_template(thermometerReader, 256, 53)
-KrisOS_task_static_template(lightSensor, 400, 2)
+KrisOS_task_static_template(lightSensor, 400, 13)
 KrisOS_task_dynamic_template(nokiaLCDSetup, 400, 1)
 KrisOS_task_dynamic_template(nokiaLCDBacklight, 256, 5)
-KrisOS_task_dynamic_template(ledPWM, 256, 42)
+KrisOS_task_dynamic_template(ledPWM, 256, 7)
 
 
 

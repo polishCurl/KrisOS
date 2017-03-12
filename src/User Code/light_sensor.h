@@ -20,9 +20,19 @@
 
 
 /*-----------------------------------------------------------------------------
-* Light sensor threshold value
+* Light sensor threshold value. If the ADC reading from the photoresistor
+* exceeds this value and the readings has dropped below HYSTERESIS_THRESHOLD
+* since the last time this threshold has been exceeded then the AC0_SS3 interrupt
+* will be generated.
 ------------------------------------------------------------------------------*/
-#define LIGHT_THRES 3200
+#define LIGHT_THRES 3000
+
+
+
+/*-----------------------------------------------------------------------------
+* Hysteresis threshold value
+------------------------------------------------------------------------------*/
+#define HYSTERESIS_THRESHOLD 2500
 
 
 
@@ -38,12 +48,11 @@ extern Semaphore lightSensorSem;
 * Function:    	light_sensor_init
 * Purpose:    	Initialise illumination level monitor. Set the ADC to conitnuously 
 *				monitor the voltage level from the photoresistor and trigger an 
-*				interrupt if the illumination level is too high.
-* Arguments:	
-*		threshold - maximum illumination level threshold
+*				interrupt if the illumionation level is too high.
+* Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void light_sensor_init(uint32_t threshold);
+void light_sensor_init(void);
 
 
 

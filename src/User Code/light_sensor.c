@@ -47,7 +47,7 @@ void lightSensor(void) {
 	KrisOS_sem_init(&lightSensorSem, 0);
 	
 	// Initialise the ADC module to read voltage level at the photoresistor
-	light_sensor_init(LIGHT_THRES);
+	light_sensor_init();
 	
 	// Initialise the buzzer
 	buzzer_init();
@@ -93,14 +93,13 @@ void lightSensor(void) {
 * Purpose:    	Initialise illumination level monitor. Set the ADC to conitnuously 
 *				monitor the voltage level from the photoresistor and trigger an 
 *				interrupt if the illumionation level is too high.
-* Arguments:	
-*		threshold - maximum illumination level threshold
+* Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void light_sensor_init(uint32_t threshold) {
+void light_sensor_init(void) {
 	
 	// Check if the threshold is valid (12-bit)
-	if (threshold & ~0xFFF)
+	if ((LIGHT_THRES & ~0xFFF) || (HYSTERESIS_THRESHOLD & ~0xFFF))
 		return;
 	
 	// Activate the ADC0 module and enable clock on port B. Add a small delay.
@@ -130,7 +129,7 @@ void light_sensor_init(uint32_t threshold) {
 	ADC0->DCCTL0 |= 0x3 << DCCTL0_CIM;
 	ADC0->DCCTL0 |= 1 << DCCTL0_CIE;
 	ADC0->DCCMP0 = 0;   
-	ADC0->DCCMP0 |= ((threshold - 300) << DCCMP0_COMP0) | (threshold << DCCMP0_COMP1); 
+	ADC0->DCCMP0 |= ((HYSTERESIS_THRESHOLD) << DCCMP0_COMP0) | (LIGHT_THRES << DCCMP0_COMP1); 
 	
 	// Set continuous sampling on SS3 and specify that AIN10 is used for 
 	// analog-to-digital conversion

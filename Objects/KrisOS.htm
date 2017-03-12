@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\KrisOS.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\KrisOS.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Sun Mar 12 00:18:00 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Sun Mar 12 21:53:48 2017
 <BR><P>
 <H3>Maximum Stack Usage =        176 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1135,7 +1135,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ledPWM
 </UL>
 
-<P><STRONG><a name="[7f]"></a>lightSensor</STRONG> (Thumb, 180 bytes, Stack size 0 bytes, light_sensor.o(i.lightSensor))
+<P><STRONG><a name="[7f]"></a>lightSensor</STRONG> (Thumb, 176 bytes, Stack size 0 bytes, light_sensor.o(i.lightSensor))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136 + Unknown Stack Size
 <LI>Call Chain = lightSensor &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -1149,10 +1149,8 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> demo2.o(i.main)
 </UL>
-<P><STRONG><a name="[d9]"></a>light_sensor_init</STRONG> (Thumb, 274 bytes, Stack size 8 bytes, light_sensor.o(i.light_sensor_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = light_sensor_init
-</UL>
-<BR>[Called By]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lightSensor
+<P><STRONG><a name="[d9]"></a>light_sensor_init</STRONG> (Thumb, 256 bytes, Stack size 0 bytes, light_sensor.o(i.light_sensor_init))
+<BR><BR>[Called By]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lightSensor
 </UL>
 
 <P><STRONG><a name="[79]"></a>main</STRONG> (Thumb, 80 bytes, Stack size 0 bytes, demo2.o(i.main))
@@ -1381,8 +1379,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[b0]"></a>os_start</STRONG> (Thumb, 82 bytes, Stack size 8 bytes, os.o(i.os_start))
-<BR><BR>[Stack]<UL><LI>Max Depth = 40 + Unknown Stack Size
+<P><STRONG><a name="[b0]"></a>os_start</STRONG> (Thumb, 92 bytes, Stack size 16 bytes, os.o(i.os_start))
+<BR><BR>[Stack]<UL><LI>Max Depth = 48 + Unknown Stack Size
 <LI>Call Chain = os_start &rArr; systick_config &rArr; nvic_set_priority &rArr; exit
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;systick_config
@@ -1594,7 +1592,7 @@ Global Symbols
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SVC_Handler_C
 </UL>
 
-<P><STRONG><a name="[83]"></a>stats</STRONG> (Thumb, 696 bytes, Stack size 40 bytes, os_tasks.o(i.stats))
+<P><STRONG><a name="[83]"></a>stats</STRONG> (Thumb, 714 bytes, Stack size 40 bytes, os_tasks.o(i.stats))
 <BR><BR>[Stack]<UL><LI>Max Depth = 176 + Unknown Stack Size
 <LI>Call Chain = stats &rArr; __2fprintf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
