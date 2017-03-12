@@ -60,9 +60,9 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider);
 
 /*-------------------------------------------------------------------------------
 * Function:    	systick_config
-* Purpose:    	Configure the KrisOS clock
+* Purpose:    	Setup the KrisOS clock by configuring the SysTick timer interrupts
 * Arguments: 	
-*		cycles - number of systen clock cycles between OS timer interrupts (24 bits)
+*		cycles - SysTick timer reload value (KrisOS clock period)
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void systick_config(uint32_t cycles);

@@ -61,10 +61,13 @@ typedef struct __FILE __FILE;		// File definition (for redirecting output stream
 /*-----------------------------------------------------------------------------
 * System timing setup
 ------------------------------------------------------------------------------*/
-// OS clock frequency (in Hz)
+// KrisOS clock frequency (in Hz). The suggested range of frequencies is 
+// 100Hz - 100000Hz. OS_CLOCK_FREQ defines OS clock resolution and it is impossible
+// to generate periodic events/tasks/etc which occur more frequencly than the 
+// KrisOS clock frequency
 #define OS_CLOCK_FREQ 10000
 
-// Definition of infinity (for pernamently suspending tasks)
+// Definition of infinity, for pernamently suspending tasks using KrisOS_task_sleep()
 #define TIME_INFINITY 0
 
 // System clock frequency
@@ -77,7 +80,7 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 // Time quantum size for preemptive scheduling (in OS clock 'ticks')
 #define TIME_SLICE 500
 
-// Size of the task registry for keeping track of all the tasks (without linked-list)
+// Size of the task registry (for debugging purposes) 
 #define TASK_REGISTRY_SIZE 20
 
 
@@ -93,33 +96,16 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 
 /*-----------------------------------------------------------------------------
 * Serial Monitor setup 
+* The UART interface over USB is preconfigured to:
+*	1. word length 		- 8 bits
+*	2. parity checking 	- none
+*	3. stop bit(s) 		- 1
+*	4. polling mode 	- receive and transmit FIFOs are disabled
 ------------------------------------------------------------------------------*/
 // UART0 baud rate
 #define UART_BAUD_RATE 115200
 
-/* UART0 word length
-	0 - 5bits
-	1 - 6bits
-	2 - 7bits
-	3 - 8bits	*/
-#define UART_WORD_LEN 3	
-
-/* UART0 parity checking
- 	0 - no parity checking
- 	1 - parity bit added (even or odd) 	*/
-#define UART_D0_PARITY_CHECK 0	
-
-/* UART0 parity
- 	0 - odd
- 	1 - even	*/
-#define UART_PARITY 0	
-
-/* UART0 number of stop bits
- 	0 - one stop bit
- 	1 - two stop bits	*/
-#define UART_STOP_BITS 0	
-
-// For redirecting output stream in stdio library to UART0
+// UART interface as a file for output stream redirection
 extern __FILE uart;
 
 // Mutual exclusion lock on UART
@@ -132,7 +118,7 @@ extern Mutex uartMtx;
 * Usage statistics task setup
 ------------------------------------------------------------------------------*/
 // Diagnostic data refresh rate (in OS clock 'ticks'). How frequently the KrisOS 
-// usage data task is run.
+// usage data is displayed on serial monitor
 #define DIAG_DATA_RATE 50000
 
 // Statistics task'S priority

@@ -4,20 +4,31 @@
 ; Author: 		Krzysztof Koch
 ; Version:		V1.00
 ; Date created:	26/09/2016
-; Last mod: 	27/09/2016
+; Last mod: 	10/03/2016
 ;
-; Note: 		System startup code containing stack and heap definitions as well 
-;				as simple exception and interrupt handlers.
+; Note: 		
+;	System startup code containing stack and heap definitions as well as simple 
+;	exception and interrupt handlers. This file also contains the PendSV IRQ 
+;	handler for context switching and SVC call handler for initial handling of
+; 	the system calls to the KrisOS (the rest is done C)
 ; ******************************************************************************
 
 
+
 ;-------------------------------------------------------------------------------
-; Stack Configuration, double stacking in use
+; Stack Configuration. There are two separate stacks used for each of the 
+; processor modes. The Handler mode stack (pointed to by MSP) should be large 
+; enough for all KrisOS kernel code. The Thread mode stack memory can be fairly
+; small as each user task uses its own private stack memory anyways, so it is only
+; used at startup time, right after the write to CONTROL register which degrades
+; Thread (user) mode to be unpriviliged.
 ;-------------------------------------------------------------------------------
 Handler_Stack_Size	EQU     0x00000200		  ; Stack size for handler mode (MSP)
 Thread_Stack_Size	EQU     0x00000100		  ; Stack size for thread mode (PSP)
 
-; Stack memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
+
+				; Stack memory area - RAM, uninitialised with 8-byte alignment 
+				; (requirement of AAPCS)
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3 
 					
 Handler_Stack	SPACE   Handler_Stack_Size
@@ -27,16 +38,20 @@ Thread_Stack   	SPACE   Thread_Stack_Size
 __initial_sp	
 
 
+
 ;-------------------------------------------------------------------------------
-; Heap Configuration
+; Heap Configuration. The heap size is zero because a separate heap implementation
+; is used with its own heap memory definition. (See heap.c)
 ;-------------------------------------------------------------------------------
 				EXPORT 	Heap_Size
-Heap_Size       EQU     0x00000100
+Heap_Size       EQU     0x00000000
 
-; HEAP memory area - RAM, uninitialised with 8-byte alignment (requirement of AAPCS)
+				; HEAP memory area - RAM, uninitialised with 8-byte alignment 
+				; (requirement of AAPCS)
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 Heap_Mem        SPACE   Heap_Size
 __heap_limit
+
 
 
 ;-------------------------------------------------------------------------------
@@ -215,12 +230,12 @@ Reset_Handler   PROC
 				IMPORT	__set_control
 				IMPORT  main
 				EXPORT  Reset_Handler 
-				LDR 	R0, =__initial_handler_sp 	; Load the proces stack pointer
-				MSR 	PSP, R0
-				MOV 	R0, #0x3
-				BL 		__set_control 				; Use double stacking
-                LDR     R0, =main				  	; Run the main method
-                BX      R0
+				LDR 	R0, =__initial_handler_sp 	; Load the Process Stack Pointer
+				MSR 	PSP, R0 					; (PSP).
+				MOV 	R0, #0x3					; Degrade the Thread mode to be 
+				BL 		__set_control 				; unpriviliged and split the MSP and PSP
+                LDR     R0, =main				  	; between the two execution modes.
+                BX      R0							; Jump to the the main method
                 ENDP
 
 
@@ -256,21 +271,32 @@ UsageFault_Handler\
 
 
 ;-------------------------------------------------------------------------------
-; Reset Handler
+; Supervisor Call (SVC) Handler
+;
+; The SVC call handler is split into two parts. The first one (written in assembly
+; language) checks the value of LR (EXC_RETURN) to figure out which stack pointer 
+; was used before the SVC call was made. Thanks to this test, we can save the 
+; value of the calling 'Thread' (mode) stack pointer regardless of the register
+; the user program used before (MSP/PSP)
+;
+; Actually the SVC calls are made by user programs which always run in Thread mode, so
+; they use PSP as the stack pointer. This means that this test is done 'just in case'.
+; as it should always be the PSP which is saved before the SVC call continues and is 
+; restored before the SVC Call returns
 ;-------------------------------------------------------------------------------					
 SVC_Handler     PROC
 				IMPORT 	scheduler
 				IMPORT 	SVC_Handler_C
                 TST 	LR, #4
-				ITE		EQ					; determine which stack was used before 
-				MRSEQ	R0, MSP				; the SVC call
-				MRSNE	R0, PSP
-				LDR 	R1, =scheduler		; save the EXC_RETURN
+				ITE		EQ					; Determine which stack pointer was used before 
+				MRSEQ	R0, MSP				; the SVC call by looking at bit 2 of
+				MRSNE	R0, PSP 			; EXC_RETURN (LR)
+				LDR 	R1, =scheduler		; Save the EXC_RETURN
 				STR 	LR, [R1, #8]
 				BL 		SVC_Handler_C
-				LDR 	R1, =scheduler		; restore the EXC_RETURN
-				LDR		LR, [R1, #8]
-				BX 		LR
+				LDR 	R1, =scheduler		; Restore the EXC_RETURN so that 
+				LDR		LR, [R1, #8] 		; any changes to the MSP or PSP
+				BX 		LR 					; don't propagate to the calling user code
                 ENDP
 					
 					
@@ -311,41 +337,51 @@ DebugMon_Handler\
 ;	|      | <- SP before interrupt (orig. SP), bottom of task's stack
 ;	+------+
 ;
-; At context switch in addition to the registers that are save by NVIC implictly, 
-; the remaining ones are also saved together with the value of CONTROL register and 
-; SVC_EXC_RETURN. This is for determining whether the task saved has priviliged 
-; access level (system task) or not and if the task was using FPU or not. 
+; At context switch in addition to the registers that are saved by NVIC implictly:
+; R0-R3, R12, PC, xPSR, the remaining ones: R3-R11 are also saved explicitly
+; inside the PendSV handler. In addition to all the registers mentioned
+; before, also the value of CONTROL and EXC_RETURN is saved for the currently 
+; running task and restored for the task to be run next.
+;
+; The CONTROL register stores the information about the access rights 
+; priviliged/unpriviliged of the given task. This helps to distinguish between 
+; user (unpriviliged) tasks and the system ones.
+;
+; The LR (EXC_RETURN) is saved and reloaded too. But the value of its bit 4 
+; is used for determining whether the floating-point context should be saved as well.
+; The positive test outcome implies that the currently running task performed some
+; operations on floatin-point number using FPU hardware support.
 ;-------------------------------------------------------------------------------	
 PendSV_Handler	PROC
 				IMPORT 	scheduler
                 EXPORT  PendSV_Handler
 					
 				; Save current context
-				CPSID	I 					; disable Interrupts
-				MRS 	R0, PSP				; get current PSP
-				TST 	LR, #0x10			; check if floating point context should 
-                IT 		EQ					; be saved
-				VSTMDBEQ R0!, {S16-S31} 	; save floating point registers
-				MOV 	R2, LR
+				CPSID	I 					; Disable Interrupts
+				MRS 	R0, PSP				; Get current PSP
+				TST 	LR, #0x10			; Check if floating point context should 
+                IT 		EQ					; be saved and save floating point registers 
+				VSTMDBEQ R0!, {S16-S31} 	; if the FPU has been used by the last run task
+				MOV 	R2, LR 				; Save the LR, CONTROL and R4-R11 registers
 				MRS 	R3, CONTROL
-				STMDB 	R0!, {R2-R11} 		; push the LR, CONTROL and R4 to R11 registers
-				LDR 	R2, =scheduler		; save the PSP into current task's metadata
-				LDR 	R1, [R2]
-				STR 	R0, [R1] 		
-
+				STMDB 	R0!, {R2-R11} 		
+				LDR 	R2, =scheduler		; Now only the stack pointer value, after all
+				LDR 	R1, [R2] 			; context saving, remains to be saved inside
+				STR 	R0, [R1] 			; task's metadata runPtr->sp = R0
+											
 				; Load next context
-				LDR 	R3, [R2, #4] 		; load the next task to run
-				LDR		R0, [R3]			; load the SP of the next task
-				STR		R3, [R2]			; update the runPtr
-				LDMIA 	R0!, {R2-R11} 		; pop LR, CONTROL and R4 to R11 
-				MOV		LR, R2
-				MSR 	CONTROL, R3
+				LDR 	R3, [R2, #4] 		; Load the pointer to the next task to run
+				LDR		R0, [R3]			; Load the SP of the next task R0 = scheduler->topPrioTask->sp
+				STR		R3, [R2]			; scheduler->runPtr = scheduler->topPrioTask
+				LDMIA 	R0!, {R2-R11} 		; Restore the values of LR, CONTROL and R4-R11 
+				MOV		LR, R2 				; from the task's private stack
+				MSR 	CONTROL, R3 		; Reload the execution mode (
 				ISB
 				TST 	LR, #0x10
 				IT		EQ 					; Test bit 4. If zero, need to unstack 
 				VLDMIAEQ R0!, {S16-S31} 	; floating point registers
-				MSR 	PSP, R0 			; set PSP to next task
-				CPSIE	I					; re-enable Interrupts 
+				MSR 	PSP, R0 			; Set PSP to next task's stack pointer
+				CPSIE	I					; Re-enable Interrupts 
 				BX 		LR					; return
                 ENDP
 					
@@ -587,7 +623,9 @@ PWM1_FAULT_Handler
 					
 ;-------------------------------------------------------------------------------
 ; Function:    	__user_initial_stackheap
-; Purpose:    	Returns the locations of the initial stack and heap.
+; Purpose:    	Retarget the heap and stack memory. Returns the heap and the Handler 
+;				mode stack memory space range addresses. Implementing this function
+;				is necessary when semihosting is switched off.
 ; Arguments:	-
 ; Returns: 		
 ;		R0 - heap base address

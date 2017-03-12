@@ -32,7 +32,7 @@ void ledPWM(void) {
 	// Maximum duty cycle allowed for the PWM frequency specified 
 	uint32_t maxDuty;
 	
-	// Initialise the PWM operation on the RGB LED
+	// Initialise the PWM on the RGB LED
 	maxDuty = ledPWM_init(RGB_LED_PWM_FREQ);
 	
 	// Make gentle transitions of the RGB colour by dimming/brightening

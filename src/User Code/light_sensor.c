@@ -130,7 +130,7 @@ void light_sensor_init(uint32_t threshold) {
 	ADC0->DCCTL0 |= 0x3 << DCCTL0_CIM;
 	ADC0->DCCTL0 |= 1 << DCCTL0_CIE;
 	ADC0->DCCMP0 = 0;   
-	ADC0->DCCMP0 |= ((threshold - 500) << DCCMP0_COMP0) | (threshold << DCCMP0_COMP1); 
+	ADC0->DCCMP0 |= ((threshold - 300) << DCCMP0_COMP0) | (threshold << DCCMP0_COMP1); 
 	
 	// Set continuous sampling on SS3 and specify that AIN10 is used for 
 	// analog-to-digital conversion

@@ -4,7 +4,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
-* Last mod: 	30/09/2016
+* Last mod: 	11/03/2017
 *
 * Note: 		Methods for controlling the system clock speed, periodic 
 *				interrupts using SysTick timer, as well as other timing utilities
@@ -103,12 +103,17 @@ void system_clock_config(uint32_t oscSrc, uint32_t divider) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	systick_config
-* Purpose:    	Configure the KrisOS clock
+* Purpose:    	Setup the KrisOS clock by configuring the SysTick timer interrupts
 * Arguments: 	
-*		cycles - number of systen clock cycles between OS timer interrupts (24 bits)
+*		cycles - SysTick timer reload value (KrisOS clock period)
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void systick_config(uint32_t cycles) {
+	
+	// Check if the timer reload value is positive and it fits inside the SysTick
+	// reload register (24 bits)
+	if (cycles == 0 || cycles & ~0xFFFFFF)
+		exit(EXIT_INVALID_OS_CLOCK_FREQ);
 	
 	// Disable SysTick for the time of configuration. Set the reload value and 
 	// reset the SysTick counter
@@ -116,8 +121,10 @@ void systick_config(uint32_t cycles) {
 	SYSTICK->RELOAD = cycles - 1; 
 	SYSTICK->CURRENT = 0; 			
 	
-	// Main clock as source, SysTick enabled with IRQs. Reset the OS 'ticks' counter
-	SYSTICK->CTRL |= (1 << CTRL_CLK_SRC) | (1 << CTRL_INTEN) | (1 << CTRL_ENABLE);			
+	// Main clock as source, SysTick enabled with IRQs. 
+	SYSTICK->CTRL |= (1 << CTRL_CLK_SRC) | (1 << CTRL_INTEN) | (1 << CTRL_ENABLE);	
+
+	// Reset the OS 'ticks' counter
 	KrisOS.ticks = 0;
 	
 	// OS clock ticks are the most important events in the KrisOS operating system. So,

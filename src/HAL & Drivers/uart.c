@@ -4,7 +4,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
-* Last mod: 	04/12/2016
+* Last mod: 	11/03/2016
 *
 * Note: 		
 *******************************************************************************/
@@ -16,14 +16,15 @@
 
 
 /*-------------------------------------------------------------------------------
-* Uart I/O stream 'as file' declarations 
+* Declaration of UART interface as a file for output stream redirection
 --------------------------------------------------------------------------------*/
 __FILE uart;
 
 
 
 /*-------------------------------------------------------------------------------
-* Mutex on UART
+* Mutex on UART. This mutex is optional but is maintained by the kernel code
+* as the UART interface forms part of the KrisOS (is used for KrisOS debugging)
 --------------------------------------------------------------------------------*/
 #ifdef USE_MUTEX
 	Mutex uartMtx;
@@ -33,49 +34,49 @@ __FILE uart;
 
 /*-------------------------------------------------------------------------------
 * Function:    	uart_init
-* Purpose:    	Initialisation of UART interface.
-* Arguments:
-*		baudRate - controls the number of bits sent per second
-*		uartWordLen - UART word length: 5bits (0), 6bits (1), 7bits (2) or 8bits (3)
-*		parityUsed - no parity checking/generation (0) or parity used (1)
-*		oddEven - parity: odd (0), even (1)
-*		stopBits - number of stop bits: one stop bit (0), two stop bits (1) 
+* Purpose:    	Initialisation function for the UART0 interface (Serial monitor 
+*				over USB).
+* Arguments:	-
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
-void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed, 
-			   uint32_t oddEven, uint32_t stopBits) {
-					
+void uart_init(void) {
+				   					
 	// Integer and fractional part of the system clock divider for generating
 	// the desired baudRate
 	int32_t dividerInt; 				
-	float32_t dividerFrac;			
+	float32_t dividerFrac;	
+
+	// Test if the baud rate is within the allowable range 9600 to 115200
+	if (UART_BAUD_RATE < 9600 || UART_BAUD_RATE > 115200)
+		exit(EXIT_UART_INVALID_BAUD_RATE);
 	
 	// Activate UART0 on port A and disable UART device for time of configuration
 	SYSCTL->RCGCUART |= (1 << RCGC_UART0);		
 	SYSCTL->RCGCGPIO |= (1 << RCGCGPIO_PORTA); 
 	UART0->CTL &= ~(1 << CTL_UARTEN); 							   
 				   
-	// Calculate the divider, separate the integer and fractional parts
-	dividerFrac = (float32_t) SYSTEM_CLOCK_FREQ / 16 / baudRate;
+	// Calculate the divider, separate the integer and fractional parts and write
+	// these to the Integer Baud-Rate Divisor and Fractional Baud-Rate Divisor 
+	// registers
+	dividerFrac = (float32_t) SYSTEM_CLOCK_FREQ / 16 / UART_BAUD_RATE;
 	dividerInt = (int32_t) dividerFrac;
 	dividerFrac -= dividerInt;
 	dividerFrac = dividerFrac * 64 + 0.5f;
 	UART0->IBRD = dividerInt; 							
 	UART0->FBRD = (int32_t) dividerFrac; 
 	
-	// Enable port A pins 1 and 0. Set GPIOA pins 1-0 to alternative function and
-	// enable digitial I/O on pins 1-0 of GPIOA	
+	// Enable port A pins 1 and 0. Set GPIOA pins 1-0 to alternative function (UART0)
+	// and enable digitial I/O on pins 1-0 of GPIOA	
 	GPIOA->PCTL &= ~((0xFU << PCTL_PMC1) | (0xFU << PCTL_PMC0));
 	GPIOA->PCTL |= (1 << PCTL_PMC1) | (1 << PCTL_PMC0); 
 	GPIOA->AFSEL |= (1 << PIN0) | (1 << PIN1);	 
 	GPIOA->DEN |= (1 << PIN0) | (1 << PIN1);				   
 				   
-	// Set the parameters of serial communication. Parity, stop bit, word length etc...
-	UART0->LCRH = (parityUsed << LCHR_SPS) | (uartWordLen << LCHR_WLEN) | 
-				  (stopBits << LCHR_STP2) | (oddEven << LCHR_EPS) | 
-				  (parityUsed << LCHR_PEN);  
+	// Set the parameters of serial communication. No parity checks, single stop bit,
+	// UART FIFO disabled (polling mode), 8 bit word length
+	UART0->LCRH = 0x3 << LCHR_WLEN;
 	
-	// Enable the receive, transmitter and the whole UART module
+	// Enable the UART receiver, the transmitter and the whole UART module
 	UART0->CTL |= (1 << CTL_RXE) | (1 << CTL_TXE) | (1 << CTL_UARTEN);
 
 	// Initialise the UART mutex
@@ -95,7 +96,8 @@ void uart_init(uint32_t baudRate, uint32_t uartWordLen, uint32_t parityUsed,
 --------------------------------------------------------------------------------*/
 void uart_send_char(uint8_t character) {
 
-	// Wait for the transmitter to be ready to accept next character
+	// Wait for the transmitter to be ready (not full) to accept next character.
+	// Then write to the UART data register
 	while (UART0->FR & (1 << FR_TXFF)); 
 	UART0->DR = character;
 }
@@ -116,8 +118,5 @@ uint8_t uart_get_char(void) {
 	while (UART0->FR & (1 << FR_RXFE)); 
 	return (UART0->DR & 0xFF);
 }
-
-
-
 
 #endif

@@ -134,6 +134,10 @@ void* malloc(size_t bytesToAlloc) {
 		if (iterator == heap.endBlock)
 			exit(EXIT_HEAP_TOO_SMALL);
 	}
+	// The remaining heap space is smaller than the block size
+	else {
+		exit(EXIT_HEAP_TOO_SMALL);
+	}
 	return allocatedMemory;	
 }
 

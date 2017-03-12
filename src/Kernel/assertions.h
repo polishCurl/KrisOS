@@ -5,7 +5,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	02/03/2016
-* Last mod: 	02/03/2016
+* Last mod: 	11/03/2016
 *
 * Note: 		
 *******************************************************************************/
@@ -13,6 +13,8 @@
 #define EXIT_INVALID_SIZE 2
 #define EXIT_INVALID_IRQ_PRIO 3
 #define EXIT_HEAP_TOO_SMALL 4
+#define EXIT_UART_INVALID_BAUD_RATE 5
+#define EXIT_INVALID_OS_CLOCK_FREQ 6
 
 
 

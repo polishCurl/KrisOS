@@ -71,7 +71,7 @@ uint32_t os_init(void) {
 			
 		// Initialise the uart serial interface
 		#ifdef USE_UART		
-			uart_init(UART_BAUD_RATE, UART_WORD_LEN, UART_D0_PARITY_CHECK, UART_PARITY, UART_STOP_BITS); 
+			uart_init(); 
 		#endif
 		
 		// SVC calls (software interrupts) are used for interaction between the user and 
@@ -301,6 +301,16 @@ void _sys_exit(int return_code) {
 			case EXIT_HEAP_TOO_SMALL: 
 				fprintf(&uart, "\nNo more heap space available! Increase the heap size...");
 				break;
+			case EXIT_INVALID_SIZE:
+				fprintf(&uart, "\nInvalid size argument specified! Should be greated than 0...");
+				break;
+			case EXIT_INVALID_OS_CLOCK_FREQ:
+				fprintf(&uart, "\nInvalid OS clock frequency specified! Try a different value such as 100Hz or 100000Hz...");
+				break;
+			// With the invalid baud rate displaying any error message over serial monitor
+			// doesn't make sense
+			case EXIT_UART_INVALID_BAUD_RATE:
+				while(1);
 			default: break;
 		}
 

@@ -4,10 +4,11 @@
 ; Author: 		Krzysztof Koch
 ; Version:		V1.00
 ; Date created:	26/09/2016
-; Last mod: 	27/09/2016
+; Last mod: 	11/03/2017
 ;
-; Note: 		Methods allowing to access internal special registers and other
-; 				functionality which can't easily be accessed using C language syntax
+; Note: 		
+;	Methods allowing access to Cortex-M4 internal registers and other
+; 	functionality which can't be accessed using C language syntax.
 ; ******************************************************************************
 
 
@@ -27,6 +28,7 @@ __disable_irqs	PROC
 				ENDP
 				
 				
+				
 ;-------------------------------------------------------------------------------
 ; Function:    	__enable_irqs
 ; Purpose:    	Enable interrupts by clearing the I bit in PRIMASK register
@@ -38,7 +40,8 @@ __enable_irqs	PROC
 				CPSIE	I
 				BX 		LR
 				ENDP
-				
+		
+		
 		
 ;-------------------------------------------------------------------------------
 ; Function:    	__set_base_prio
@@ -55,6 +58,7 @@ __set_base_prio	PROC
 				ENDP
 					
 
+
 ;-------------------------------------------------------------------------------
 ; Function:    	__get_base_prio
 ; Purpose:    	Read the masking priority level
@@ -67,7 +71,9 @@ __get_base_prio	PROC
 				MRS 	R0, BASEPRI
 				BX 		LR
 				ENDP
-				
+		
+
+
 ;-------------------------------------------------------------------------------
 ; Function:    	__set_psp
 ; Purpose:    	Set the value of the Process Stack Pointer
@@ -82,6 +88,7 @@ __set_psp		PROC
 				ENDP
 
 
+
 ;-------------------------------------------------------------------------------
 ; Function:    	__get_psp
 ; Purpose:    	Get the value of the Process Stack Pointer
@@ -94,6 +101,7 @@ __get_psp		PROC
 				MRS		R0, PSP
 				BX 		LR
 				ENDP
+
 
 
 ;-------------------------------------------------------------------------------
@@ -114,9 +122,10 @@ __enable_fpu	PROC
 				ENDP
 
 
+
 ;-------------------------------------------------------------------------------
 ; Function:    	__disable_fpu
-; Purpose:    	Enable the floating-point unit co-processor
+; Purpose:    	Disable the floating-point unit co-processor
 ; Arguments: 	-
 ; Returns: 		-	
 ;-------------------------------------------------------------------------------
@@ -127,10 +136,11 @@ __disable_fpu	PROC
 				BIC     R1, R1, #(0xF << 20)
 				STR     R1, [R0]
 				DSB							; wait for store to complete
-				ISB 						; flush the pipeline	
+				ISB 						; flush the processor pipeline	
 				BX 		LR
 				ENDP
 				
+
 
 ;-------------------------------------------------------------------------------
 ; Function:    	__set_control
@@ -142,9 +152,10 @@ __disable_fpu	PROC
 				EXPORT	__set_control
 __set_control	PROC
 				MSR		CONTROL, r0
-				ISB							; flush the pipeline
+				ISB							; flush the processor pipeline
 				BX 		LR
 				ENDP
+
 
 
 ;-------------------------------------------------------------------------------

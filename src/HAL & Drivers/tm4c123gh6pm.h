@@ -45,8 +45,10 @@
 
 
 /*-------------------------------------------------------------------------------
-* Interrupt Number Definition 
+* Interrupt Numbers
 --------------------------------------------------------------------------------*/
+// Enum type so that less input argument checking is needed when accessing NVIC
+// registers for setting priorities, clearing/setting pending bits etc...
 typedef enum {
 	// Cortex-M4 Processor Exceptions Numbers 
 	Reset_IRQn 				= -15,          

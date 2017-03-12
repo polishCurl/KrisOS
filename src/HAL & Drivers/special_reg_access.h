@@ -4,9 +4,15 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
-* Last mod: 	30/09/2016
+* Last mod: 	11/03/2017
 *
-* Note: 		
+* Note: 	
+*	This file acts as a bridge between KrisOS kernel C and Assembly code. Thanks
+*	to this header, the subroutines for accessing processor registers, such as
+* 	CONTROL, or for disabling interrupts are accessible from C language level.
+*
+*	The __ prefix is used so that no other function name can be confused with
+*	these 'rather crucial' subroutines
 *******************************************************************************/
 #include "common.h"
 
