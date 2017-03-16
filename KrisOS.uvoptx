@@ -460,8 +460,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\User Code\demo2.c</PathWithFileName>
-      <FilenameWithoutPath>demo2.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\User Code\demo1.c</PathWithFileName>
+      <FilenameWithoutPath>demo1.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

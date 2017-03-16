@@ -4,7 +4,7 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	10/02/2017
-* Last mod: 	10/02/2017
+* Last mod: 	16/03/2017
 *
 * Note: 		
 * 	Demo application showing mutual exclusion lock on the UART module in

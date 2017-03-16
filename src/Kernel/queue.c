@@ -1,13 +1,22 @@
 /*******************************************************************************
 * File:     	queue.c
-* Brief:    	Generic queue implementation to be used between tasks and 
-*				task-interrupt communication.
+* Brief:    	Generic OS queue implementation for task-task and interrupt-task  
+*				communication.
 * Author: 		Krzysztof Koch
 * Version:		V1.00
-* Date created:	02/03/2016
-* Last mod: 	02/03/2017
+* Date created:	02/03/2017
+* Last mod: 	16/03/2017
 *
-* Note: 		
+* Note: 	
+*	KrisOS queue implementation used for communication between tasks and task-
+*	interrupt communication. The queues store any type of data specified by value.
+*	This means that modifying a variable which holds an element which has just
+*	been placed on a queue won't have effect on the contents of the queue. 
+*
+*	The queue uses a circular FIFO for storing and reading data. The FIFO is 
+*	protected by two semaphores which keep track of the capacity still available
+*	and the number of entries stored. This ensures blocking behaviour of queues 
+*	when needed.
 *******************************************************************************/
 #include "kernel.h"
 #include "system.h"
@@ -47,7 +56,6 @@ uint32_t queue_init(Queue* toInit, void* bufferMemory, size_t capacity,
 	#ifdef SHOW_DIAGNOSTIC_DATA
 		KrisOS.totalQueueNo++;
 	#endif	
-	
 	return EXIT_SUCCESS;
 }
 					
@@ -81,7 +89,6 @@ Queue* queue_create(size_t capacity, size_t itemSize) {
 	queue_init(queueCreated, queueCreated->buffer, capacity, itemSize);
 	return queueCreated;
 }
-#endif
 
 
 
@@ -118,6 +125,7 @@ uint32_t queue_delete(Queue* toDelete) {
 
 	return EXIT_SUCCESS;
 }
+#endif
 
 
 

@@ -1,12 +1,25 @@
 /*******************************************************************************
 * File:     	uart.c
-* Brief:    	UART driver for serial asynchronous communication
+* Brief:    	A simple UART driver
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
 * Last mod: 	11/03/2016
 *
 * Note: 		
+*	The UART module driver is the only device driver that is part of the operating
+*	system, however it is optional. In embedded operating systems the device drivers
+*	should be written by the user as these tend to be quite specific and packing all
+*	possible drivers inside the OS doesn't make sense in embedded (memory restricted)
+*	applications.
+*	
+*	The driver uses GPIO pins PA0 and PA1 which are directly connected to the USB.
+*	This is the main motivation for having the driver on-board. This allows for
+*	useful debug data to be displayed on a serial monitor on a host machine 
+*	without relying on the user to write a driver for at least one output stream.
+*
+*	The driver is polling-based and allows modification of the transmission baud
+*	rate, provided it is sensible.
 *******************************************************************************/
 #include "KrisOS.h"
 #include "system.h"

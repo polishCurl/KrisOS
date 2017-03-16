@@ -1,12 +1,17 @@
 /*******************************************************************************
 * File:     	os.c
-* Brief:    	KrisOS implementation
+* Brief:    	KrisOS base kernel code
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	16/10/2016
-* Last mod: 	16/10/2016
+* Last mod: 	13/03/2017
 *
 * Note: 	
+*	os.c and scheduler.c form the basis of KrisOS kernel code with other source
+*	files heap.c, mutex.c, ... being optional features. Here, the OS clock timer
+*	interrupts as well as the 'C' part of the SVC calls (OS calls) are defined.
+*	In addition to this the methods for initialising tha starting the OS are 
+*	defined here.
 *******************************************************************************/
 #include "kernel.h"
 #include "system.h"
@@ -24,7 +29,7 @@
 
 
 /*-------------------------------------------------------------------------------
-* Kernel status block
+* Kernel control block - static memory allocation
 --------------------------------------------------------------------------------*/
 Kernel KrisOS;
 
@@ -32,7 +37,7 @@ Kernel KrisOS;
 
 /*-------------------------------------------------------------------------------
 * Function:    	os_init
-* Purpose:    	KrisOS initialisation routine
+* Purpose:    	Initialise the operating system
 * Arguments:	-
 * Returns: 
 * 		exit status		
@@ -48,7 +53,7 @@ uint32_t os_init(void) {
 		// Set up the system clock
 		system_clock_config(CLOCK_SOURCE, SYSCLOCK_DIVIDER);
 		
-		// Reset the mutex, semaphore and queue counters
+		// Reset the mutex, semaphore and queue counters 
 		#if defined SHOW_DIAGNOSTIC_DATA && defined USE_MUTEX
 			KrisOS.totalMutexNo = 0;
 		#endif
@@ -64,7 +69,7 @@ uint32_t os_init(void) {
 		// Initialse the scheduler
 		scheduler_init();
 			
-		// Initialise the heap
+		// Initialise the heap manager
 		#ifdef USE_HEAP
 			heap_init();
 		#endif			
@@ -75,8 +80,8 @@ uint32_t os_init(void) {
 		#endif
 		
 		// SVC calls (software interrupts) are used for interaction between the user and 
-		// the operating system. Handling external interrupts should be carried out first, 
-		// so they have the lowest priority possible
+		// the operating system. Handling external interrupts should have the priority
+		// over handling OS calls (SVC calls)
 		nvic_set_priority(SVCall_IRQn, 7);
 	}
 	__enable_irqs();	
@@ -87,35 +92,37 @@ uint32_t os_init(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	os_start
-* Purpose:    	Start the operating system by setting up the first task to run
+* Purpose:    	Start the operating system by redirecting the execution to the top
+*				priority ready task in the scheduler
 * Arguments:	-
 * Returns: 
 * 		exit status	
 --------------------------------------------------------------------------------*/
 uint32_t os_start(void) {
 	
-	// Helper pointer for specifying register address within the task's stack frame
+	// Helper pointer for navigating around the private stack memory of the first
+	// task to run
 	uint32_t* taskFramePtr; 	
 
-	// Find the first task to run. 
+	// Find the first task to run
 	scheduler_run();
 	scheduler.runPtr = scheduler.topPrioTask;
 	scheduler.topPrioTask->status = READY;
 	
-	// Set the initial value of svcExcReturn, CONTROL register as well as PSP.
-	// PSP should be pointing to the position of PC in the stack frame of the first task
-	// to run.
-	__set_psp(scheduler.runPtr->sp + (STACK_FRAME_R0 << WORD_ACCESS_SHIFT)); 
-	taskFramePtr = (uint32_t*) (scheduler.runPtr->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));
+	// Prepare to run the first task by loading the values of CONTROL and PSP 
+	// registers that have been specified during the task creation
+	__set_psp(scheduler.runPtr->sp + (STACK_FRAME_R0 << 2)); 
+	taskFramePtr = (uint32_t*) (scheduler.runPtr->sp + (STACK_FRAME_CONTROL << 2));
 	__set_control(*taskFramePtr);
 	taskFramePtr = (uint32_t*) scheduler.runPtr->sp;
 	scheduler.svcExcReturn = *taskFramePtr;
 	
-	// It is assumed that the first task will use up its timeslice completely so
-	// the preemption flag should be raised
+	// It is assumed that the first task run will use up its timeslice completely.
+	// So the preemption flag should be raised as if the tasks executed uninterrupted
+	// for 
 	scheduler.preemptFlag = 1;
 	
-	// Set up periodic interrupts
+	// Set up periodic interrupts - the OS clock
 	systick_config(SYSTEM_CLOCK_FREQ / OS_CLOCK_FREQ);	
 	
 	// OS is now running
@@ -136,17 +143,22 @@ void SysTick_Handler(void) {
 	// Increment the OS ticks counter
 	KrisOS.ticks++;
 	
-	// Update the cpu usage data of currently running task
+	// On each OS timer interrupt increment a counter of the currently running task
+	// so that the CPU usage can be computed later by the KrisOS usage statistics 
+	// task
 	#ifdef SHOW_DIAGNOSTIC_DATA
 		scheduler.runPtr->cpuUsage++;
 	#endif
 	
-	// If the soonest delayed task has become ready then wake all the currently ready tasks up
+	// If there is curently at least one suspended task in the scheduler, check if it
+	// is now ready, if so, wake all the tasks that reached their wait timout value
 	if (scheduler.blocked != NULL && scheduler.blocked->waitCounter <= KrisOS.ticks)
 		scheduler_wake_tasks();
 		
 	// If the currently running task has used up its entire time slice, then
-	// it should be preempted.
+	// it should be preempted. Otherwise, mark it as a future candidate for
+	// preemption (if it doesn't get disturbed for the whole duration of a 
+	// time slice.
 	if (KrisOS.ticks % TIME_SLICE == 0) {
 		if (scheduler.preemptFlag)
 			scheduler_run();
@@ -159,22 +171,21 @@ void SysTick_Handler(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	SVC_Handler_C
-* Purpose:    	User interface to the operating system. Part of the SVC_Handler 
-* 				written in C
+* Purpose:    	The 'C' part of the SVC call handler - the mechanism for requesting
+*				KrisOS servises by the user code.
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void SVC_Handler_C(uint32_t* svcArgs) {
 	
-	// Extract the SVC number and use it to run the right subroutine using the 
-	// arguments saved on the stack
+	// Extract the SVC number and use it to run the right subroutine 
 	uint8_t svcNumber = ((uint8_t*) svcArgs[6])[-2];
 	switch(svcNumber) {
 // ---- OS initialisation and launch SVC calls  ---------------------------------
 		case SVC_OS_INIT: svcArgs[0] = os_init(); break;
 		case SVC_OS_START: svcArgs[0] = os_start(); break;	
 		
-// ---- Interrupt control SVC calls ---------------------------------------------
+// ---- NVIC Interrupt control SVC calls ----------------------------------------
 		case SVC_IRQ_EN: svcArgs[0] = nvic_enable_irq((IRQn_Type) svcArgs[0]); break;
 		case SVC_IRQ_DIS: svcArgs[0] = nvic_disable_irq((IRQn_Type) svcArgs[0]); break;
 		case SVC_IRQ_SET_PEND: svcArgs[0] = nvic_set_pending((IRQn_Type) svcArgs[0]); break;
@@ -205,11 +216,11 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_MTX_INIT: svcArgs[0] = mutex_init((void*) svcArgs[0]); break;
 		#ifdef USE_HEAP
 			case SVC_MTX_CREATE: svcArgs[0] = (uint32_t) mutex_create(); break;
+			case SVC_MTX_DELETE: svcArgs[0] = mutex_delete((void*) svcArgs[0]); break;
 		#endif
 		case SVC_MTX_TRY_LOCK: svcArgs[0] = mutex_try_lock((void*) svcArgs[0]); break;
 		case SVC_MTX_LOCK: svcArgs[0] = (uint32_t) mutex_lock((void*) svcArgs[0]); break;
 		case SVC_MTX_UNLOCK: svcArgs[0] = mutex_unlock((void*) svcArgs[0]); break;
-		case SVC_MTX_DELETE: svcArgs[0] = mutex_delete((void*) svcArgs[0]); break;
 		#endif
 		
 // ---- Semaphore management SVC calls -------------------------------------------
@@ -217,8 +228,8 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		case SVC_SEM_INIT: svcArgs[0] = sem_init((void*) svcArgs[0], svcArgs[1]); break;
 		#ifdef USE_HEAP
 			case SVC_SEM_CREATE: svcArgs[0] = (uint32_t) sem_create(svcArgs[0]); break;
+			case SVC_SEM_DELETE: svcArgs[0] = sem_delete((void*) svcArgs[0]); break;
 		#endif
-		case SVC_SEM_DELETE: svcArgs[0] = sem_delete((void*) svcArgs[0]); break;
 		case SVC_SEM_TRY_ACQUIRE: svcArgs[0] = (uint32_t) sem_try_acquire((void*) svcArgs[0]); break;
 		case SVC_SEM_ACQUIRE: svcArgs[0] = sem_acquire((void*) svcArgs[0]); break;
 		case SVC_SEM_RELEASE: svcArgs[0] = (uint32_t) sem_release((void*) svcArgs[0]); break;
@@ -231,16 +242,16 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 		#ifdef USE_HEAP
 			case SVC_QUEUE_CREATE: svcArgs[0] = (uint32_t) queue_create(svcArgs[0], 
 				svcArgs[1]); break;
+			case SVC_QUEUE_DELETE: svcArgs[0] = queue_delete((void*) svcArgs[0]); break;
 		#endif
-		case SVC_QUEUE_DELETE: svcArgs[0] = queue_delete((void*) svcArgs[0]); break;
 		case SVC_QUEUE_TRY_WRITE: svcArgs[0] = queue_try_write((void*) svcArgs[0], 
 			(const void*) svcArgs[1]); break;	
 		case SVC_QUEUE_TRY_READ: svcArgs[0] = queue_try_read((void*) svcArgs[0], 
 			(void*) svcArgs[1]); break;
 		case SVC_QUEUE_ENQUEUE: svcArgs[0] = queue_enqueue((void*) svcArgs[0], 
 			(const void*) svcArgs[1]); break;	
-		case SVC_QUEUE_DEQUEUE: svcArgs[0] = queue_dequeue((void*) svcArgs[0], (void*) svcArgs[1]); break;	
-
+		case SVC_QUEUE_DEQUEUE: svcArgs[0] = queue_dequeue((void*) svcArgs[0], 
+			(void*) svcArgs[1]); break;	
 		#endif 		
 		
 		default: break;
@@ -251,37 +262,10 @@ void SVC_Handler_C(uint32_t* svcArgs) {
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	ferror
-* Purpose:    	Test the error indicator for the given stream
-* Arguments:	-
-* Returns: 		-
---------------------------------------------------------------------------------*/
-int ferror(FILE *file) {
-	return EOF;
-}
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	_ttywrch
-* Purpose:    	Write a character to the console.
-* Arguments:	
-*		character - character to write
-* Returns: 		-
---------------------------------------------------------------------------------*/
-void _ttywrch(int character) {
-	#ifdef USE_UART
-		uart_send_char(character);
-	#endif
-}
-
-
-
-/*-------------------------------------------------------------------------------
 * Function:    	_sys_exit
-* Purpose:    	KrisOS exit routine. Must not return. 
+* Purpose:    	Terminate the operating system 
 * Arguments:	
-*		return_code - advisory
+*		exitCode - a number representing the cause of KrisOS termination
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void _sys_exit(int return_code) {
@@ -314,10 +298,10 @@ void _sys_exit(int return_code) {
 			default: break;
 		}
 
-		 fprintf(&uart, "\nTerminating...");
+		fprintf(&uart, "\nTerminating...");
 	#endif
-		
-		
+	
+	// Semihosting is not supported, so this method should not return 
 	while(1);
 }
 

@@ -4,9 +4,54 @@
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	21/10/2016
-* Last mod: 	09/12/2016
+* Last mod: 	16/03/2017
 *
 * Note: 		
+*	The KrisOS scheduler is a priority preemptive scheduler. This means that, 
+*	whenever a higher priority task becomes ready, it preempts the currently running
+*	one. If two tasks have the same priority, the one that becomes ready (if it wasn't
+*	before, will preempt the other (executing task). If two tasks of the same 
+*	priority run uninterrupted until completion then time-sliced preemption is 
+*	applied with the time slice length of TIME_SLICE OS 'ticks;
+*
+*	All task queues are arranged into doubly linked lists for constant removal
+*	time. The status of a task is reflected by the queue it belongs to:
+*		1. ready queue - a task is waiting for its turn to get CPU time
+*		2. blocked queue - a task is temporarily/pernamently suspended and won't
+*		get a chance to resume execution until the wait timout is reached
+*		3. mutex wait queue - a task is waiting to access a shared resource
+*		which is currently occupied by some other task
+*		4. semaphore wait queue - a task is waiting for a semaphore counter value
+*		to be positive, so that it can proceed.
+*
+*	Every queue (except from the blocked one) is sorted in descending task priority order.
+*	This implies that basic re-scheduling takes contant time, as it requires
+*	taking the first task located at the ready queue head. The lower the task
+*	priority the longer the insertion time. The blocked queue is arranged in ascending
+*	'wait deadline' value. This means that on each OS timer interrupt, only if the first
+*	task in the queue has become ready, then the scheduler has to further investigate
+*	the blocked queue, but usually not the whole of it (because of sorting).
+*
+*	The currently running task doesn't have a separate queue for itself. It is also
+*	located in the ready queue. If a task is removed, it is permanently deregistered 
+*	from the scheduler.
+*
+*	The tasks which terminate (don't run forever) are dealt with by the 
+* 	task_complete_handler which removes the task which returns from the scheduler
+*	and deletes it if allocated dynamically.
+*
+*	If the SHOW_DIAGNOSTIC_DATA option is enabled, an extra task registry is used
+*	to keep track of all the active tasks, no matter which queue they are in.
+*	This solves the problem of tracking all the tasks between various data structures
+*	such as semaphores/mutexes which can be created or removed at runtime.
+*	These primitives (semaphores/mutexes) aren't directly connected with the scheduler,
+*	so an extra array is used to store information about all the currently active
+*	tasks. This is easier than registering the KrisOS synchronisation and communication
+*	primitives instead. The TASK_REGISTRY_SIZE can be controlled, but nevertheless,
+*	it imposes an explicit limit on the number of tasks created. However, if the 
+*	SHOW_DIAGNOSTIC_DATA is disabled (after all debugging and performance analysis)
+*	then there is no limit on the number of tasks created except for the available
+*	RAM memory.
 *******************************************************************************/
 #include "KrisOS.h"
 #include "kernel.h"
@@ -85,8 +130,10 @@ uint32_t scheduler_run(void) {
 	
 	__start_critical();
 	{
-		// Pick either the top priority ready task or (if the time-sliced preemption 
-		// flag is set) the task next in queue with respect to the currently running one
+		// Pick either the top priority ready task (first in the ready queue) or 
+		// (if the time-sliced preemption flag is set) the task next in queue with 
+		// respect to the currently running one, if its priority is equal to the
+		// one of the running task
 		if (scheduler.preemptFlag && scheduler.runPtr->next->priority == scheduler.runPtr->priority)
 			scheduler.topPrioTask = scheduler.runPtr->next;
 		else
@@ -98,13 +145,16 @@ uint32_t scheduler_run(void) {
 			SCB->ICSR |= (1 << PENDSV);	
 			
 			// Update current task's state only if it hasn't been updated yet due to some request.
-			// (Sleep/Mutex wait/...)
+			// (Sleep/Mutex wait/...). There are various reasons to reschedule tasks.
+			// And if that reason hasn't been specified earlier (status of the last running 
+			// task is still 'RUNNING' then it has to be set to 'READY'
 			if (scheduler.runPtr->status == RUNNING)
 				scheduler.runPtr->status = READY;
 			scheduler.topPrioTask->status = RUNNING; 
 			
 			// The current time-slice will now be divided between more than one task so 
 			// time-sliced preemption is switched off until the next time slice is entered
+			// (inside the SysTick IRQ handler)
 			scheduler.preemptFlag = 0;
 			
 			// Update the context switch counter
@@ -121,7 +171,7 @@ uint32_t scheduler_run(void) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	scheduler_wake_tasks
-* Purpose:    	Check which tasks are ready, and wake them up
+* Purpose:    	Wake all the tasks from the blocked queue which are now ready
 * Arguments:	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
@@ -130,15 +180,12 @@ void scheduler_wake_tasks(void) {
 	// Pointer to the task to wake
 	Task* toWake;
 	
-	// Semaphore for which a task was waiting (with timout)
-	#ifdef USE_SEMAPHORE
-		Semaphore* semWaitedFor;
-	#endif
-	
 	__start_critical();
 	{
-		// Go through the delayed queue until a 'not ready' task is encountered (task are 
-		// sorted in ascending delay time)
+		// Go through the blocked queue until a 'not ready' task is encountered (task are 
+		// sorted in ascending delay time, so as soon as we encounter a task with wait
+		// counter greated than current OS 'ticks' value then the search for task
+		// to wake is over.
 		while (scheduler.blocked != NULL && scheduler.blocked->waitCounter <= KrisOS.ticks) {
 			
 			// Remove the ready task from delayed queue and reset its wait counter
@@ -146,19 +193,11 @@ void scheduler_wake_tasks(void) {
 			task_remove(&scheduler.blocked, toWake);
 			toWake->waitCounter = 0;
 			
-			#ifdef USE_SEMAPHORE
-				if (toWake->status == SEM_WAIT) {
-					semWaitedFor = toWake->waitingObj;
-					task_remove(&semWaitedFor->waitingQueue, toWake); 
-					toWake->waitingObj = NULL;
-				}
-			#endif
-			
 			// Insert the task back to the ready queue
 			toWake->status = READY;
 			task_add(&scheduler.ready, toWake);
 		}
-		// Reschedule tasks as the state of ready queues have changed
+		// Reschedule tasks as the state of ready queue has changed
 		scheduler_run();
 	}
 	__end_critical();
@@ -171,10 +210,10 @@ void scheduler_wake_tasks(void) {
 * Function:    	task_create_dynamic
 * Purpose:    	Create a task using heap and add it to the ready queue
 * Arguments:	
-*		startAddr - starting address of the task to add
-*		stackSize - stack size (in bytes) required by the task
-*		priority - the higher the number the lower the priority
-*		isPrivileged - 1 if privileged access level (system task), 0 otherwise
+*		startAddr - pointer to the task code (function)
+*		stackSize - size of the task's private stack (in bytes)
+*		priority - task priority. The higher the number the lower the priority.
+*		isPrivileged - 1 if the task to create should be priviliged, 0 otherwise
 * Returns: 		
 *		pointer to the task created
 --------------------------------------------------------------------------------*/
@@ -184,30 +223,30 @@ Task* task_create_dynamic(void* startAddr, size_t stackSize, uint8_t priority,
 	// Pointer to the task to create
 	Task* toCreate;				 
 						 
-	// Test if the starting address of the task code is valid
+	// Validate input arguments
 	TEST_NULL_POINTER(startAddr)
 	TEST_INVALID_SIZE(stackSize)
 	
+	// Allocate memory for the task control block. 
+	toCreate = malloc(sizeof(Task));
+							  
 	// Adjust the stack size to comply with the double-word stack alignment
 	if (stackSize % STACK_ALIGNMENT)
 		stackSize = stackSize + (STACK_ALIGNMENT - stackSize % STACK_ALIGNMENT);
-	
-	// Allocate memory for the task control block. 
-	toCreate = malloc(sizeof(Task));
-	TEST_NULL_POINTER(toCreate)
-	
-	// Allocate memory for the task's private stack
-	toCreate->stackBase = malloc(stackSize);
-	TEST_NULL_POINTER(toCreate->stackBase)
-	toCreate->sp = ((uint32_t) toCreate->stackBase) + stackSize - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
+
+	// Allocate memory for the task's private stack memory and set its SP intial
+	// value
+	toCreate->stackBottom = malloc(stackSize);
+	toCreate->sp = ((uint32_t) toCreate->stackBottom) + stackSize - (STACK_FRAME_SIZE << 2);
 	
 	#ifdef SHOW_DIAGNOSTIC_DATA
-		// Indicate that the task is placed on heap and store the stack size
+		// Record the type of memory allocation used for the creation of this task and
+		// save the stack size inside its task control block
 		toCreate->memoryType = DYNAMIC;
 		toCreate->stackSize = stackSize;
 	
 		// Preprocess the stack memory for debugging purpose (estimating stack usage)
-		KrisOS_task_stack_usage(toCreate->stackBase, stackSize);
+		KrisOS_task_stack_usage(toCreate->stackBottom, stackSize);
 	#endif
 	
 	// Initialise the task's control block and stack frame
@@ -225,24 +264,24 @@ Task* task_create_dynamic(void* startAddr, size_t stackSize, uint8_t priority,
 * Purpose:    	Create a task using statically allocated memory
 * Arguments:	
 * 		toDeclare - pointer to the pre-allocated task control block of the task to declare
-*		startAddr - starting address of the task to add
-*		stackBase - pointer to the private static stack area to be used by the task
-*		priority - task priority
+*		startAddr - pointer to the task code (function)
+*		stackBottom - pointer to the private static stack area to be used by the task
+*		priority - task priority. The higher the number the lower the priority.
 *		isPrivileged - 1 if privileged access level (system task), 0 otherwise
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
-uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase, 
+uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBottom, 
 					        uint8_t priority, uint8_t isPrivileged) {
 						 				 
-	// Test if input arguments are valid
+	// Validate input arguments
 	TEST_NULL_POINTER(toDeclare)
-	TEST_NULL_POINTER(stackBase)
+	TEST_NULL_POINTER(stackBottom)
 	TEST_NULL_POINTER(startAddr)
 	
 	// Attach the stack to the task control block of the task to declare and set the SP value
-	toDeclare->stackBase = stackBase;
-	toDeclare->sp = ((uint32_t) toDeclare->stackBase) - (STACK_FRAME_SIZE << WORD_ACCESS_SHIFT);
+	toDeclare->stackBottom = stackBottom;
+	toDeclare->sp = ((uint32_t) toDeclare->stackBottom) - (STACK_FRAME_SIZE << 2);
 								
 	// Indicate that the task is statically allocated
 	#ifdef SHOW_DIAGNOSTIC_DATA
@@ -258,8 +297,8 @@ uint32_t task_create_static(Task* toDeclare,  void* startAddr, void* stackBase,
 
 /*-------------------------------------------------------------------------------
 * Function:    	task_sleep
-* Purpose:    	Suspend the execution of the running task for specified amount of
-* 				OS ticks.
+* Purpose:    	Suspend the execution of the currently running task for 
+* 				specified amount of OS ticks.
 * Arguments: 	
 *		delay - number of OS 'ticks' do suspend execution of the task by
 * Returns: 
@@ -272,37 +311,40 @@ uint32_t task_sleep(uint64_t delay) {
 	
 	__start_critical();
 	{			
-		// Only the calling task (currently executing) can delay itself. Remove the
-		// running task from the ready queue
+		// Only the currently executing task can delay itself. So, remove the
+		// calling task from the ready queue
 		toDelay = scheduler.runPtr;
 		task_remove(&scheduler.ready, toDelay);
 		
-		// Release any locks the calling tasks has		
+		// Release a (potential) lock the calling tasks might own		
 		#ifdef USE_MUTEX 	
 			mutex_unlock(toDelay->mutexHeld);
 		#endif		
 		
-		// Update the wait counter and reschedule tasks
+		// Update the wait counter and the task status. If the task is suspended
+		// without a timout, set its waitCounter to the maximum value possible
 		toDelay->waitCounter = delay == TIME_INFINITY ? UINT64_MAX : KrisOS.ticks + delay;
 		toDelay->status = SLEEPING;
+		
+		// The state of the ready queue has changed so rescheduling is necessary
 		scheduler_run();
 		
 		// Insert the task to the queue with delayed tasks. Insertion sort is 
-		// performed in ascending delay value order.
+		// performed in ascending 'waitCounter' value order.
 		toDelay->next = toDelay->previous = NULL;
 		
-		// The queue is empty
+		// The queue is empty case:
 		if (scheduler.blocked == NULL) {
 			scheduler.blocked = toDelay;
 		}
-		// The task to insert to the delayed queue will be the soonest to wake
+		// The task to insert to the delayed queue will be the soonest to wake,
+		// inserted at the beginning case:
 		else if (toDelay->waitCounter <= scheduler.blocked->waitCounter) {
 			toDelay->next = scheduler.blocked;
 			scheduler.blocked->previous = toDelay;
 			scheduler.blocked = toDelay;
 		}
-		// Iterate through the queue until the right spot is found (ascending delay
-		// value order)
+		// Iterate through the queue until the right spot is found 
 		else {
 			iterator = scheduler.blocked;
 			while (iterator != NULL && toDelay->waitCounter > iterator->waitCounter) {
@@ -324,7 +366,8 @@ uint32_t task_sleep(uint64_t delay) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	task_delete
-* Purpose:    	Permanently remove the calling task.
+* Purpose:    	Remove the currently running (calling) task from the scheduler and
+*				delete it, if allocated dynamically.
 * Arguments: 	-
 * Returns: 
 * 		exit status
@@ -352,17 +395,18 @@ uint32_t task_delete(void) {
 			scheduler.taskRegistry[index] = scheduler.taskRegistry[--scheduler.totalTaskNo];
 		#endif
 		
-		// Release any locks the calling tasks has		
+		// Release a (potential) lock the calling tasks might own			
 		#ifdef USE_MUTEX 	
 			mutex_unlock(toDelete->mutexHeld);
 		#endif	
 		
 		// Free the heap memory the task occupies (if any)
 		#ifdef USE_HEAP
-			free(toDelete->stackBase);
+			free(toDelete->stackBottom);
 			free(toDelete);
 		#endif
 		
+		// The state of the ready queue has changed so rescheduling is necessary
 		scheduler_run();
 	}
 	__end_critical();	
@@ -389,12 +433,13 @@ uint32_t task_add(Task** queue, Task* toInsert) {
 	
 	__start_critical();
 	{
-		// The queue is empty
+		// The queue is empty case:
 		if (*queue == NULL) {
 			toInsert->next = toInsert->previous = NULL;
 			*queue = toInsert;
 		}
 		// The task to insert has the hightest priority (is inserted at the beginnig)
+		// case:
 		else if (toInsert->priority <= (*queue)->priority) {
 			toInsert->next = *queue;
 			toInsert->previous = NULL;
@@ -434,7 +479,7 @@ uint32_t task_remove(Task** queue, Task* toRemove) {
 
 	__start_critical();
 	{	
-		// Join the next and previous tasks together
+		// Join the neighbours of the task to delete together
 		if (toRemove->previous != NULL)
 			toRemove->previous->next = toRemove->next;
 		if (toRemove->next != NULL)
@@ -444,6 +489,7 @@ uint32_t task_remove(Task** queue, Task* toRemove) {
 		if (*queue == toRemove) 
 			*queue = (*queue)->next;
 		
+		// Make sure that the task to remove don't have any dangling pointers
 		toRemove->next = toRemove->previous = NULL;
 	}
 	__end_critical();
@@ -456,52 +502,54 @@ uint32_t task_remove(Task** queue, Task* toRemove) {
 * Function:    	task_init
 * Purpose:    	Initialise the task control block and stack frame for the task specified
 * Arguments: 	
-*		toInit - pointer to the task to have its stack frame initialised
+*		toInit - pointer to the task struct to have the stack frame initialised
 *		startAddr - address of the first instruction of the task to initialise
-*		isPrivileged - task's priviliged access level flag
+*		isPrivileged - 1 if the task to initialise should be priviliged, 0 otherwise
 *		priority - priority of the task to initialise
 * Returns: 
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t task_init(Task* toInit, void* startAddr, uint8_t isPrivileged, uint8_t priority) {
 	
-	// Helper pointer for specifying initial register values in the stack frame
+	// Helper pointer for specifying an address within the task's stack where specific
+	// register values are stored
 	uint32_t* taskFramePtr; 
 	
-	// Assign the task's priority, id, status and sleep time. System tasks have negative
-	// IDs while user ones have positive IDs. Reset the waitCounter. Finally, set the 
-	// initial stack pointer value
+	// Initialise the fields in the task control block
 	toInit->basePrio = toInit->priority = priority;
 	toInit->status = READY;
-	toInit->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
-	scheduler.lastIDUsed++;
 	toInit->waitCounter = 0;
 	toInit->waitingObj = NULL;
 	
-	// Initialise the mutex info - mutexes held by task initialised 
+	// Initially tasks don't own any mutual exclusion locks
 	#ifdef USE_MUTEX
 		toInit->mutexHeld = NULL;
 	#endif
+	
+	// System tasks have negative IDs while user ones have positive IDs.
+	toInit->id = isPrivileged ? -scheduler.lastIDUsed : scheduler.lastIDUsed;
+	scheduler.lastIDUsed++;
 
-	// Set the initial PC to the starting address of task's code
-	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_PC << WORD_ACCESS_SHIFT));	
+	// Set the initial PC register value to the starting address of task's code
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_PC << 2));	
 	*taskFramePtr = (uint32_t) startAddr;
 	
-	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_LR << WORD_ACCESS_SHIFT));				   
+	// Set the initial LR register value to the method for handling completed
+	// tasks, the ones which have returned
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_LR << 2));				   
 	*taskFramePtr = (uint32_t) task_complete_handler;
 	
-	// Set the initial value of xPSR
-	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_xPSR << WORD_ACCESS_SHIFT));				   
+	// Set the initial value of xPSR register (see scheduler.h)
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_xPSR << 2));				   
 	*taskFramePtr = INIT_xPSR;
 	
-	// Set the initial value of EXC_RETURN, which specifies the use of stack pointer PSP or MSP and floating 
-	// point unit before and after return from this exception
-	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_EXC_RETURN << WORD_ACCESS_SHIFT));				   
+	// Set the initial value of EXC_RETURN (see scheduler.h)
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_EXC_RETURN << 2));				   
 	*taskFramePtr = EXC_RETURN_2;
 	
-	// Set the initial value of control register according to privilege level. This will
-	// specify access level of the task
-	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_CONTROL << WORD_ACCESS_SHIFT));				   
+	// Set the initial value of CONTROL register according to isPriviliged flag. 
+	// This will specify access level of the task.
+	taskFramePtr = (uint32_t*) (toInit->sp + (STACK_FRAME_CONTROL << 2));				   
 	*taskFramePtr = isPrivileged ? 0x2 : 0x3;
 	
 	__start_critical();
@@ -526,13 +574,13 @@ uint32_t task_init(Task* toInit, void* startAddr, uint8_t isPrivileged, uint8_t 
 
 /*-------------------------------------------------------------------------------
 * Function:    	task_complete_handler
-* Purpose:    	Code to be executed when the running task returns. 
+* Purpose:    	Code to be executed should a task return
 * Arguments: 	-
 * Returns: 		-
 --------------------------------------------------------------------------------*/
 void task_complete_handler(void) {
 	
-	// Self-deletion of completed (one-off) tasks 
+	// Self-deletion of completed task 
 	KrisOS_task_delete();
 }
 
@@ -541,24 +589,28 @@ void task_complete_handler(void) {
 #ifdef SHOW_DIAGNOSTIC_DATA
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_task_stack_usage
-* Purpose:    	Reset the stack memory given in order to extract stack usage data later
+* Purpose:    	Pre-set the task's private stack memory area to some known value
+*				in order to estimate the stack usage later
 * Arguments:	
-*		toPrepare - top of the stack memory to reset
+*		toPrepare - pointer to the top of the task's stack memory to initialise
 * 		size - size of stack memory
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, size_t size) {
 	
+	// Iterator through the memory area to initialise
 	uint32_t* iterator;
+	
+	// The end address of the memory to initialise
 	uint32_t* endAddress;
 	
 	// Argument checks
 	TEST_NULL_POINTER(toPrepare)
 	TEST_INVALID_SIZE(size)
 	
-	// Iterate through each word in the given memory area and initialise it to some 
-	// known value. This is later used for stack usage computation
+	// Iterate through each memory word in the given memory area and initialise 
+	// it to some known value. 
 	iterator = toPrepare;
 	endAddress = toPrepare + size / 4;
 	while (iterator < endAddress)

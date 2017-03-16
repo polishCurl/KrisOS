@@ -1,10 +1,10 @@
 /*******************************************************************************
 * File:     	kernel.h
-* Brief:    	OS kernel methods and definitions visible to the OS itself
+* Brief:    	A common include file for all kernel code (KrisOS functionality)
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	29/12/2016
-* Last mod: 	29/12/2016
+* Last mod: 	13/03/2017
 *
 * Note: 		
 *******************************************************************************/

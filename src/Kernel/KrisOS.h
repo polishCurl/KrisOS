@@ -1,12 +1,12 @@
 /*******************************************************************************
 * File:     	KrisOS.h
-* Brief:    	User interface to the KrisOS embedded operating system
+* Brief:    	KrisOS config file and interface specification
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016
-* Last mod: 	29/12/2016
+* Last mod: 	14/03/2017
 *
-* Note: 		User interface to the KrisOS and KrisOS setup parameters
+* Note: 		
 *******************************************************************************/
 #include "common.h"
 #include "tm4c123gh6pm.h"
@@ -16,7 +16,7 @@
 
 
 /*******************************************************************************
-* KrisOS features enable/disable (comment out to disable features)
+* KrisOS optional features (comment them out to disable)
 *******************************************************************************/
 #define USE_MUTEX 					// Use mutexes
 #define USE_SEMAPHORE 				// Use semaphores
@@ -28,7 +28,7 @@
 
 
 /*******************************************************************************
-* Resolve KrisOS feature dependencies
+* Resolve KrisOS feature dependencies, some optional features have to 'go together'
 *******************************************************************************/
 // To display diagnostic data the UART interface via USB must be enabled
 #if defined SHOW_DIAGNOSTIC_DATA && !defined USE_UART
@@ -91,6 +91,7 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 #define HEAP_SIZE 2000		
 
 // Minimum heap free block size that can still be divided into smaller ones
+// (in bytes)
 #define MIN_BLOCK_SIZE (4 * sizeof(HeapBlock))
 
 
@@ -108,7 +109,7 @@ extern uint32_t SYSTEM_CLOCK_FREQ;
 // UART interface as a file for output stream redirection
 extern __FILE uart;
 
-// Mutual exclusion lock on UART
+// Mutual exclusion lock on UART (optional)
 #if defined USE_UART && defined USE_MUTEX
 extern Mutex uartMtx;
 #endif
@@ -157,10 +158,10 @@ typedef struct Task {
 	int32_t id; 					// Task unique identifier
 	uint8_t priority; 				// Task priority
 	TaskState status; 				// Current task status
-	uint64_t waitCounter;			// Remaining time to sleep (in OS 'ticks')
-	uint32_t* stackBase; 			// Pointer to the base of process' stack
-	void* waitingObj;				// Synchronisation object the task is waiting for
-	uint8_t basePrio; 				// Base priority of the task given
+	uint64_t waitCounter;			// The time (in OS 'ticks') when the task should be woken up
+	uint32_t* stackBottom; 			// Pointer to the bottom of private stack (full-descending). 
+	void* waitingObj;				// Synchronisation object the task is waiting for (Mutex/Semaphore)
+	uint8_t basePrio; 				// Base priority of the task given (used for priority inheritance)
 #ifdef USE_MUTEX
 	Mutex* mutexHeld; 				// List of mutexes held
 #endif
@@ -203,10 +204,10 @@ typedef struct Semaphore {
 ------------------------------------------------------------------------------*/
 #ifdef USE_QUEUE
 typedef struct Queue {
-	uint8_t* buffer; 				// Buffer storing data placed in the queue
+	uint8_t* buffer; 				// Buffer storing the data placed in the queue
 	size_t bufferSize; 				// Buffer size in bytes
 	size_t itemSize; 				// Size (in bytes) of a single item stored
-	uint8_t* head;						// Current values of the head and tail pointers
+	uint8_t* head;					// Current values of the head and tail pointers
 	uint8_t* tail;			
 	Semaphore elementsStored;		// Number of elements currently in the queue 
 	Semaphore remainingCapacity;	// Remaining buffer capacity (in number of elements)
@@ -237,7 +238,7 @@ typedef struct __FILE {
 #define SVC_IRQ_GET_PRIO 8 			// Set a priority for an interrupt
 #define SVC_TASK_NEW 9 				// Create a task using heap
 #define SVC_TASK_NEW_S 10 			// Create a task using static memory
-#define SVC_TASK_SLEEP 11 			// Delay given task by a multiple of OS 'ticks'
+#define SVC_TASK_SLEEP 11 			// Suspend a task
 #define SVC_TASK_YIELD 12 			// Yield the currently running task
 #define SVC_TASK_DELETE 13 			// Delete the currently running task
 #define SVC_HEAP_ALLOC 14 			// Request dynamic memory allocation
@@ -280,10 +281,11 @@ uint32_t __svc(SVC_OS_INIT) KrisOS_init(void);
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_start
-* Purpose:    	Start the operating system
+* Purpose:    	Start the operating system by redirecting the execution to the top
+*				priority ready task in the scheduler
 * Arguments:	-
 * Returns: 
-* 		exit status		
+* 		exit status	
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_OS_START) KrisOS_start(void);
 
@@ -398,13 +400,13 @@ Task* __svc(SVC_TASK_NEW) KrisOS_task_create(void* startAddr, size_t stackSize,
 * Arguments:	
 * 		toDeclare - pointer to the pre-allocated task control block of the task to declare
 *		startAddr - starting address of the task to add
-*		stackBase - pointer to the private static stack area to be used by the task
+*		stackBottom - pointer to the private static stack area to be used by the task
 *		priority - task priority
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_TASK_NEW_S) KrisOS_task_create_static(Task* toCreate, void* startAddr,
-											             void* stackBase, uint8_t priority);
+											             void* stackBottom, uint8_t priority);
 
 
 
@@ -443,6 +445,7 @@ uint32_t __svc(SVC_TASK_DELETE) KrisOS_task_delete(void);
 
 
 
+#ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_malloc
 * Purpose:    	Dynamically allocate bytesToAlloc bytes of memory
@@ -464,6 +467,7 @@ void* __svc(SVC_HEAP_ALLOC) KrisOS_malloc(size_t bytesToAlloc);
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_HEAP_FREE) KrisOS_free(void* toFree);
+#endif
 
 
 
@@ -483,24 +487,36 @@ uint32_t __svc(SVC_MTX_INIT) KrisOS_mutex_init(Mutex* toInit);
 #ifdef USE_HEAP
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_mutex_create
-* Purpose:    	Create a mutex using dynamic memory
+* Purpose:    	Create a mutex using dynamic memory allocation.
 * Arguments:	-
 * Returns: 		
 *		Pointer to the mutex created
 --------------------------------------------------------------------------------*/
 Mutex* __svc(SVC_MTX_CREATE) KrisOS_mutex_create(void);
+
+
+
+/*-------------------------------------------------------------------------------
+* Function:    	KrisOS_mutex_delete
+* Purpose:    	Delete the mutex specified 
+* Arguments:	
+*		toDelete - mutex to delete
+* Returns: 		
+*		exit status
+--------------------------------------------------------------------------------*/
+uint32_t __svc(SVC_MTX_DELETE) KrisOS_mutex_delete(Mutex* toDelete);
 #endif
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_mutex_try_lock
-* Purpose:    	Attempts to lock the mutex specified. If mutex is already owned then
-*				the calling function doesn't wait until it's released.
+* Purpose:    	Attempt to lock the mutex specified. Don't wait if the mutex is 
+*				already owned by some other task. 
 * Arguments:	
 *		toLock - mutex to lock
 * Returns: 		
-*		exit status (if lock already acquired - EXIT_FAILURE)
+*		exit status. EXIT_FAILURE if the mutex can't be locked immediately
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_MTX_TRY_LOCK) KrisOS_mutex_try_lock(Mutex* toLock);
 
@@ -508,12 +524,11 @@ uint32_t __svc(SVC_MTX_TRY_LOCK) KrisOS_mutex_try_lock(Mutex* toLock);
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_mutex_lock
-* Purpose:    	Take the mutex given. If already taken, place the calling task in
-* 				the waiting queue
+* Purpose:    	Take the mutex given. Wait if the mutex is already taken.
 * Arguments:	
 *		toLock - mutex to lock
 * Returns: 		
-*		exit status 
+*		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_MTX_LOCK) KrisOS_mutex_lock(Mutex* toLock);
 
@@ -521,25 +536,13 @@ uint32_t __svc(SVC_MTX_LOCK) KrisOS_mutex_lock(Mutex* toLock);
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_mutex_unlock
-* Purpose:    	Release the mutex specified
+* Purpose:    	Unlock the mutex specified
 * Arguments:	
 *		toUnlock - mutex to unlock
 * Returns: 		
-*		exit status 
+*		exit status, EXIT_FAILURE if the calling task doesn't own the mutex specified 
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_MTX_UNLOCK) KrisOS_mutex_unlock(Mutex* toUnlock);
-
-
-
-/*-------------------------------------------------------------------------------
-* Function:    	mutex_delete
-* Purpose:    	Delete the mutex specified (if created using dynamic memory)
-* Arguments:	
-*		toDelete - mutex to delete
-* Returns: 		
-*		exit status
---------------------------------------------------------------------------------*/
-uint32_t __svc(SVC_MTX_DELETE) KrisOS_mutex_delete(Mutex* toDelete);
 #endif
 
 
@@ -568,29 +571,29 @@ uint32_t __svc(SVC_SEM_INIT) KrisOS_sem_init(Semaphore* toInit, uint32_t startVa
 *		pointer to the semaphore created
 --------------------------------------------------------------------------------*/
 Semaphore* __svc(SVC_SEM_CREATE) KrisOS_sem_create(uint32_t startVal);
-#endif
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_delete
-* Purpose:    	Remove the semaphore given
+* Purpose:    	Delete the semaphore given
 * Arguments:	
 * 		toDelete - semaphore to delete
 * Returns: 		
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_DELETE) KrisOS_sem_delete(Semaphore* toDelete);
+#endif
 
 
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_try_acquire
-* Purpose:    	Attempt to decrement the semaphore without waiting if unsucessful
+* Purpose:    	Attempt to decrement the semaphore. Don't wait if unsucessful.
 * Arguments:	
 * 		toAcquire - semaphore to acquire
 * Returns: 		
-*		exit status. If semaphore can't be taken exit status = EXIT_FAILURE
+*		exit status. EXIT_FAILURE if semaphore can't be taken
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_TRY_ACQUIRE) KrisOS_sem_try_acquire(Semaphore* toAcquire);
 
@@ -598,11 +601,10 @@ uint32_t __svc(SVC_SEM_TRY_ACQUIRE) KrisOS_sem_try_acquire(Semaphore* toAcquire)
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_acquire
-* Purpose:    	Attempt to decrement the semaphore. Wait if unsuccessful.
+* Purpose:    	Decrement the semaphore. Wait if unsuccessful.
 * Arguments:	
 * 		toAcquire - semaphore to acquire
-* Returns: 		
-*		exit status
+* Returns: -
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_ACQUIRE) KrisOS_sem_acquire(Semaphore* toAcquire);
 
@@ -610,12 +612,12 @@ uint32_t __svc(SVC_SEM_ACQUIRE) KrisOS_sem_acquire(Semaphore* toAcquire);
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	KrisOS_sem_release
-* Purpose:    	Release the semaphore specified
+* Function:    	sem_release
+* Purpose:    	Increment the semaphore.
 * Arguments:	
-*		toRelease - mutex to unlock
+*		toRelease - semaphore to release
 * Returns: 		
-*		exit status 
+*		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 
@@ -623,7 +625,7 @@ uint32_t __svc(SVC_SEM_RELEASE) KrisOS_sem_release(Semaphore* toRelease);
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_release_ISR
-* Purpose:    	Release the semaphore specified by an interrupt service routine
+* Purpose:    	Release the semaphore specified inside an interrupt service routine
 * Arguments:	
 *		toRelease - semaphore to release		
 * Returns: 		
@@ -635,7 +637,7 @@ uint32_t KrisOS_sem_release_ISR(Semaphore* toRelease);
 
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_sem_acquire_ISR
-* Purpose:    	Take the semaphore by an interrupt service routine. Don't wait if
+* Purpose:    	Take the semaphore inside an interrupt service routine. Don't wait if
 *				unsuccessful
 * Arguments:	
 * 		toAcquire - semaphore to acquire
@@ -643,8 +645,8 @@ uint32_t KrisOS_sem_release_ISR(Semaphore* toRelease);
 *		exit status 
 --------------------------------------------------------------------------------*/
 uint32_t KrisOS_sem_acquire_ISR(Semaphore* toAcquire);
-
 #endif
+
 
 
 #ifdef USE_QUEUE
@@ -676,7 +678,6 @@ uint32_t __svc(SVC_QUEUE_INIT) KrisOS_queue_init(Queue* toInit, void* bufferMemo
 *		exit status
 --------------------------------------------------------------------------------*/
 Queue* __svc(SVC_QUEUE_CREATE) KrisOS_queue_create(size_t capacity, size_t itemSize);
-#endif
 
 
 
@@ -689,6 +690,7 @@ Queue* __svc(SVC_QUEUE_CREATE) KrisOS_queue_create(size_t capacity, size_t itemS
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t __svc(SVC_QUEUE_DELETE) KrisOS_queue_delete(Queue* toDelete);
+#endif
 
 
 
@@ -779,9 +781,10 @@ uint32_t KrisOS_queue_read_ISR(Queue* toRead, void* item);
 #ifdef SHOW_DIAGNOSTIC_DATA
 /*-------------------------------------------------------------------------------
 * Function:    	KrisOS_task_stack_usage
-* Purpose:    	Reset the stack memory given in order to extract stack usage data later
+* Purpose:    	Pre-set the task's private stack memory area to some known value
+*				in order to estimate the stack usage later
 * Arguments:	
-*		toPrepare - top of the stack memory to reset
+*		toPrepare - pointer to the top of the task's stack memory to initialise
 * 		size - size of stack memory
 * Returns: 		
 *		exit status
@@ -793,7 +796,7 @@ uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, uint32_t size);
 
 /*-------------------------------------------------------------------------------
 * Macro:    	KrisOS_task_static_template
-* Purpose:    	MACRO speeding up static task declaration by automatically declaring 
+* Purpose:    	MACRO speeding up the static task declaration by automatically declaring 
 *				and initialising variables and constants to be passed to 
 *				KrisOS_task_create_static.
 * Arguments:	
@@ -817,7 +820,7 @@ uint32_t KrisOS_task_stack_usage(uint32_t* toPrepare, uint32_t size);
 	
 /*-------------------------------------------------------------------------------
 * Macro:    	KrisOS_task_dynamic_template
-* Purpose:    	MACRO speeding up dynamic task declaration by automatically declaring 
+* Purpose:    	MACRO speeding up the dynamic task declaration by automatically declaring 
 *				and initialising variables and constants to be passed to 
 *				KrisOS_task_create.
 * Arguments:	

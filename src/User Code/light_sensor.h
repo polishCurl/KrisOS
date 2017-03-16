@@ -13,13 +13,6 @@
 
 
 /*-----------------------------------------------------------------------------
-* Piezo buzzer address
-------------------------------------------------------------------------------*/
-#define PIEZO (*((volatile uint32_t*) 0x40005008))
-
-
-
-/*-----------------------------------------------------------------------------
 * Light sensor threshold value. If the ADC reading from the photoresistor
 * exceeds this value and the readings has dropped below HYSTERESIS_THRESHOLD
 * since the last time this threshold has been exceeded then the AC0_SS3 interrupt

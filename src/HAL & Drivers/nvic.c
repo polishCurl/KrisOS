@@ -7,6 +7,9 @@
 * Last mod: 	05/12/2016
 *
 * Note: 		
+*	The NVIC registers can only be accessed from the priviliged mode. Since the
+*	user code runs in unpriuviliged Thread mode, there is a need for a set of
+*	SVC calls for configuring the Interrupts from user level.
 *******************************************************************************/
 #include "system.h"
 #include "kernel.h"

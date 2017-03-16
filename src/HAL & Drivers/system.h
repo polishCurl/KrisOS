@@ -1,10 +1,11 @@
 /*******************************************************************************
 * File:     	system.h
-* Brief:    	System methods visible to the Operating System
+* Brief:    	A common include file for all system code (Hardware abstraction
+*				layer)
 * Author: 		Krzysztof Koch
 * Version:		V1.00
-* Date created:	30/09/2016
-* Last mod: 	30/09/2016
+* Date created:	29/12/2016
+* Last mod: 	13/03/2017
 *
 * Note: 		
 *******************************************************************************/

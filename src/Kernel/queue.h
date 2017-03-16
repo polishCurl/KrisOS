@@ -3,8 +3,8 @@
 * Brief:    	Header file for queue.c
 * Author: 		Krzysztof Koch
 * Version:		V1.00
-* Date created:	03/03/2016
-* Last mod: 	03/03/2016
+* Date created:	03/03/2017
+* Last mod: 	16/03/2017
 *
 * Note: 		
 *******************************************************************************/
@@ -41,7 +41,6 @@ uint32_t queue_init(Queue* toInit, void* bufferMemory, size_t capacity,
 *		exit status
 --------------------------------------------------------------------------------*/
 Queue* queue_create(size_t capacity, size_t itemSize);
-#endif
 
 
 
@@ -54,6 +53,7 @@ Queue* queue_create(size_t capacity, size_t itemSize);
 *		exit status
 --------------------------------------------------------------------------------*/
 uint32_t queue_delete(Queue* toDelete);
+#endif
 
 
 

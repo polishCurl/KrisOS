@@ -1,7 +1,7 @@
 /*******************************************************************************
 * File:     	common.h
-* Brief:    	Standard libraries and common definitions used across various
-*				files in KrisOS code.
+* Brief:    	A common include file for all standard libaries used across the
+*				KrisOS source and a re-definition of floating-point data types
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	30/09/2016

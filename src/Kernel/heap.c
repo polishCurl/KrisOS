@@ -1,12 +1,34 @@
 /*******************************************************************************
 * File:     	heap_manager.c
-* Brief:    	heap implementation for dynamic memory allocation
+* Brief:    	KrisOS heap manager implementation
 * Author: 		Krzysztof Koch
 * Version:		V1.00
 * Date created:	28/09/2016
-* Last mod: 	04/12/2016
+* Last mod: 	14/03/2017
 *
 * Note: 		
+*	The heap manager is implemented as a set of blocks (used/free) Each separate 
+*	block of heap memory has an overhead of 8 bytes of metadata (the HeapBlock 
+*	struct), which is used for describing a continuous subset of (used/free)
+*	heap memory
+*		1. Block size - size of the memory area that HeapBlock is describing
+*		2. Next pointer - pointer to the next block of heap memory
+*
+*	Only the free heap blocks are chained together in a linked list. To do that
+*	two extra (meta)blocks are used which mark the start and end of the list of
+*	free heap block list. The start block is declared separately from the heap
+*	memory space, but the end block occupies the last 8 bytes of heap memory.
+*	So, after initialisation the heap usage is equal to 8 bytes already (instead
+*	of 0). Initially, there exist only a single free heap block which occupies
+*	the entire (almost) heap memory and links together the start and end blocks.
+*
+*	To avoid external memory fragmentation each new free heap block, either freed
+*	or created from existing one, is re-inserted into the list and if any of its
+*	neighbours are directly adjacent, the free blocks are merged together,
+*
+* 	This heap manager implementation overrides the <stdlib.h> malloc and free
+*	function declarations. Malloc terminates the OS if there is insufficient free
+*	heap memory left.
 *******************************************************************************/
 #include "KrisOS.h"
 #include "kernel.h"
@@ -16,7 +38,7 @@
 
 
 /*-------------------------------------------------------------------------------
-* Heap manager declaration
+* Allocate memory for the heap manager at compile time
 --------------------------------------------------------------------------------*/
 HeapManager heap;
 
@@ -24,23 +46,32 @@ HeapManager heap;
 
 /*-------------------------------------------------------------------------------
 * Function:    	heap_init
-* Purpose:    	Heap initialisation function 
+* Purpose:    	Heap initialisation function
 * Arguments:	- 	
 * Returns: 		-	
 --------------------------------------------------------------------------------*/
 void heap_init(void){
 
-	// Pointer to the first free block of data that can be used and a helper pointer
-	// for end HeapBlock address computation
+	// Pointer to the first free block, which is not startBlock or endBlock (metablock) 
 	HeapBlock* firstBlock;
+	
+	// Helper pointer for end HeapBlock address computation
 	uint8_t* endBlockAdr;
 	
-	// Reset the heap usage counter. The end block is contained within the heap memory
+	// Reset the heap usage counter. The end block is located within the heap memory
+	// so the heap usage is reset to a non-zero value
 	heap.heapBytesUsed = sizeof(HeapBlock);					
 	
-	// Initialise the two blocks used for management, the starting and ending ones
+	// Initialise the startBlock and endBlock which mark the beginning and end of
+	// the list of free heap blocks (they don't describe an actual susbset of 
+	// heap-designated memory).
+	// Make the startBlock unallocatable by setting its size to 0 and making
+	// it point next to the start of the heap memory space (firstBlock)
 	heap.startBlock.blockSize = 0;
 	heap.startBlock.next = (void*) heap.heapMem;
+	
+	// Initialise the endBlock and place it inside the heap memory area right
+	// at the end of it (last 8 bytes)
 	endBlockAdr = heap.heapMem + ALIGNED_HEAP_SIZE - sizeof(HeapBlock);
 	heap.endBlock = (void*) endBlockAdr;
 	heap.endBlock->blockSize = ALIGNED_HEAP_SIZE;
@@ -62,34 +93,34 @@ void heap_init(void){
 
 /*-------------------------------------------------------------------------------
 * Function:    	malloc
-* Purpose:    	Dynamically allocate bytesToAlloc bytes on the heap
+* Purpose:    	Dynamically allocate bytesToAlloc bytes of memory
 * Arguments:	
-*		bytesToAlloc - number of bytes to allocate	
+*		bytesToAlloc - number of bytes to allocate on heap
 * Returns: 
-* 		pointer to the memory block allocated or a NULL pointer if unsuccessful
+* 		pointer to the memory block allocated. Doesn't return if unsuccessful
 --------------------------------------------------------------------------------*/
 void* malloc(size_t bytesToAlloc) {
 	
 	// Pointer to the memory allocated
 	void* allocatedMemory;
 	
-	// Block pointers used for traversing the list
+	// Block pointers used for traversing the free heap block list
 	HeapBlock *previousBlock, *iterator;
 	
-	// Pointer to a new block can be created if there is no free block closely
-	// matching the number of bytes requested
+	// Pointer to a new free heap block that can be created (to avoid internal 
+	// fragmentation) from the block allocated in this request
 	HeapBlock *subBlock;
 	
-	// Check if the request is valid and add extra number of bytes to the request
-	// so that the HeapBlock for heap management can be stored inside the allocated
-	// memory. Also ensure correct memory alignment
-	if (bytesToAlloc > 0) {
-		bytesToAlloc += sizeof(HeapBlock);
-		bytesToAlloc = align_byte_number(bytesToAlloc);
-	}
+	// Check if the request is valid
+	TEST_INVALID_SIZE(bytesToAlloc)
 	
-	// If the heap is big enough to meet the request
-	if (bytesToAlloc > 0 && bytesToAlloc < ALIGNED_HEAP_SIZE) {
+	// In addition to the memory to serve the request, extra 8 bytes need to
+	// be allocated for the HeapBlock which will be describing it 
+	bytesToAlloc += sizeof(HeapBlock);
+	bytesToAlloc = heap_align_byte_number(bytesToAlloc);
+	
+	// If the heap is big enough to meet the request...
+	if (bytesToAlloc < ALIGNED_HEAP_SIZE) {
 		
 		#ifdef USE_MUTEX
 			mutex_lock(&heap.heapMutex);
@@ -101,20 +132,21 @@ void* malloc(size_t bytesToAlloc) {
 			// or we reached the endBlock 
 			previousBlock = &heap.startBlock;
 			iterator = heap.startBlock.next;
-			
 			while ((iterator->blockSize < bytesToAlloc) && (iterator->next != NULL)) {
 				previousBlock = iterator;
 				iterator = iterator->next;
 			}
 			
-			// If such block exists, join its neighbours and update the pointer
+			// If a large enough block exists, remove it from free block list by 
+			// joining its neighbours together
 			if (iterator != heap.endBlock) {
 				allocatedMemory = (void*) (((uint8_t*) previousBlock->next) + sizeof(HeapBlock));
 				previousBlock->next = iterator->next;
 				
-				// If the difference between the requested memory size and the assigned block
-				// size is too big then split the block into two and insert the unallocated
-				// part to the list of heap blocks
+				// If the size difference between the requested memory and the free 
+				// heap block found is too big, split the block found into two 
+				// subblocks and insert the unallocated part back to the free heap
+				// block list
 				if (iterator->blockSize - bytesToAlloc > MIN_BLOCK_SIZE) {
 					subBlock = (void*) (((uint8_t*) iterator) + bytesToAlloc);
 					subBlock->blockSize = iterator->blockSize - bytesToAlloc;
@@ -122,23 +154,26 @@ void* malloc(size_t bytesToAlloc) {
 					heap_insert_free_block(subBlock);
 				}	
 				heap.heapBytesUsed += iterator->blockSize;
-			}
+				
+				#ifdef USE_MUTEX
+					mutex_unlock(&heap.heapMutex);
+				#else
+					__end_critical();
+				#endif
+				return allocatedMemory;	
+			}	
 		}
 		#ifdef USE_MUTEX
-			mutex_unlock(&heap.heapMutex);
+			mutex_lock(&heap.heapMutex);
 		#else
-			__end_critical();
-		#endif
+			__start_critical();
+		#endif		
+	}
 		
-		// Test if there is insufficient free heap memory left to serve this request
-		if (iterator == heap.endBlock)
-			exit(EXIT_HEAP_TOO_SMALL);
-	}
-	// The remaining heap space is smaller than the block size
-	else {
-		exit(EXIT_HEAP_TOO_SMALL);
-	}
-	return allocatedMemory;	
+	// If there is insufficient free heap memory left to serve this request
+	// terminate the OS prematurely 
+	exit(EXIT_HEAP_TOO_SMALL);
+	return NULL;
 }
 
 
@@ -159,12 +194,12 @@ void free(void* toFree) {
 	// Validate the input argument
 	TEST_NULL_POINTER(toFree)
 	
-	// Test if pointer points to heap memory
+	// Test if the memory to free actually belongs to heap
 	if (toFree < (void*) &heap.heapMem[0] || toFree >= (void*) &heap.heapMem[ALIGNED_HEAP_SIZE])
 		return;
 	
-	// Create a new heap block from the memory area to freed and re-insert it to the
-	// list of free heap blocks
+	// Extract the HeapBlock metadata from the input argument pointer and re-insert 
+	// the block back to the list of free heap blocks
 	bytesToFree = (uint8_t*) toFree;
 	bytesToFree -= sizeof(HeapBlock);
 	blockToFree = (HeapBlock*) bytesToFree;
@@ -189,7 +224,8 @@ void free(void* toFree) {
 
 /*-------------------------------------------------------------------------------
 * Function:    	heap_insert_free_block
-* Purpose:    	Insert a new block into the list of free blocks
+* Purpose:    	Insert a new block into the list of free blocks in ascending block 
+* 				size order
 * Arguments:	
 *		toInsert - pointer to the block to insert
 * Returns: 		-
@@ -243,7 +279,7 @@ void heap_insert_free_block(HeapBlock* toInsert) {
 
 
 /*-------------------------------------------------------------------------------
-* Function:    	align_byte_number
+* Function:    	heap_align_byte_number
 * Purpose:    	Update the number of bytes requested for allocation so that it is 
 *				compliant with the current byte alignment
 * Arguments:	
@@ -251,7 +287,7 @@ void heap_insert_free_block(HeapBlock* toInsert) {
 * Returns: 		
 *		modified byte number to
 --------------------------------------------------------------------------------*/
-size_t align_byte_number(size_t byteNumber) {
+size_t heap_align_byte_number(size_t byteNumber) {
 	
 	// Test if the number of bytes is a multiple of HEAP_BYTE_ALIGN. If not, add 
 	// number of bytes necessary to enforce alignment

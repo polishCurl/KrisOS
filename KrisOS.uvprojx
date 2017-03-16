@@ -478,9 +478,9 @@
               <FilePath>.\src\User Code\led_pulse.c</FilePath>
             </File>
             <File>
-              <FileName>demo2.c</FileName>
+              <FileName>demo1.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\User Code\demo2.c</FilePath>
+              <FilePath>.\src\User Code\demo1.c</FilePath>
             </File>
           </Files>
         </Group>
