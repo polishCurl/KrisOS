@@ -125,7 +125,7 @@ I (src\Kernel\os.h)(0x58CA66A8)
 I (src\Kernel\semaphore.h)(0x58CAC8E5)
 I (src\Kernel\queue.h)(0x58CAC658)
 I (src\Kernel\assertions.h)(0x58C7D5AA)
-F (.\src\Kernel\queue.c)(0x58CACF78)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code" --diag_suppress 815-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\queue.o --omf_browse .\objects\queue.crf --depend .\objects\queue.d)
+F (.\src\Kernel\queue.c)(0x58CC2795)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code" --diag_suppress 815-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\queue.o --omf_browse .\objects\queue.crf --depend .\objects\queue.d)
 I (src\Kernel\kernel.h)(0x58C7D63D)
 I (src\Kernel\heap.h)(0x58CA6645)
 I (src\Kernel\mutex.h)(0x58CAC950)
@@ -272,7 +272,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x58A4E5F4)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x56FEA54E)
 I (.\src\HAL & Drivers\tm4c123gh6pm.h)(0x58C4310C)
 I (src\User Code\led_pulse.h)(0x58C48DF0)
-F (.\src\User Code\demo1.c)(0x58CA986C)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code" --diag_suppress 815-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\demo1.o --omf_browse .\objects\demo1.crf --depend .\objects\demo1.d)
+F (.\src\User Code\demo2.c)(0x58CACA04)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\src\Common -I ".\src\HAL & Drivers" -I .\src\Kernel -I ".\src\User Code" --diag_suppress 815-I "C:\Users\Krzysztof Koch\Documents\KrisRTOS\RTE"-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM-o .\objects\demo2.o --omf_browse .\objects\demo2.crf --depend .\objects\demo2.d)
 I (.\src\Kernel\KrisOS.h)(0x58CAC9FD)
 I (.\src\Common\common.h)(0x58C7E045)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FEA54E)
@@ -280,4 +280,3 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x56FEA54E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x58A4E5F4)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x56FEA54E)
 I (.\src\HAL & Drivers\tm4c123gh6pm.h)(0x58C4310C)
-I (src\User Code\led_pulse.h)(0x58C48DF0)

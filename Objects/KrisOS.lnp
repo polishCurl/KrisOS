@@ -17,7 +17,7 @@
 ".\objects\thermometer.o"
 ".\objects\nokia5110_backlight.o"
 ".\objects\led_pulse.o"
-".\objects\demo1.o"
+".\objects\demo2.o"
 --ro-base 0x00000000 --entry 0x00000000 --rw-base 0x20000000 --entry Reset_Handler --first __Vectors --strict --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list ".\Listings\KrisOS.map" -o .\Objects\KrisOS.axf
