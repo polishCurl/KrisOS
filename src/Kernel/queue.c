@@ -17,6 +17,15 @@
 *	protected by two semaphores which keep track of the capacity still available
 *	and the number of entries stored. This ensures blocking behaviour of queues 
 *	when needed.
+*
+*	One peculiarity of my implementation is that to achieve the blocking behaviour
+*	rescheduling might be needed. As we know, rescheduling triggers the PendSV 
+*	interrupt which will only be handled when outside a SVC call (both have the
+*	same priority). This is the reason why the blocking calls to write/read using
+*	the queue aren't SVC calls themselves, but inside these methods multiple SVC
+*	calls are made so that not all of the queue kernel code runs in Handler mode
+*	and there are windows when the PendSV interrupt can be handled (causing the
+*	context switch of the task which can't write/read to the queue at the moment.
 *******************************************************************************/
 #include "kernel.h"
 #include "system.h"
